@@ -354,7 +354,7 @@ class MOVecsWriter(object):
         self.int_fmt = size_to_code[self.reader.int_size]
 
     def put_head(self, open_file, count):
-        """Put a head on a Fortran record, basically a count of how
+        """Put a head on a Fortran record, an integer count of how
         many bytes are in the actual record data.
 
         @param open_file: open file to write a record head to
@@ -401,9 +401,13 @@ class MOVecsWriter(object):
 
         @param open_file: open file to write a record to
         @type open_file : file
-        @param ints: string data
-        @type ints : list
+        @param ints: integer values
+        @type ints : list | int
         """
+
+        #convert lone value to one-item list
+        if type(ints) == int:
+            ints = [ints]
 
         fmt = self._end + self.int_fmt * len(ints)
         packed = struct.pack(fmt, *tuple(ints))
@@ -416,8 +420,12 @@ class MOVecsWriter(object):
         @param open_file: open file to write a record to
         @type open_file : file
         @param doubles: double precision floating point values
-        @type doubles : list
+        @type doubles : list | double
         """
+
+        #convert lone value to one-item list
+        if type(doubles) == float:
+            doubles = [doubles]
 
         fmt = self._end + 'd' * len(doubles)
         packed = struct.pack(fmt, *tuple(doubles))
@@ -442,11 +450,11 @@ class MOVecsWriter(object):
             self.put_string(f, data['scf_type'])
 
             #write title with title length (which is actually fixed)
-            self.put_ints(f, [len(data['title'])])
+            self.put_ints(f, len(data['title']))
             self.put_string(f, data['title'])
 
             #write basis_name with title length (which is actually fixed)
-            self.put_ints(f, [len(data['basis_name'])])
+            self.put_ints(f, len(data['basis_name']))
             self.put_string(f, data['basis_name'])
 
             #number of molecular orbital sets and their
@@ -461,11 +469,11 @@ class MOVecsWriter(object):
                 Nmo = [data['Nbas_mo']]
 
             #write number of molecular orbital sets
-            self.put_ints(f, [Nmo_sets])
+            self.put_ints(f, Nmo_sets)
 
             #write number of atomic orbitals
             Nao = data['Nbas_ao']
-            self.put_ints(f, [Nao])
+            self.put_ints(f, Nao)
 
             #write number of molecular orbitals for each orbital set
             self.put_ints(f, Nmo)
@@ -645,7 +653,6 @@ class GuessReader(object):
 
         readers = [MOVecsReaderLittle64, MOVecsReaderLittle32,
                    MOVecsReaderBig32, MOVecsReaderBig64, PickleReader]
-        readers = [readers[3]]
 
         results = []
         for reader in readers:
