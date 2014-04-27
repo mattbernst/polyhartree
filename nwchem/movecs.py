@@ -30,6 +30,23 @@ class MOVecsReader(object):
     """
     
     def __init__(self, movecs_file_name, default_energy=0.0, default_enrep=0.0):
+        """Initialize reader with the input file name and (optionally)
+        default total energy and default nuclear repulsion energy.
+
+        Before release 4.1 NWChem did not store these energies in movecs, so
+        if writing a modern movecs file from old movecs input the user may
+        need to supply the energy values manually, e.g. by copying them from
+        the calculation log file. The default energies are used only
+        if they cannot be found in the input files.
+
+        @param movecs_file_name: name of molecular orbital vector file to read
+        @type movecs_file_name : str
+        @param default_energy: total energy in Hartrees
+        @type default_energy : float
+        @param default_enrep: nuclear repulsion energy in Hartrees
+        @type default_enrep : float
+        """
+        
         self.fname = movecs_file_name
         self.default_energy = default_energy
         self.default_enrep = default_enrep
@@ -273,10 +290,8 @@ class MOVecsReader(object):
             #After 2001/12/28, release 4.1, total energy stored.
             #After 2002/02/19, release 4.1, also nuclear repulsion energy.
             
-            #If translating from old movecs, assign missing values arbitrarily
-            #default 0.0
-            #User may assign missing values from external knowledge, e.g.
-            #calculation log file
+            #If translating from old movecs, set missing values using
+            #assigned defaults
             if f.tell() < fsize:
                 energy, enrep = self.get_doubles(f)
                 rdata['effective_nuclear_repulsion_energy'] = enrep
@@ -301,6 +316,12 @@ class MOVecsWriter(object):
     """
 
     def __init__(self, movecs_file_name):
+        """Prepare writer for molecular orbital vectors.
+
+        @param movecs_file_name: name of molecular orbital vector file to write
+        @type movecs_file_name : str
+        """
+        
         self.fname = movecs_file_name
         
         #just test that the file can be opened for writing, in case user gave
@@ -389,7 +410,8 @@ class MOVecsWriter(object):
         self.put_record(open_file, packed)
 
     def put_doubles(self, open_file, doubles):
-        """Write one or more doubles into a contiguous record.
+        """Write one or more double precision floating point numbers into a
+        contiguous record.
 
         @param open_file: open file to write a record to
         @type open_file : file
@@ -402,7 +424,7 @@ class MOVecsWriter(object):
         self.put_record(open_file, packed)
 
     def write(self, data):
-        """Write formatted data produced by a MOVecsReader into an NWChem
+        """Write formatted data interpreted by a MOVecsReader into an NWChem
         .movecs file.
 
         @param data: formatted platform-independent data
