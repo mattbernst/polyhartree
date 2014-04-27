@@ -66,7 +66,7 @@ class MOVecsReader(object):
 
         self.head_fmt = self._end + size_to_code[self.head_size]
         self.tail_fmt = self._end + size_to_code[self.tail_size]
-        self.int_fmt = self._end + size_to_code[self.int_size]
+        self.int_fmt = size_to_code[self.int_size]
 
     def get_head(self, open_file):
         """Get the head of a Fortran record, basically a count of how
@@ -118,18 +118,28 @@ class MOVecsReader(object):
 
         return rec
 
-    def get_int(self, open_file):
-        """Read a record that consists of a single integer from an
-        open file
+    def get_ints(self, open_file):
+        """Read a record that consists of one or more integer from an
+        open file. If there is only a single record, return as int
+        instead of list.
 
         @param open_file: open file to read a record from
         @type open_file : file
         @return: an integer
-        @rtype : int
+        @rtype : int | list
         """
-        data = self.get_record(open_file)
-        unpacked = struct.unpack(self.int_fmt, data)
-        return unpacked[0]
+        
+        raw_ints = self.get_record(open_file)
+        num_ints = len(raw_ints) / self.int_size
+        #the struct format string: endianness flag followed by one
+        #unsigned int symbol for each int to be decoded from the raw data
+        struct_fmt = self._end + (self.int_fmt * num_ints)
+        unpacked = struct.unpack(struct_fmt, raw_ints)
+
+        if len(unpacked) == 1:
+            return unpacked[0]
+        else:
+            return unpacked
 
     def get_doubles(self, open_file):
         """Fetch data from a record that represents contiguous
@@ -158,6 +168,7 @@ class MOVecsReader(object):
         
         rdata = {'reader_name' : self.__class__.__name__}
         rdata['movecs_name'] = self.fname
+        fsize = os.path.getsize(self.fname)
         
         with open(self.fname, 'rb') as f:
             ##c would be performed by movecs_read_header
@@ -172,18 +183,18 @@ class MOVecsReader(object):
 
             ##read(unitno) ! length of title
             ##read(unitno) ! title(1:lentit)
-            title_len = self.get_int(f)
+            title_len = self.get_ints(f)
             title = self.get_record(f)
             rdata['title'] = title.strip()
 
             ##read(unitno) ! length of basis name
             ##read(unitno) ! basis_name(1:lenbas)
-            basis_name_len = self.get_int(f)
+            basis_name_len = self.get_ints(f)
             basis_name = self.get_record(f)
             rdata['basis_name'] = basis_name
 
             ##read(unitno) nsets ! = 1 for RHF/KS and 2 for UHF/KS
-            Nmo_sets = self.get_int(f)
+            Nmo_sets = self.get_ints(f)
             if Nmo_sets == 1:
                 pNmo_sets = "Nmo_sets {0} : Restricted RHF/KS".format(Nmo_sets)
             elif Nmo_sets == 2:
@@ -195,21 +206,18 @@ class MOVecsReader(object):
 
             ##read(unitno) nbf   ! cardinality of orbital basis 
             ##write(*,*) 'nbf            ', nbf
-            Nao = self.get_int(f)
+            Nao = self.get_ints(f)
             rdata['Nbas_ao'] = Nao
 
             if( Nmo_sets == 1 ):
                 ##read(unitno) (nmo(i),i=1,nsets) ! nmo<nbf if linear dependencies
-                Nmo = [self.get_int(f)]
+                Nmo = [self.get_ints(f)]
                 rdata["Nbas_mo"] = Nmo[0]
 
             elif( Nmo_sets == 2 ):
                 ##read(unitno) (nmo(i),i=1,nsets) ! nmo<nbf if linear dependencies
                 ##write(*,*) 'nmo alpha beta ', nmo(1),nmo(2)
-                #FIXME
-                Nmo = [sefl.get_int(f), self.get_int(f)]
-                #Nmo = struct.unpack('ii', sets_data)[0:2]
-                import ipdb; ipdb.set_trace()
+                Nmo = list(self.get_ints(f))
                 rdata["Nbas_mo: alpha"] = Nmo[0]
                 rdata["Nbas_mo: beta"] = Nmo[1]
 
@@ -238,7 +246,16 @@ class MOVecsReader(object):
                     orbC.append(orbCv[i * Nao : (i + 1) * Nao])
                 orbCv = []
 
-                mo_set.append( [orbN,orbE,orbC] )
+                mo_set.append([orbN, orbE, orbC])
+
+
+            #If there are still bytes left in the file, it contains
+            #two energy values. Very old files do not contain these
+            #values.
+            if f.tell() < fsize:
+                energy, enrep = self.get_doubles(f)
+                rdata['effective_nuclear_repulsion_energy'] = enrep
+                rdata['total_energy'] = energy
 
             #enddo
 
