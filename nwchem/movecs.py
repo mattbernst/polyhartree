@@ -609,7 +609,7 @@ class PickleWriter(object):
         with open(self.fname, 'wb') as f:
             pickle.dump(data, f)
 
-def native_platform():
+def guess_native_platform():
     """Guess which kind of platform this script is currently running on.
     It could guess wrong if you're doing something tricky like running a
     32 bit Python interpreter under a 64 bit OS.
@@ -710,7 +710,7 @@ if __name__ == '__main__':
             writer = PickleWriter
 
         else:
-            platform = native_platform()
+            platform = guess_native_platform()
             writer = cmap[platform][1]
             
     else:
