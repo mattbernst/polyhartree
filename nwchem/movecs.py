@@ -165,9 +165,10 @@ class MOVecsReader(object):
 
     def read(self):
         self._init_formats()
-        
-        rdata = {'reader_name' : self.__class__.__name__}
-        rdata['movecs_name'] = self.fname
+
+        rdata = {'metadata' : {}}
+        rdata['metadata']['reader_name'] = self.__class__.__name__
+        rdata['metadata']['movecs_name'] = self.fname
         fsize = os.path.getsize(self.fname)
         
         with open(self.fname, 'rb') as f:
@@ -175,17 +176,29 @@ class MOVecsReader(object):
 
             ##read(unitno) ! convergence info
             conv = self.get_record(f)
-            rdata['conv'] = conv.strip()
+
+            #'conv' packs together a bunch of strings
+            #basissum 32
+            #geomsum 32
+            #bqsum 32
+            #scftype 20
+            #date 26
+            #the *sum values are md5 checksums, bqsum currently appears unused
+            rdata['basissum'] = conv[:32]
+            rdata['geomsum'] = conv[32:64]
+            rdata['bqsum'] = conv[64:96]
+            rdata['scftype'] = conv[96:116]
+            rdata['date'] = conv[116:]
 
             ##read(unitno) ! scf type
             scf_type = self.get_record(f)
-            rdata['scf_type'] = scf_type.strip()
+            rdata['scf_type'] = scf_type
 
             ##read(unitno) ! length of title
             ##read(unitno) ! title(1:lentit)
             title_len = self.get_ints(f)
             title = self.get_record(f)
-            rdata['title'] = title.strip()
+            rdata['title'] = title
 
             ##read(unitno) ! length of basis name
             ##read(unitno) ! basis_name(1:lenbas)
@@ -242,20 +255,23 @@ class MOVecsReader(object):
                     orbCv += Cv
                 orbC = []
                 for i in range(Nmo[iset]):
-                    #orbC.append( orbCv[i::Nao] )
                     orbC.append(orbCv[i * Nao : (i + 1) * Nao])
-                orbCv = []
 
                 mo_set.append([orbN, orbE, orbC])
 
-
-            #If there are still bytes left in the file, it contains
-            #two energy values. Very old files do not contain these
-            #values.
+            #If there are still bytes left in the file, process them.
+            #If the file is from NWChem
+            #Before 2001/12/28, release 4.1, nothing at the end.
+            #After 2001/12/28, release 4.1, total energy.
+            #After 2002/02/19, release 4.1, also nuclear repulsion energy.
+            #If translating from old movecs, pretend total energy is 0.0
             if f.tell() < fsize:
                 energy, enrep = self.get_doubles(f)
                 rdata['effective_nuclear_repulsion_energy'] = enrep
                 rdata['total_energy'] = energy
+
+            else:
+                rdata['total_energy'] = 0.0
 
             #enddo
 
@@ -324,7 +340,7 @@ if __name__ == '__main__':
         results.append(data)
 
     ok_readers = len(results) - results.count(None)
-    names = [x['reader_name'] for x in results if x is not None]
+    names = [x['metadata']['reader_name'] for x in results if x is not None]
         
     if ok_readers > 1:
         sys.stderr.write("Ambiguous format -- multiple readers worked: {0}\n".format(names))
