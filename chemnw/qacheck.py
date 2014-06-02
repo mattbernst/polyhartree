@@ -6,8 +6,7 @@ import glob
 import shlex
 import subprocess
 import stat
-# https://github.com/cclib/cclib
-#import cclib
+import pprint
 
 class Verifier(object):
     def __init__(self):
@@ -40,6 +39,8 @@ class Verifier(object):
 #
 setenv NWCHEM_TOP {0}
 setenv NWCHEM_TARGET {1}
+setenv NWCHEM_EXECUTABLE `which nwchem`
+
 set np = 1
 if ($1 !="") then
   set np = $1
@@ -57,8 +58,8 @@ endif
         for cost, test in tests:
             count += 1
             tname = test.replace('.out', '')
-            sline = "./runtests.unix procs $np {0} # {1} {2}\n".format(tname, cost, count)
-            pline = "./runtests.mpi.unix procs $np {0} # {1} {2}\n".format(tname, cost, count)
+            sline = "./runtests.unix procs $np {0} # estimated cost {1} number {2}\n".format(tname, cost, count)
+            pline = sline.replace('runtests.unix', 'runtests.mpi.unix')
             s.write(sline)
             p.write(pline)
 
@@ -69,11 +70,15 @@ endif
             st = os.stat(name)
             os.chmod(name, st.st_mode | stat.S_IEXEC)
 
-    def find_ok_tests(self, qa_root, glob_pattern="do*"):
+    def find_ok_tests(self, qa_root, glob_pattern="doNightly*"):
         """Find test cases that already appear in QA test scripts
         included with NWChem. There are more test cases in
         the tests/ directory than those appearing in the bundled QA
         scripts, and those extra tests are often broken.
+
+        N.B.: even many of the tests that do appear in bundled scripts
+        are unreliable. Now only accepting tests that are in the doNightly
+        script and that are not commented out.
 
         @param qa_root: path to the QA root directory
         @type qa_root : str
@@ -89,6 +94,8 @@ endif
             with open(testfile) as f:
                 for line in f:
                     line = line.strip()
+                    if line.startswith('#'):
+                        continue
                     if "runtests" in line:
                         tail = line.split("runtest", 1)[-1]
 
@@ -309,24 +316,6 @@ endif
         @type reference_file : str
         """
 
-        """
-        #cclib NWChem parser not quite mature enough yet
-        ref_parser = cclib.parser.NWChem(reference_file.replace('.nwparse', ''))
-        trial_parser = cclib.parser.NWChem(trial_file.replace('.nwparse', ''))
-
-        ref_parsed = ref_parser.parse()
-        trial_parsed = trial_parser.parse()
-        """
-
-        # a few tests may have extra data in the reference not present in
-        # trial output, especially "SCS-MP2 energy"
-        refs_with_extra_data = {'oniom4.ok.out.nwparse',
-                                'auh2o.ok.out.nwparse',
-                                'h2mp2.ok.out.nwparse',
-                                'grad_ozone.ok.out.nwparse',
-                                'oniom1.ok.out.nwparse',
-                                'h2o_vscf.ok.out.nwparse'}
-
         cmd = "diff {0} {1}".format(reference_file, trial_file)
         diff = self.execute(cmd).split('\n')
 
@@ -343,11 +332,7 @@ endif
                 
             elif not t:
                 base = os.path.basename(reference_file)
-                if base in refs_with_extra_data:
-                    mismatch_score = (0, 0.0)
-                    
-                else:
-                    import ipdb; ipdb.set_trace()
+                import ipdb; ipdb.set_trace()
 
             else:
                 mismatch_score = self.score_mismatch(r, t)
@@ -377,7 +362,6 @@ endif
         decorated.sort()
         failures = [f[1] for f in decorated]
         
-        import pprint
         pprint.pprint(failures)
 
         passed = len(self.processed) - len(failures)
