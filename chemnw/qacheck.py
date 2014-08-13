@@ -124,7 +124,7 @@ endif
 
         ok_tests = self.find_ok_tests(qa_root)
 
-        tests = {}
+        tests = set()
         for root, dirs, files in os.walk(os.path.abspath(qa_root)):
             path = root.split(os.sep)
             #process only test reference outputs
@@ -151,7 +151,7 @@ endif
                                 try:
                                     tests[path[-1]].add(entry)
                                 except KeyError:
-                                    tests[path[-1]] = {entry}
+                                    tests[path[-1]] = set(entry)
                                     
         approved = []
         for k, v in tests.items():
