@@ -151,7 +151,7 @@ endif
                                 try:
                                     tests[path[-1]].add(entry)
                                 except KeyError:
-                                    tests[path[-1]] = set(entry)
+                                    tests[path[-1]] = {entry}
                                     
         approved = []
         for k, v in tests.items():
