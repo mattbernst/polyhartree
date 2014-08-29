@@ -124,7 +124,7 @@ endif
 
         ok_tests = self.find_ok_tests(qa_root)
 
-        tests = set()
+        tests = {}
         for root, dirs, files in os.walk(os.path.abspath(qa_root)):
             path = root.split(os.sep)
             #process only test reference outputs
