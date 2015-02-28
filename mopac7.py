@@ -83,18 +83,18 @@ class Mopac7(cpinterface.MolecularCalculator):
         @return: elements from system
         """
         
-        emap = {'semiempirical:mndo' : ['H', 'Li', 'B', 'C', 'N', 'O', 'F',
+        emap = {"semiempirical:mndo" : ['H', 'Li', 'B', 'C', 'N', 'O', 'F',
                                         'Al', 'Si', 'P', 'S', 'Cl', 'Zn',
                                         'Ge', 'Br', 'Sn', 'I', 'Hg', 'Pb'],
-                'semiempirical:am1' : ['H', 'B', 'C', 'N', 'O', 'F', 'Al',
+                "semiempirical:am1" : ['H', 'B', 'C', 'N', 'O', 'F', 'Al',
                                        'Si', 'P', 'S', 'Cl', 'Zn', 'Ge', 'Br',
                                        'Sn', 'I', 'Hg'],
-                'semiempirical:pm3' : ['H', 'Be', 'C', 'N', 'O', 'F', 'Mg',
+                "semiempirical:pm3" : ['H', 'Be', 'C', 'N', 'O', 'F', 'Mg',
                                        'Al', 'Si', 'P', 'S', 'Cl', 'Zn', 'Ga',
                                        'Ge', 'As', 'Se', 'Br', 'Cd', 'In',
                                        'Sn', 'Sb', 'Te', 'I', 'Hg', 'Tl', 'Pb',
                                        'Bi'],
-                'semiempirical:mindo/3' : ['H', 'B', 'C', 'N', 'O', 'F', 'Si',
+                "semiempirical:mindo/3" : ['H', 'B', 'C', 'N', 'O', 'F', 'Si',
                                            'P', 'S', 'Cl']}
         
         method = options.get('method')

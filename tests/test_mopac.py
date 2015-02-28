@@ -61,6 +61,34 @@ class MOPACTestCase(unittest.TestCase):
         self.assertAlmostEqual(-14.11915, job.energy, places=4)
         self.assertAlmostEqual(-0.020660, job.heat_of_formation, places=5)
 
+    def test_methane_energy_mndo(self):
+        G = geoprep.Geotool()
+        C = mopac7.Mopac7()
+        methane = G.make_mol("C")
+        job = C.make_energy_job(methane, 'semiempirical:mndo')
+        job.run_local()
+        self.assertAlmostEqual(-14.34421, job.energy, places=4)
+        self.assertAlmostEqual(-0.018578, job.heat_of_formation, places=5)
+
+    def test_methane_energy_am1(self):
+        G = geoprep.Geotool()
+        C = mopac7.Mopac7()
+        methane = G.make_mol("C")
+        job = C.make_energy_job(methane, 'semiempirical:am1')
+        job.run_local()
+        self.assertAlmostEqual(-14.19059, job.energy, places=4)
+        self.assertAlmostEqual(-0.012894, job.heat_of_formation, places=5)
+
+    def test_methane_energy_mindo3(self):
+        G = geoprep.Geotool()
+        C = mopac7.Mopac7()
+        methane = G.make_mol("C")
+        job = C.make_energy_job(methane, 'semiempirical:mindo/3')
+        job.run_local()
+        self.assertAlmostEqual(-14.04530, job.energy, places=4)
+        self.assertAlmostEqual(-0.009680, job.heat_of_formation, places=5)
+    
+
 def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.
 
