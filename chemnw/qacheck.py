@@ -3,12 +3,16 @@ import sys
 import argparse
 import os
 import glob
-import shlex
-import subprocess
 import stat
 import pprint
+try:
+    from ..sharedutilities import Utility
+except ValueError:
+    if __package__ is None:
+        sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from sharedutilities import Utility
 
-class Verifier(object):
+class Verifier(Utility):
     def __init__(self):
         self.processed = []
 
@@ -70,7 +74,7 @@ endif
             st = os.stat(name)
             os.chmod(name, st.st_mode | stat.S_IEXEC)
 
-    def find_ok_tests(self, qa_root, glob_pattern="doNightly*"):
+    def find_ok_tests(self, qa_root, glob_pattern="doqmtest*"):
         """Find test cases that already appear in QA test scripts
         included with NWChem. There are more test cases in
         the tests/ directory than those appearing in the bundled QA
@@ -201,54 +205,6 @@ endif
                              'trial' : trial_file}
                     self.processed.append(entry)
 
-    def execute(self, cmd, stdin_data=''):
-        """Execute a command with subprocess.Popen, optionally supplying
-        data to the command through stdin, and return the results.
-
-        @param cmd: a command line for an external program
-        @type cmd : str
-        @param stdin_data: optional data to supply on stdin to external program
-        @type stdin_data : str
-        @return: data from stdout
-        @rtype : str
-        """
-
-        command = shlex.split(cmd)
-        with(open('/dev/null', 'w')) as devnull:
-            p = subprocess.Popen(command, stdout=subprocess.PIPE,
-                                 stdin=subprocess.PIPE, stderr=devnull)
-            output = p.communicate(input=stdin_data)[0]
-
-        return output
-
-    def numericize(self, line):
-        """Split a line of text by whitespace and try to convert all
-        numbers to floating point numeric values.
-
-        e.g.
-
-        'Root 1 singlet 19.48009 a.u. 530.08030 eV'
-
-        becomes
-
-        ['Root', 1.0, 'singlet', 19.48009, 'a.u.', 530.0803, 'eV']
-
-        @param line: input line of text from a nwparse QA file
-        @type line : str
-        @return: mixed list of strings and floats
-        @rtype : list
-        """
-
-        converted = []
-        for piece in line.split():
-            try:
-                v = float(piece)
-            except ValueError:
-                v = piece
-            converted.append(v)
-
-        return converted
-
     def score_mismatch(self, reference, trial):
         """Score a trial output against a reference output. Reference and
         trial are both lines of text extracted from .nwparse files produced
@@ -329,10 +285,12 @@ endif
             #trial just has extra info not in ref, e.g. 'Total SCS-MP2 energy'
             if not r:
                 mismatch_score = (0, 0.0)
-                
+
+            #ref just has extra info not in trial, perhaps from extra iterations
             elif not t:
                 base = os.path.basename(reference_file)
-                import ipdb; ipdb.set_trace()
+                #import ipdb; ipdb.set_trace()
+                mismatch_score = (0, 0.0)
 
             else:
                 mismatch_score = self.score_mismatch(r, t)

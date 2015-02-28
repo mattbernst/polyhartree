@@ -14,7 +14,7 @@ import sys
 import unittest
 from cinfony import pybel
 import geoprep
-import gamess_us
+import mopac7
 
 class MOPACTestCase(unittest.TestCase):
 
@@ -24,31 +24,42 @@ class MOPACTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_methylium(self):
+    def test_methylium_energy(self):
         G = geoprep.Geotool()
-        C = gamess_us.GAMESSUS()
+        C = mopac7.Mopac7()
         methylium = G.make_mol("[CH3+]")
         job = C.make_energy_job(methylium, 'semiempirical:pm3')
+        job.run_local()
+        self.assertAlmostEqual(-10.85734, job.energy, places=4)
+        self.assertAlmostEqual(0.408868, job.heat_of_formation,
+                               places=5)
 
-    def test_carbanide(self):
+    def test_carbanide_energy(self):
         G = geoprep.Geotool()
-        C = gamess_us.GAMESSUS()
+        C = mopac7.Mopac7()
         carbanide = G.make_mol("[CH3-]")
         job = C.make_energy_job(carbanide, 'semiempirical:pm3')
+        job.run_local()
+        self.assertAlmostEqual(-11.18324, job.energy, places=4)
+        self.assertAlmostEqual(0.082962, job.heat_of_formation, places=5)
 
-    def test_methyl_radical(self):
+    def test_methyl_radical_energy(self):
         G = geoprep.Geotool()
-        C = gamess_us.GAMESSUS()
+        C = mopac7.Mopac7()
         mradical = G.make_mol("[CH3]")
         job = C.make_energy_job(mradical, 'semiempirical:pm3')
+        job.run_local()
+        self.assertAlmostEqual(-11.22140, job.energy, places=4)
+        self.assertAlmostEqual(0.044800, job.heat_of_formation, places=5)
 
-    def test_ethane(self):
+    def test_methane_energy(self):
         G = geoprep.Geotool()
-        C = gamess_us.GAMESSUS()
-        ethane = G.make_mol("CC")
-        job = C.make_energy_job(ethane, 'semiempirical:pm3')
-        import pdb; pdb.set_trace()
-
+        C = mopac7.Mopac7()
+        methane = G.make_mol("C")
+        job = C.make_energy_job(methane, 'semiempirical:pm3')
+        job.run_local()
+        self.assertAlmostEqual(-14.11915, job.energy, places=4)
+        self.assertAlmostEqual(-0.020660, job.heat_of_formation, places=5)
 
 def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.
