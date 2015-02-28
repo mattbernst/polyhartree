@@ -83,21 +83,21 @@ class Mopac7(cpinterface.MolecularCalculator):
         @return: elements from system
         """
         
-        emap = {"semiempirical:mndo" : ['H', 'Li', 'B', 'C', 'N', 'O', 'F',
-                                        'Al', 'Si', 'P', 'S', 'Cl', 'Zn',
-                                        'Ge', 'Br', 'Sn', 'I', 'Hg', 'Pb'],
-                "semiempirical:am1" : ['H', 'B', 'C', 'N', 'O', 'F', 'Al',
-                                       'Si', 'P', 'S', 'Cl', 'Zn', 'Ge', 'Br',
-                                       'Sn', 'I', 'Hg'],
-                "semiempirical:pm3" : ['H', 'Be', 'C', 'N', 'O', 'F', 'Mg',
-                                       'Al', 'Si', 'P', 'S', 'Cl', 'Zn', 'Ga',
-                                       'Ge', 'As', 'Se', 'Br', 'Cd', 'In',
-                                       'Sn', 'Sb', 'Te', 'I', 'Hg', 'Tl', 'Pb',
-                                       'Bi'],
-                "semiempirical:mindo/3" : ['H', 'B', 'C', 'N', 'O', 'F', 'Si',
-                                           'P', 'S', 'Cl']}
+        emap = {"semiempirical:mndo" : ["H", "Li", "B", "C", "N", "O", "F",
+                                        "Al", "Si", "P", "S", "Cl", "Zn",
+                                        "Ge", "Br", "Sn", "I", "Hg", "Pb"],
+                "semiempirical:am1" : ["H", "B", "C", "N", "O", "F", "Al",
+                                       "Si", "P", "S", "Cl", "Zn", "Ge", "Br",
+                                       "Sn", "I", "Hg"],
+                "semiempirical:pm3" : ["H", "Be", "C", "N", "O", "F", "Mg",
+                                       "Al", "Si", "P", "S", "Cl", "Zn", "Ga",
+                                       "Ge", "As", "Se", "Br", "Cd", "In",
+                                       "Sn", "Sb", "Te", "I", "Hg", "Tl", "Pb",
+                                       "Bi"],
+                "semiempirical:mindo/3" : ["H", "B", "C", "N", "O", "F", "Si",
+                                           "P", "S", "Cl"]}
         
-        method = options.get('method')
+        method = options.get("method")
         self.check_method(method)
         elements = self.get_elements(system)
         allowed = emap[method]
@@ -110,7 +110,7 @@ class Mopac7(cpinterface.MolecularCalculator):
         
 
     def check_coordinates(self, coordinate_choice):
-        if coordinate_choice in ['zmatrix', 'cartesian']:
+        if coordinate_choice in ["zmatrix", "cartesian"]:
             return coordinate_choice
 
         else:
@@ -121,7 +121,7 @@ class Mopac7(cpinterface.MolecularCalculator):
         """Create input geometry for a subsequent calculation.
 
         options:
-         coordinates: 'cartesian' or 'zmatrix'
+         coordinates: "cartesian" or "zmatrix"
 
         @param system: molecular system data to convert to input geometry
         @type system : cinfony molecule
@@ -129,16 +129,16 @@ class Mopac7(cpinterface.MolecularCalculator):
         @rtype : str
         """
 
-        defaults = {'coordinates' : 'cartesian'}
+        defaults = {"coordinates" : "cartesian"}
         options = dict(defaults.items() + options.items())
         
-        coord_choice = self.check_coordinates(options.get('coordinates'))
+        coord_choice = self.check_coordinates(options.get("coordinates"))
 
-        if coord_choice == 'cartesian':
-            geometry = system.write('mopcrt')
+        if coord_choice == "cartesian":
+            geometry = system.write("mopcrt")
 
-        elif coord_choice == 'zmatrix':
-            geometry = system.write('mopin')
+        elif coord_choice == "zmatrix":
+            geometry = system.write("mopin")
 
         return geometry
 
@@ -153,7 +153,7 @@ class Mopac7(cpinterface.MolecularCalculator):
         @rtype : cpinterface.Job
         """
         
-        return self.make_semiempirical_job(system, method, 'ENERGY',
+        return self.make_semiempirical_job(system, method, "ENERGY",
                                            options=options)
 
     def make_semiempirical_job(self, system, method, runtyp,
@@ -171,14 +171,14 @@ class Mopac7(cpinterface.MolecularCalculator):
         @rtype : cpinterface.Job
         """
 
-        defaults = {'reference' : 'rhf', 'gnorm' : 0.0001, 'precise' : True,
-                    'let' : True}
+        defaults = {"reference" : "rhf", "gnorm" : 0.0001, "precise" : True,
+                    "let" : True}
         options = dict(defaults.items() + options.items())
 
         self.check_method(method)
         
         geometry = self.create_geometry(system, options=options)
-        semethod = method.split('semiempirical:')[-1].upper()
+        semethod = method.split("semiempirical:")[-1].upper()
 
         #MNDO is default method in Mopac7, so no keyword provided
         mmap = {"MNDO" : "" , "AM1" : "AM1",
@@ -207,12 +207,12 @@ class Mopac7(cpinterface.MolecularCalculator):
         controls.append(spin_name)
         controls.append(mmap[semethod])
 
-        #Default is to optimize geometry; '1SCF' gives a single-point energy
+        #Default is to optimize geometry; "1SCF" gives a single-point energy
         if runtyp == "ENERGY":
             controls.append("1SCF")
 
         if options.get("gnorm"):
-            controls.append("GNORM={0:.5f}".format(options.get('gnorm')))
+            controls.append("GNORM={0:.5f}".format(options.get("gnorm")))
 
         if options.get("precise"):
             controls.append("PRECISE")

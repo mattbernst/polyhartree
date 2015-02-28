@@ -10,8 +10,8 @@ except ImportError:
 
 #http://svn.assembla.com/svn/Zori/branches/DZori/python/nw_movecs.py
 #nw_movecs.py:
-#  extract mo coefficients from nwchem's .movecs file
-#  a python port of Tim Heaton-Burgess' nwchem_movecs.F
+#  extract mo coefficients from nwchem"s .movecs file
+#  a python port of Tim Heaton-Burgess" nwchem_movecs.F
 #
 #  nw_read_movecs returns a list of mo coefficient matrices: mo_set
 #    C_alpha=mo_set[0];  C_beta=mo_set[1];  C[i][mu]
@@ -53,7 +53,7 @@ class MOVecsReader(object):
 
         #just test that the file can be opened, in case user gave bad
         #file name
-        with open(self.fname, 'rb') as f:
+        with open(self.fname, "rb") as f:
             pass
 
     def _init_formats(self):
@@ -68,20 +68,20 @@ class MOVecsReader(object):
         except AttributeError:
             self._initialized = True
         
-        if self.endianness == 'little':
-            self._end = '<'
+        if self.endianness == "little":
+            self._end = "<"
 
-        elif self.endianness == 'big':
-            self._end = '>'
+        elif self.endianness == "big":
+            self._end = ">"
 
         else:
             raise ValueError("Bad endianness {0}".format(self.endianness))
 
         #head and tail sizes expected as signed short,
         #signed long, or signed long long
-        size_to_code = {2 : 'h',
-                        4 : 'i',
-                        8 : 'q'}
+        size_to_code = {2 : "h",
+                        4 : "i",
+                        8 : "q"}
 
         self.head_fmt = self._end + size_to_code[self.head_size]
         self.tail_fmt = self._end + size_to_code[self.tail_size]
@@ -131,7 +131,7 @@ class MOVecsReader(object):
         #number of bytes to read from record came from the record head
         rec = open_file.read(head[0])
 
-        #don't do anything with the record tail, just read it to advance
+        #don"t do anything with the record tail, just read it to advance
         #position in the file
         tail = self.get_tail(open_file)
 
@@ -163,7 +163,7 @@ class MOVecsReader(object):
     def get_doubles(self, open_file):
         """Fetch data from a record that represents contiguous
         double precision floating point numbers. Convert the
-        numbers to Python's float type (which is really a double) and
+        numbers to Python"s float type (which is really a double) and
         return them in a list.
 
         @param open_file: open file to read a record from
@@ -176,9 +176,9 @@ class MOVecsReader(object):
         raw_doubles = self.get_record(open_file)
         num_doubles = len(raw_doubles) / double_size
 
-        #the struct format string: endianness flag followed by one 'd'
+        #the struct format string: endianness flag followed by one "d"
         #for each double to be decoded from the raw data
-        struct_fmt = self._end + ('d' * num_doubles)
+        struct_fmt = self._end + ("d" * num_doubles)
         unpacked = struct.unpack(struct_fmt, raw_doubles)
         return list(unpacked)
 
@@ -192,45 +192,45 @@ class MOVecsReader(object):
         
         self._init_formats()
 
-        rdata = {'metadata' : {}}
-        rdata['metadata']['reader_name'] = self.__class__.__name__
-        rdata['metadata']['movecs_name'] = self.fname
+        rdata = {"metadata" : {}}
+        rdata["metadata"]["reader_name"] = self.__class__.__name__
+        rdata["metadata"]["movecs_name"] = self.fname
         fsize = os.path.getsize(self.fname)
         
-        with open(self.fname, 'rb') as f:
+        with open(self.fname, "rb") as f:
             ##c would be performed by movecs_read_header
 
             ##read(unitno) ! convergence info
             conv = self.get_record(f)
 
-            #'conv' packs together a bunch of strings
+            #"conv" packs together a bunch of strings
             #basissum 32
             #geomsum 32
             #bqsum 32
             #scftype 20
             #date 26
             #the *sum values are md5 checksums, bqsum currently appears unused
-            rdata['basissum'] = conv[:32]
-            rdata['geomsum'] = conv[32:64]
-            rdata['bqsum'] = conv[64:96]
-            rdata['scftype'] = conv[96:116]
-            rdata['date'] = conv[116:]
+            rdata["basissum"] = conv[:32]
+            rdata["geomsum"] = conv[32:64]
+            rdata["bqsum"] = conv[64:96]
+            rdata["scftype"] = conv[96:116]
+            rdata["date"] = conv[116:]
 
             ##read(unitno) ! scf type
             scf_type = self.get_record(f)
-            rdata['scf_type'] = scf_type
+            rdata["scf_type"] = scf_type
 
             ##read(unitno) ! length of title
             ##read(unitno) ! title(1:lentit)
             title_len = self.get_ints(f)
             title = self.get_record(f)
-            rdata['title'] = title
+            rdata["title"] = title
 
             ##read(unitno) ! length of basis name
             ##read(unitno) ! basis_name(1:lenbas)
             basis_name_len = self.get_ints(f)
             basis_name = self.get_record(f)
-            rdata['basis_name'] = basis_name
+            rdata["basis_name"] = basis_name
 
             ##read(unitno) nsets ! = 1 for RHF/KS and 2 for UHF/KS
             Nmo_sets = self.get_ints(f)
@@ -241,12 +241,12 @@ class MOVecsReader(object):
             else:
                 pNmo_sets = "Nmo_sets {0} : unknown".format(Nmo_sets)
 
-            rdata['wavefun_restrictions'] = pNmo_sets
+            rdata["wavefun_restrictions"] = pNmo_sets
 
             ##read(unitno) nbf   ! cardinality of orbital basis 
-            ##write(*,*) 'nbf            ', nbf
+            ##write(*,*) "nbf            ", nbf
             Nao = self.get_ints(f)
-            rdata['Nbas_ao'] = Nao
+            rdata["Nbas_ao"] = Nao
 
             if Nmo_sets == 1:
                 ##read(unitno) (nmo(i),i=1,nsets) ! nmo<nbf if linear dependencies
@@ -255,7 +255,7 @@ class MOVecsReader(object):
 
             elif Nmo_sets == 2:
                 ##read(unitno) (nmo(i),i=1,nsets) ! nmo<nbf if linear dependencies
-                ##write(*,*) 'nmo alpha beta ', nmo(1),nmo(2)
+                ##write(*,*) "nmo alpha beta ", nmo(1),nmo(2)
                 Nmo = list(self.get_ints(f))
                 rdata["Nbas_mo: alpha"] = Nmo[0]
                 rdata["Nbas_mo: beta"] = Nmo[1]
@@ -294,18 +294,18 @@ class MOVecsReader(object):
             #assigned defaults
             if f.tell() < fsize:
                 energy, enrep = self.get_doubles(f)
-                rdata['effective_nuclear_repulsion_energy'] = enrep
-                rdata['total_energy'] = energy
+                rdata["effective_nuclear_repulsion_energy"] = enrep
+                rdata["total_energy"] = energy
 
             else:
-                rdata['total_energy'] = self.default_energy
-                rdata['effective_nuclear_repulsion_energy'] = self.default_enrep
+                rdata["total_energy"] = self.default_energy
+                rdata["effective_nuclear_repulsion_energy"] = self.default_enrep
 
             #enddo
 
             ##close(unitno)
 
-        rdata['mo_set'] = mo_set
+        rdata["mo_set"] = mo_set
 
         return rdata
 
@@ -326,7 +326,7 @@ class MOVecsWriter(object):
         
         #just test that the file can be opened for writing, in case user gave
         #bad file name or doesn't have permissions
-        with open(self.fname, 'wb') as f:
+        with open(self.fname, "wb") as f:
             pass
 
         os.unlink(self.fname)
@@ -337,17 +337,17 @@ class MOVecsWriter(object):
         settings of machine integer sizes and endianness.
         """
         
-        if self.reader.endianness == 'little':
-            self._end = '<'
+        if self.reader.endianness == "little":
+            self._end = "<"
 
-        elif self.reader.endianness == 'big':
-            self._end = '>'
+        elif self.reader.endianness == "big":
+            self._end = ">"
 
         #head and tail sizes expected as signed short,
         #signed long, or signed long long
-        size_to_code = {2 : 'h',
-                        4 : 'i',
-                        8 : 'q'}
+        size_to_code = {2 : "h",
+                        4 : "i",
+                        8 : "q"}
 
         self.head_fmt = self._end + size_to_code[self.reader.head_size]
         self.tail_fmt = self._end + size_to_code[self.reader.tail_size]
@@ -392,7 +392,7 @@ class MOVecsWriter(object):
         @type s : str
         """
 
-        fmt = 'c' * len(s)
+        fmt = "c" * len(s)
         packed = struct.pack(fmt, *tuple(s))
         self.put_record(open_file, packed)
 
@@ -427,7 +427,7 @@ class MOVecsWriter(object):
         if type(doubles) == float:
             doubles = [doubles]
 
-        fmt = self._end + 'd' * len(doubles)
+        fmt = self._end + "d" * len(doubles)
         packed = struct.pack(fmt, *tuple(doubles))
         self.put_record(open_file, packed)
 
@@ -439,47 +439,47 @@ class MOVecsWriter(object):
         @type data : dict
         """
 
-        with open(self.fname, 'wb') as f:
+        with open(self.fname, "wb") as f:
             #write convergence section data
-            conv_elements = [data['basissum'], data['geomsum'], data['bqsum'],
-                             data['scftype'], data['date']]
-            conv_string = ''.join(conv_elements)
+            conv_elements = [data["basissum"], data["geomsum"], data["bqsum"],
+                             data["scftype"], data["date"]]
+            conv_string = "".join(conv_elements)
             self.put_string(f, conv_string)
             
             #write scf_type
-            self.put_string(f, data['scf_type'])
+            self.put_string(f, data["scf_type"])
 
             #write title with title length (which is actually fixed)
-            self.put_ints(f, len(data['title']))
-            self.put_string(f, data['title'])
+            self.put_ints(f, len(data["title"]))
+            self.put_string(f, data["title"])
 
             #write basis_name with title length (which is actually fixed)
-            self.put_ints(f, len(data['basis_name']))
-            self.put_string(f, data['basis_name'])
+            self.put_ints(f, len(data["basis_name"]))
+            self.put_string(f, data["basis_name"])
 
             #number of molecular orbital sets and their
             #respective orbital counts -- two sets for UHF, else one set
-            if 'Unrestricted' in data['wavefun_restrictions']:
+            if "Unrestricted" in data["wavefun_restrictions"]:
                 Nmo_sets = 2
-                Nmo = [data['Nbas_mo: alpha'],
-                       data['Nbas_mo: beta']]
+                Nmo = [data["Nbas_mo: alpha"],
+                       data["Nbas_mo: beta"]]
 
             else:
                 Nmo_sets = 1
-                Nmo = [data['Nbas_mo']]
+                Nmo = [data["Nbas_mo"]]
 
             #write number of molecular orbital sets
             self.put_ints(f, Nmo_sets)
 
             #write number of atomic orbitals
-            Nao = data['Nbas_ao']
+            Nao = data["Nbas_ao"]
             self.put_ints(f, Nao)
 
             #write number of molecular orbitals for each orbital set
             self.put_ints(f, Nmo)
 
             for iset in range(Nmo_sets):
-                orbN, orbE, orbC = data['mo_set'][iset]
+                orbN, orbE, orbC = data["mo_set"][iset]
 
                 #write orbital occupancy
                 self.put_doubles(f, orbN)
@@ -493,8 +493,8 @@ class MOVecsWriter(object):
                     self.put_doubles(f, Cv)
 
             #write total energy and effective nuclear repulsion energy
-            self.put_doubles(f, [data['total_energy'],
-                                 data['effective_nuclear_repulsion_energy']])
+            self.put_doubles(f, [data["total_energy"],
+                                 data["effective_nuclear_repulsion_energy"]])
 
 
 class MOVecsReaderLittle64(MOVecsReader):
@@ -505,7 +505,7 @@ class MOVecsReaderLittle64(MOVecsReader):
     int_size = 8
     head_size = 4
     tail_size = 4
-    endianness = 'little'
+    endianness = "little"
     
     def __init__(self, fname):
         MOVecsReader.__init__(self, fname)
@@ -518,7 +518,7 @@ class MOVecsReaderLittle32(MOVecsReader):
     int_size = 4
     head_size = 4
     tail_size = 4
-    endianness = 'little'
+    endianness = "little"
     
     def __init__(self, fname):
         MOVecsReader.__init__(self, fname)
@@ -531,7 +531,7 @@ class MOVecsReaderBig32(MOVecsReader):
     int_size = 4
     head_size = 4
     tail_size = 4
-    endianness = 'big'
+    endianness = "big"
     
     def __init__(self, fname):
         MOVecsReader.__init__(self, fname)
@@ -544,7 +544,7 @@ class MOVecsReaderBig64(MOVecsReader):
     int_size = 8
     head_size = 4
     tail_size = 4
-    endianness = 'big'
+    endianness = "big"
     
     def __init__(self, fname):
         MOVecsReader.__init__(self, fname)
@@ -591,7 +591,7 @@ class MOVecsWriterBig32(MOVecsWriter):
         self.init_formats()
 
 class PickleReader(object):
-    """This is for reading previously translated, pickled files. It's provided
+    """This is for reading previously translated, pickled files. It"s provided
     to avoid special casing readers and writers when translating files.
     """
 
@@ -599,14 +599,14 @@ class PickleReader(object):
         self.fname = fname
 
     def read(self):
-        with open(self.fname, 'rb') as f:
+        with open(self.fname, "rb") as f:
             data = pickle.load(f)
 
         return data
 
 class PickleWriter(object):
     """This is for serializing previously translated vectors as a platform
-    independent pickle file. It's provided to avoid special casing readers
+    independent pickle file. It"s provided to avoid special casing readers
     and writers when translating files.
     """
 
@@ -614,24 +614,24 @@ class PickleWriter(object):
         self.fname = fname
 
     def write(self, data):
-        with open(self.fname, 'wb') as f:
+        with open(self.fname, "wb") as f:
             pickle.dump(data, f)
 
 def guess_native_platform():
     """Guess which kind of platform this script is currently running on.
-    It could guess wrong if you're doing something tricky like running a
+    It could guess wrong if you"re doing something tricky like running a
     32 bit Python interpreter under a 64 bit OS.
 
-    @return: a name representing platform endianness and bitness, like 'Big64'
+    @return: a name representing platform endianness and bitness, like "Big64"
     @rtype : str
     """
 
     endianness = sys.byteorder.title()
     if sys.maxsize == 2 ** 63 - 1:
-        bitness = '64'
+        bitness = "64"
 
     elif sys.maxsize == 2 ** 31 - 1:
-        bitness = '32'
+        bitness = "32"
 
     else:
         raise ValueError("Native integer doesn't appear to be 32 or 64 bits -- this shouldn't happen")
@@ -666,7 +666,7 @@ class GuessReader(object):
             results.append(rdata)
 
         ok_readers = len(results) - results.count(None)
-        names = [x['metadata']['reader_name'] for x in results if x is not None]
+        names = [x["metadata"]["reader_name"] for x in results if x is not None]
 
         if ok_readers > 1:
             err = "Ambiguous format -- multiple readers worked: {0}".format(names)
@@ -679,29 +679,29 @@ class GuessReader(object):
         else:
             raise ValueError("Failed to read file")
 
-if __name__ == '__main__':
-    cmap = {'Little64' : (MOVecsReaderLittle64, MOVecsWriterLittle64),
-            'Little32' : (MOVecsReaderLittle32, MOVecsWriterLittle32),
-            'Big64' : (MOVecsReaderBig64, MOVecsWriterBig64),
-            'Big32' : (MOVecsReaderBig32, MOVecsWriterBig32),
-            'Pickle' : (PickleReader, PickleWriter)}
+if __name__ == "__main__":
+    cmap = {"Little64" : (MOVecsReaderLittle64, MOVecsWriterLittle64),
+            "Little32" : (MOVecsReaderLittle32, MOVecsWriterLittle32),
+            "Big64" : (MOVecsReaderBig64, MOVecsWriterBig64),
+            "Big32" : (MOVecsReaderBig32, MOVecsWriterBig32),
+            "Pickle" : (PickleReader, PickleWriter)}
     
     ckeys = sorted(cmap.keys())
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('inputfile', help="File to translate, either a .movecs file or a previously translated .pkl file.")
-    parser.add_argument('outputfile', help="Name of translated file to write, either a .movecs file for NWChem or a pickled Python data structure file ending in .pkl")
-    parser.add_argument('-r', '--reader', default='guess', help="Kind of reader to use on an input .movecs or pickle file, one of {0}. The default is to guess based on the file contents. MOVecs files created on an x86, Alpha, or Itanium system running Linux are little-endian. Those created on PowerPC, SPARC, or MIPS are big-endian. 32 or 64 bit integer size depends on CPU, OS, and compiler. Pickle files are platform-independent.".format(ckeys))
-    parser.add_argument('-w', '--writer', default='guess', help="Kind of writer to use storing an output file, one of {0}. The default is to guess based on the output file extension and (possibly) the current execution platform.".format(ckeys))
-    parser.add_argument('--enrep', default=0.0, help="Nuclear repulsion energy to assign given in atomic units (Hartree), if input .movecs file does not contain the nuclear repulsion energy. NWChem did not store this value in movecs files before release 4.1.")
-    parser.add_argument('--energy', default=0.0, help="Default total energy to assign given in atomic units (Hartree), if input .movecs file does not contain the total energy. NWChem did not store this value in movecs files before release 4.1.")
+    parser.add_argument("inputfile", help="File to translate, either a .movecs file or a previously translated .pkl file.")
+    parser.add_argument("outputfile", help="Name of translated file to write, either a .movecs file for NWChem or a pickled Python data structure file ending in .pkl")
+    parser.add_argument("-r", "--reader", default="guess", help="Kind of reader to use on an input .movecs or pickle file, one of {0}. The default is to guess based on the file contents. MOVecs files created on an x86, Alpha, or Itanium system running Linux are little-endian. Those created on PowerPC, SPARC, or MIPS are big-endian. 32 or 64 bit integer size depends on CPU, OS, and compiler. Pickle files are platform-independent.".format(ckeys))
+    parser.add_argument("-w", "--writer", default="guess", help="Kind of writer to use storing an output file, one of {0}. The default is to guess based on the output file extension and (possibly) the current execution platform.".format(ckeys))
+    parser.add_argument("--enrep", default=0.0, help="Nuclear repulsion energy to assign given in atomic units (Hartree), if input .movecs file does not contain the nuclear repulsion energy. NWChem did not store this value in movecs files before release 4.1.")
+    parser.add_argument("--energy", default=0.0, help="Default total energy to assign given in atomic units (Hartree), if input .movecs file does not contain the total energy. NWChem did not store this value in movecs files before release 4.1.")
     args = parser.parse_args()
 
     if args.inputfile == args.outputfile:
         sys.stderr.write("Can't write to the same file you are reading from\n")
         sys.exit(1)
 
-    if args.reader == 'guess':
+    if args.reader == "guess":
         reader = GuessReader
 
     else:
@@ -712,8 +712,8 @@ if __name__ == '__main__':
             parser.print_help()
             sys.exit(1)
 
-    if args.writer == 'guess':
-        if args.outputfile.endswith('.pkl'):
+    if args.writer == "guess":
+        if args.outputfile.endswith(".pkl"):
             writer = PickleWriter
 
         else:
@@ -733,4 +733,4 @@ if __name__ == '__main__':
         W = writer(args.outputfile)
         W.write(data)
     except Exception, e:
-        sys.stderr.write(str(e) + '\n')
+        sys.stderr.write(str(e) + "\n")

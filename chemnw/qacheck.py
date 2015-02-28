@@ -53,17 +53,17 @@ endif
 
         sname = "{0}/{1}".format(directory, serial)
         pname = "{0}/{1}".format(directory, parallel)
-        s = open(sname, 'w')
-        p = open(pname, 'w')
+        s = open(sname, "w")
+        p = open(pname, "w")
         s.write(head)
         p.write(head)
 
         count = 0
         for cost, test in tests:
             count += 1
-            tname = test.replace('.out', '')
+            tname = test.replace(".out", "")
             sline = "./runtests.unix procs $np {0} # estimated cost {1} number {2}\n".format(tname, cost, count)
-            pline = sline.replace('runtests.unix', 'runtests.mpi.unix')
+            pline = sline.replace("runtests.unix", "runtests.mpi.unix")
             s.write(sline)
             p.write(pline)
 
@@ -98,13 +98,13 @@ endif
             with open(testfile) as f:
                 for line in f:
                     line = line.strip()
-                    if line.startswith('#'):
+                    if line.startswith("#"):
                         continue
                     if "runtests" in line:
                         tail = line.split("runtest", 1)[-1]
 
                         #This will get test case names plus some garbage
-                        #like 's.unix'. The garbage doesn't matter because
+                        #like "s.unix". The garbage doesn't matter because
                         #the names are only used to exclude bad tests.
                         for test in tail.split():
                             cases.add(test)
@@ -133,14 +133,14 @@ endif
             path = root.split(os.sep)
             #process only test reference outputs
             for f in files:
-                if 'tests' in path and f.endswith('.out'):
+                if "tests" in path and f.endswith(".out"):
                     fullfile = os.path.sep.join(path + [f])
                     nproc = 0
                     walltime = 0
-                    with open(fullfile, 'r') as infile:
+                    with open(fullfile, "r") as infile:
                         for line in infile:
                             line = line.strip()
-                            if line.startswith('nproc'):
+                            if line.startswith("nproc"):
                                 nproc = int(line.split()[-1])
                             elif line.startswith("Total times"):
                                 s = line.split()[-1]
@@ -150,7 +150,7 @@ endif
                                 cost = nproc * walltime
                                 entry = (cost, f)
                                 #last part of path is test directory,
-                                #we're summing up costs of all tests
+                                #we"re summing up costs of all tests
                                 #in one directory
                                 try:
                                     tests[path[-1]].add(entry)
@@ -177,7 +177,7 @@ endif
 
     def parse_qa_log(self, logfile):
         """Extract tests run from a NWChem QA log file by fetching all
-        'Running'/'verifying' pairs. Mark whether each test was OK or
+        "Running"/"verifying" pairs. Mark whether each test was OK or
         failed according to the log file. Failed tests can be examined
         more closely later.
 
@@ -185,24 +185,24 @@ endif
         @type logfile : str
         """
 
-        refs_path = os.path.dirname(os.path.abspath(logfile)) + '/testoutputs'
+        refs_path = os.path.dirname(os.path.abspath(logfile)) + "/testoutputs"
 
-        with open(logfile, 'r') as f:
+        with open(logfile, "r") as f:
             for line in f.readlines():
                 line = line.strip()
 
-                if line.startswith('Running'):
+                if line.startswith("Running"):
                     test = line.split()[-1]
                     
-                elif line.startswith('verifying'):
+                elif line.startswith("verifying"):
                     status = line.split()[-1]
-                    test_name = test.split('/')[-1]
+                    test_name = test.split("/")[-1]
                     ref_file = "{0}/{1}.ok.out.nwparse".format(refs_path, test_name)
                     trial_file = "{0}/{1}.out.nwparse".format(refs_path, test_name)
-                    entry = {'name' : test_name,
-                             'basic_status' : status,
-                             'reference' : ref_file,
-                             'trial' : trial_file}
+                    entry = {"name" : test_name,
+                             "basic_status" : status,
+                             "reference" : ref_file,
+                             "trial" : trial_file}
                     self.processed.append(entry)
 
     def score_mismatch(self, reference, trial):
@@ -273,16 +273,16 @@ endif
         """
 
         cmd = "diff {0} {1}".format(reference_file, trial_file)
-        diff = self.execute(cmd).split('\n')
+        diff = self.execute(cmd).split("\n")
 
         # lines starting with < are differences in reference file,
         # lines starting with > are differences in trial file,
         # group differing lines and make them easy to compare
-        r = [x[1:].strip() for x in diff if x.startswith('<')]
-        t = [x[1:].strip() for x in diff if x.startswith('>')]
+        r = [x[1:].strip() for x in diff if x.startswith("<")]
+        t = [x[1:].strip() for x in diff if x.startswith(">")]
         
         if len(r) != len(t):
-            #trial just has extra info not in ref, e.g. 'Total SCS-MP2 energy'
+            #trial just has extra info not in ref, e.g. "Total SCS-MP2 energy"
             if not r:
                 mismatch_score = (0, 0.0)
 
@@ -307,16 +307,16 @@ endif
 
         failures = []
         for entry in self.processed:
-            if entry['basic_status'] == 'failed':
-                score = self.compare_outputs(entry['reference'],
-                                             entry['trial'])
+            if entry["basic_status"] == "failed":
+                score = self.compare_outputs(entry["reference"],
+                                             entry["trial"])
                 if score != (0, 0.0):
                     failed = entry.copy()
-                    failed['score'] = score
+                    failed["score"] = score
                     failures.append(failed)
 
         #sort from minor to major failures
-        decorated = [(f['score'], f) for f in failures]
+        decorated = [(f["score"], f) for f in failures]
         decorated.sort()
         failures = [f[1] for f in decorated]
         
@@ -339,14 +339,14 @@ def main(args):
         v.parse_qa_log(args.logfile)
         v.compare_all_failures()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description="Generate a NWChem test battery with serial and MPI execution scripts, or check the test results from a completed test battery.", epilog="Example: generate a fast test battery where each test has cost no greater than 100:\n qacheck.py -c 100 -t /opt/science/nwchem/Nwchem-6.3.revision25564-src.2014-05-03/QA\nExample: run tests and then check them: \n cd /opt/science/nwchem/Nwchem-6.3.revision25564-src.2014-05-03/QA\n ./runserial | tee quick.log\n qacheck.py -l quick.log")
-    parser.add_argument('-c', '--cost', help="Maximum cost (wall clock time multiplied by number of processors) of tests to include in test battery.", type=int,default=1000)
-    parser.add_argument('--top', help="NWCHEM_TOP location of tree where NWChem was built/installed.", default="/opt/science/nwchem/current")
-    parser.add_argument('--target', help="NWCHEM_TARGET machine target that NWChem was built for.", default="LINUX64")
+    parser.add_argument("-c", "--cost", help="Maximum cost (wall clock time multiplied by number of processors) of tests to include in test battery.", type=int,default=1000)
+    parser.add_argument("--top", help="NWCHEM_TOP location of tree where NWChem was built/installed.", default="/opt/science/nwchem/current")
+    parser.add_argument("--target", help="NWCHEM_TARGET machine target that NWChem was built for.", default="LINUX64")
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('-t', '--test-root', help="Root directory location of NWChem QA, required to generate test battery, expressed either absolutely or relatively, e.g. '.' or '/opt/science/nwchem/Nwchem-6.3.revision25564-src.2014-05-03'.")
-    group.add_argument('-l', '--logfile', help="NWChem QA log file from a test battery run, required to check QA output.")
+    group.add_argument("-t", "--test-root", help="Root directory location of NWChem QA, required to generate test battery, expressed either absolutely or relatively, e.g. \".\" or \"/opt/science/nwchem/Nwchem-6.3.revision25564-src.2014-05-03\".")
+    group.add_argument("-l", "--logfile", help="NWChem QA log file from a test battery run, required to check QA output.")
     args = parser.parse_args()
     main(args)
 

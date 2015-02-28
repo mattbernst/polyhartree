@@ -3,7 +3,7 @@ import subprocess
 import shlex
 
 class Utility(object):
-    def execute(self, cmd, stdin_data='', shell=False):
+    def execute(self, cmd, stdin_data="", shell=False):
         """Execute a command with subprocess.Popen, optionally supplying
         data to the command through stdin, and return the results.
 
@@ -18,7 +18,7 @@ class Utility(object):
         """
 
         command = shlex.split(cmd)
-        with(open('/dev/null', 'w')) as devnull:
+        with(open("/dev/null", "w")) as devnull:
             p = subprocess.Popen(command, stdout=subprocess.PIPE,
                                  stdin=subprocess.PIPE, stderr=devnull,
                                  shell=shell)
@@ -32,11 +32,11 @@ class Utility(object):
 
         e.g.
 
-        'Root 1 singlet 19.48009 a.u. 530.08030 eV'
+        "Root 1 singlet 19.48009 a.u. 530.08030 eV"
 
         becomes
 
-        ['Root', 1.0, 'singlet', 19.48009, 'a.u.', 530.0803, 'eV']
+        ["Root", 1.0, "singlet", 19.48009, "a.u.", 530.0803, "eV"]
 
         @param line: input line of text from a nwparse QA file
         @type line : str
