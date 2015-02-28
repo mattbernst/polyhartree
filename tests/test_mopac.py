@@ -78,11 +78,20 @@ class MOPACTestCase(unittest.TestCase):
     def test_error(self):
         #This doesn't work. At least the job status says so.
         #"THE FIRST THREE ATOMS MUST NOT LIE IN A STRAIGHT LINE"
-        p2 = self.G.make_mol("P#P")
-        job = self.C.make_energy_job(p2, "semiempirical:pm3")
+        P2 = self.G.make_mol("P#P")
+        job = self.C.make_energy_job(P2, "semiempirical:pm3")
         job.run_local()
         self.assertEqual("error", job.runstate)
-    
+
+    def test_element_error(self):
+        #Try to create a system containing an element unparameterized for
+        #MINDO/3. Should raise an error.
+        #N.B.: The generated input file would actually run in practice,
+        #rather contrary to the Mopac 7 manual's parameterization information,
+        #but it seems best to err on the side of caution.
+        SbCl3 = self.G.make_mol("Cl[Sb](Cl)Cl")
+        self.assertRaises(ValueError, self.C.make_energy_job, SbCl3,
+                          "semiempirical:mindo/3")
 
 def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.

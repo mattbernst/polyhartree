@@ -73,7 +73,7 @@ class Mopac7(cpinterface.MolecularCalculator):
         self.coordinate_choices = ["cartesian", "zmatrix"]
         self.references = ["rhf", "uhf"]
 
-    def check_element_support(self, system, options={}):
+    def check_element_support(self, system, method):
         """Check that the chosen semiempirical method is parameterized for
         all the elements in the system. Supported elements are taken from
         section 3.5 of the Mopac 7 manual. Unsupported elements will raise
@@ -85,6 +85,8 @@ class Mopac7(cpinterface.MolecularCalculator):
 
         @param system: molecular system
         @type system : cinfony molecule
+        @param method: name of method
+        @type method : str
         @return: elements from system
         """
         
@@ -102,17 +104,13 @@ class Mopac7(cpinterface.MolecularCalculator):
                 "semiempirical:mindo/3" : ["H", "B", "C", "N", "O", "F", "Si",
                                            "P", "S", "Cl"]}
         
-        method = options.get("method")
-        self.check_method(method)
         elements = self.get_elements(system)
         allowed = emap[method]
         for e in elements:
             if e not in allowed:
-                raise ValueError("Element {0} not supported by {1}".format(repr(e), repr(method)))
+                raise ValueError("Element {0} not parameterized for {1}".format(repr(e), repr(method)))
 
-        return elements
-
-        
+        return elements        
 
     def check_coordinates(self, coordinate_choice):
         if coordinate_choice in ["zmatrix", "cartesian"]:
@@ -181,9 +179,10 @@ class Mopac7(cpinterface.MolecularCalculator):
         options = dict(defaults.items() + options.items())
 
         self.check_method(method)
+        self.check_element_support(system, method)
 
         geometry = self.create_geometry(system, options=options)
-        semethod = method.split("semiempirical:")[-1].upper()
+        semethod = method.split("semiempirical:")[-1].upper()        
 
         #MNDO is default method in Mopac7, so no keyword provided
         mmap = {"MNDO" : "" , "AM1" : "AM1",
