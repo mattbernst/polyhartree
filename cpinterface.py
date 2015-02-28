@@ -17,6 +17,8 @@ class Job(Utility, Messages):
         self.runstate = runstate
         self.system = system
         self.deck = deck
+        self.stdout = ""
+        self.logdata = ""
         self.energy = None
         self.heat_of_formation = None
         self.geometry = None

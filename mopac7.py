@@ -37,11 +37,11 @@ class Mopac7Job(cpinterface.Job):
                 self.heat_of_formation = self.kcalm_to_au(hof)
         
     def run_local(self, options={}):
-        workdir = str(uuid.uuid1())[:16]
+        workdir = str(uuid.uuid1()).replace('-', '')[:16]
         path = "/tmp/{0}/".format(workdir)
         os.makedirs(path)
 
-        deck_hash = hashlib.sha1(self.deck).hexdigest()[:16]
+        deck_hash = hashlib.sha1(self.deck).hexdigest()[:10]
         dat_file = "{0}.dat".format(deck_hash)
         abs_file = path + dat_file
         with open(abs_file, "w") as deckfile:
@@ -51,11 +51,16 @@ class Mopac7Job(cpinterface.Job):
         cmd = "run_mopac7 {0}".format(abs_file.split(".dat")[0])
         
         stdout, returncode = self.execute(cmd)
+        self.stdout = stdout
+        if "DUE TO PROGRAM BUG" in stdout:
+            self.runstate = "error"
+            return
+
         log_file = abs_file.replace(".dat", ".log")
         with open(log_file, "r") as lfile:
-            logdata = lfile.read()
-            self.extract_last_energy(logdata)
-            self.extract_heat_of_formation(logdata)
+            self.logdata = lfile.read()
+            self.extract_last_energy(self.logdata)
+            self.extract_heat_of_formation(self.logdata)
 
         self.runstate = "complete"
 
@@ -176,7 +181,7 @@ class Mopac7(cpinterface.MolecularCalculator):
         options = dict(defaults.items() + options.items())
 
         self.check_method(method)
-        
+
         geometry = self.create_geometry(system, options=options)
         semethod = method.split("semiempirical:")[-1].upper()
 
