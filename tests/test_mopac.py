@@ -74,7 +74,7 @@ class MOPACTestCase(unittest.TestCase):
         self.assertAlmostEqual(-14.04530, job.energy, places=4)
         self.assertAlmostEqual(-0.009680, job.heat_of_formation, places=5)
 
-    def test_error(self):
+    def test_bad_input_error(self):
         #This doesn't work. At least the job status says so.
         #"THE FIRST THREE ATOMS MUST NOT LIE IN A STRAIGHT LINE"
         P2 = self.G.make_mol("P#P")

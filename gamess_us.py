@@ -61,10 +61,14 @@ class GAMESSUSJob(cpinterface.Job):
 
         with open(log_file, "r") as lfile:
             self.logdata = lfile.read()
-            self.extract_last_energy(self.logdata)
-            self.extract_heat_of_formation(self.logdata)
 
-        self.runstate = "complete"
+            if "FATAL ERROR DETECTED" in self.logdata.upper():
+                self.runstate = "error"
+                
+            else:
+                self.extract_last_energy(self.logdata)
+                self.extract_heat_of_formation(self.logdata)
+                self.runstate = "complete"
 
 class GAMESSUS(cpinterface.MolecularCalculator):
     def __init__(self, *args, **kw):
