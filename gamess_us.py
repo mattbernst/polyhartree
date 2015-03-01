@@ -51,13 +51,10 @@ class GAMESSUSJob(cpinterface.Job):
         with open(abs_file, "w") as deckfile:
             deckfile.write(self.deck)
 
-        cmd = "cd {0} && /opt/science/gamess/gamess/rungms {1} &> {2}".format(path, deck_hash, log_file)
+        cmd = "cd {0} && rungms {1} &> {2}".format(path, deck_hash, log_file)
         
         stdout, returncode = self.execute(cmd, cwd=path, bash_shell=True)
         self.stdout = stdout
-        #if "DUE TO PROGRAM BUG" in stdout:
-        #    self.runstate = "error"
-        #    return
 
         with open(log_file, "r") as lfile:
             self.logdata = lfile.read()
