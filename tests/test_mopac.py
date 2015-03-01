@@ -6,9 +6,8 @@
     test_mopac
     ~~~~~~~~~~~~~~
 
-    Test MOPAC implementations for energy, minimum geometry, transition state
-    geometry, and frequencies.
-
+    Test MOPAC 7 implementations for energy, minimum geometry,
+    transition state geometry, and frequencies.
 """
 
 import sys
@@ -26,28 +25,28 @@ class MOPACTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_methylium_energy(self):
+    def test_methylium_energy_pm3(self):
         methylium = self.G.make_mol("[CH3+]")
         job = self.C.make_energy_job(methylium, "semiempirical:pm3")
         job.run_local()
         self.assertAlmostEqual(-10.85734, job.energy, places=4)
         self.assertAlmostEqual(0.408868, job.heat_of_formation, places=5)
 
-    def test_carbanide_energy(self):
+    def test_carbanide_energy_pm3(self):
         carbanide = self.G.make_mol("[CH3-]")
         job = self.C.make_energy_job(carbanide, "semiempirical:pm3")
         job.run_local()
         self.assertAlmostEqual(-11.18324, job.energy, places=4)
         self.assertAlmostEqual(0.082962, job.heat_of_formation, places=5)
 
-    def test_methyl_radical_energy(self):
+    def test_methyl_radical_energy_pm3(self):
         mradical = self.G.make_mol("[CH3]")
         job = self.C.make_energy_job(mradical, "semiempirical:pm3")
         job.run_local()
-        self.assertAlmostEqual(-11.22140, job.energy, places=4)
-        self.assertAlmostEqual(0.044800, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(-11.21848, job.energy, places=4)
+        self.assertAlmostEqual(0.047725, job.heat_of_formation, places=5)
 
-    def test_methane_energy(self):
+    def test_methane_energy_pm3(self):
         methane = self.G.make_mol("C")
         job = self.C.make_energy_job(methane, "semiempirical:pm3")
         job.run_local()

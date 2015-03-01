@@ -19,7 +19,7 @@ class Mopac7Job(cpinterface.Job):
 
         for line in data.split("\n"):
             if "ELECTRONIC ENERGY" in line:
-                energy = self.one_number_from_line(line)
+                energy = self.n_number_from_line(line, 0, 1)
                 self.energy = self.ev_to_au(energy)
                 self.log_once("NOTE: energies from semiempirical methods are not directly comparable to ab initio energies")
 
@@ -33,11 +33,11 @@ class Mopac7Job(cpinterface.Job):
 
         for line in data.split("\n"):
             if "HEAT OF FORMATION" in line:
-                hof = self.one_number_from_line(line)
+                hof = self.n_number_from_line(line, 0, 1)
                 self.heat_of_formation = self.kcalm_to_au(hof)
         
     def run_local(self, options={}):
-        workdir = str(uuid.uuid1()).replace('-', '')[:16]
+        workdir = self.backend + "-" + str(uuid.uuid1()).replace('-', '')[:16]
         path = "/tmp/{0}/".format(workdir)
         os.makedirs(path)
 
@@ -71,7 +71,7 @@ class Mopac7(cpinterface.MolecularCalculator):
         self.methods = ["semiempirical:am1", "semiempirical:pm3",
                         "semiempirical:mindo/3", "semiempirical:mndo"]
         self.coordinate_choices = ["cartesian", "zmatrix"]
-        self.references = ["rhf", "uhf"]
+        self.references = ["RHF", "UHF"]
 
     def check_element_support(self, system, method):
         """Check that the chosen semiempirical method is parameterized for
@@ -110,10 +110,10 @@ class Mopac7(cpinterface.MolecularCalculator):
             if e not in allowed:
                 raise ValueError("Element {0} not parameterized for {1}".format(repr(e), repr(method)))
 
-        return elements        
+        return elements
 
     def check_coordinates(self, coordinate_choice):
-        if coordinate_choice in ["zmatrix", "cartesian"]:
+        if coordinate_choice in self.coordinate_choices:
             return coordinate_choice
 
         else:
@@ -155,9 +155,12 @@ class Mopac7(cpinterface.MolecularCalculator):
         @return: a Mopac7 single point energy calculation job
         @rtype : cpinterface.Job
         """
-        
-        return self.make_semiempirical_job(system, method, "ENERGY",
-                                           options=options)
+
+        if method.startswith("semiempirical"):
+            return self.make_semiempirical_job(system, method, "ENERGY",
+                                               options=options)
+        else:
+            raise ValueError("Mopac 7 does not support {0}".format(method))
 
     def make_semiempirical_job(self, system, method, runtyp,
                                options={}):
@@ -171,7 +174,7 @@ class Mopac7(cpinterface.MolecularCalculator):
         @param method: a semiempirical calculation method
         @type method : str
         @return: a Mopac7 semiempirical job
-        @rtype : cpinterface.Job
+        @rtype : Job
         """
 
         defaults = {"reference" : "rhf", "gnorm" : 0.0001, "precise" : True,
@@ -181,7 +184,7 @@ class Mopac7(cpinterface.MolecularCalculator):
         self.check_method(method)
         self.check_element_support(system, method)
 
-        geometry = self.create_geometry(system, options=options)
+        deck = self.create_geometry(system, options=options)
         semethod = method.split("semiempirical:")[-1].upper()        
 
         #MNDO is default method in Mopac7, so no keyword provided
@@ -203,7 +206,8 @@ class Mopac7(cpinterface.MolecularCalculator):
 
 
         reference = rmap[options["reference"].upper()]
-        if system.spin > 1 and reference != "UHF":
+        self.check_electronic_reference(reference or options["reference"].upper())
+        if system.spin > 1 and reference == "RHF":
             self.log("Forcing UHF for multiplicity {0}".format(system.spin))
             reference = "UHF"
             
@@ -227,12 +231,10 @@ class Mopac7(cpinterface.MolecularCalculator):
         if system.charge != 0:
             controls.append("CHARGE={0}".format(system.charge))
 
-        controls.append("ENPART")
-
         keywords = " ".join([c for c in controls if c])
-        deck = geometry.replace("PUT KEYWORDS HERE", keywords)
+        deck = deck.replace("PUT KEYWORDS HERE", keywords)
 
-        j = Mopac7Job(deck=deck, system=system)
+        job = Mopac7Job(deck=deck, system=system)
 
-        return j
+        return job
 

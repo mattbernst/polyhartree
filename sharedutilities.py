@@ -3,7 +3,7 @@ import subprocess
 import shlex
 
 class Utility(object):
-    def execute(self, cmd, stdin_data="", shell=False):
+    def execute(self, cmd, stdin_data="", bash_shell=False, cwd=None):
         """Execute a command with subprocess.Popen, optionally supplying
         data to the command through stdin, and return the results.
 
@@ -11,17 +11,20 @@ class Utility(object):
         @type cmd : str
         @param stdin_data: optional data to supply on stdin to external program
         @type stdin_data : str
-        @param shell: execute command through system shell, if True
-        @type shell : bool
+        @param bash_shell: execute command through Bash with rcfile, if True
+        @type bash_shell : bool
         @return: (data from stdout, return code)
         @rtype : tuple
         """
 
         command = shlex.split(cmd)
         with(open("/dev/null", "w")) as devnull:
+            if bash_shell:
+                command = ["/bin/bash", "-i", "-c"] + [" ".join(command)]
+                
             p = subprocess.Popen(command, stdout=subprocess.PIPE,
                                  stdin=subprocess.PIPE, stderr=devnull,
-                                 shell=shell)
+                                 cwd=cwd)
             output = p.communicate(input=stdin_data)[0]
 
         return (output, p.returncode)
@@ -58,8 +61,8 @@ class Utility(object):
 
         return converted
 
-    def one_number_from_line(self, line):
-        """Get a single numeric value from a line where only one is present.
+    def n_number_from_line(self, line, n, m):
+        """Get the Nth numeric value from a line where M values are present.
 
         @param line: a line from a data file
         @type line : str
@@ -68,9 +71,9 @@ class Utility(object):
         """
 
         numbers = self.numericize(line, numeric_only=True)
-        if len(numbers) != 1:
-            raise ValueError("Expected exactly one value in line: {0}".format(line))
-        return numbers[0]
+        if len(numbers) != m:
+            raise ValueError("Expected {0} numeric values in line: {1}".format(m, line))
+        return numbers[n]
 
     def ev_to_au(self, v):
         """Convert an energy expressed in electron volts to a Hartree value.
