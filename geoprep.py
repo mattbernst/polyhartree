@@ -1,3 +1,4 @@
+import os
 import types
 from cinfony import pybel, webel
 
@@ -42,11 +43,40 @@ class Geotool(object):
         molecule = pybel.readstring(kind, representation)
         #iupac = webel.Molecule(molecule).write('iupac')
         iupac = "NOT A REAL IUPAC NAME"
-        smiles = molecule.write('smiles')
+        smiles = molecule.write("smiles")
         molecule.make3D()
         molecule.title = "{0} SMILES: {1}".format(iupac, smiles)
         enriched = self.enrich_molecule(molecule)
         return enriched
+
+    def read_mol(self, file_name, fmt=None):
+        """Load a molecular structure from a file. Guess at the file type
+        from extension caller does not supply explicit fmt.
+
+        TODO: reduce code duplication with make_mol
+
+        @param file_name: file to open
+        @type file_name : str
+        @param fmt: optional OpenBabel format code e.g. "xyz"
+        @type fmt : str
+        @return: molecular system
+        @rtype : cinfony.pybel.Molecule
+        """
+
+        if not fmt:
+            try:
+                fmt = file_name.split(".")[-1]
+            except IndexError:
+                msg = "No fmt given for {0} and unable to guess from file extensions".format(repr(file_name))
+
+        molecule = pybel.readfile(fmt, file_name).next()
+        iupac = "NOT A REAL IUPAC NAME"
+        smiles = molecule.write("smiles")
+
+        molecule.title = "{0} SMILES: {1}".format(iupac, smiles)
+        enriched = self.enrich_molecule(molecule)
+        return enriched
+        
 
     
         
