@@ -25,49 +25,49 @@ class MOPACTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_methylium_energy_pm3(self):
+    def test_energy_pm3_methylium(self):
         methylium = self.G.make_mol("[CH3+]")
         job = self.C.make_energy_job(methylium, "semiempirical:pm3")
         job.run_local()
         self.assertAlmostEqual(-5.641481, job.energy, places=5)
         self.assertAlmostEqual(0.408868, job.heat_of_formation, places=5)
 
-    def test_carbanide_energy_pm3(self):
+    def test_energy_pm3_methylium(self):
         carbanide = self.G.make_mol("[CH3-]")
         job = self.C.make_energy_job(carbanide, "semiempirical:pm3")
         job.run_local()
         self.assertAlmostEqual(-5.967380, job.energy, places=5)
         self.assertAlmostEqual(0.082962, job.heat_of_formation, places=5)
 
-    def test_methyl_radical_energy_pm3(self):
+    def test_energy_pm3_methyl_radical(self):
         mradical = self.G.make_mol("[CH3]")
         job = self.C.make_energy_job(mradical, "semiempirical:pm3")
         job.run_local()
         self.assertAlmostEqual(-6.002616, job.energy, places=5)
         self.assertAlmostEqual(0.047725, job.heat_of_formation, places=5)
 
-    def test_methane_energy_pm3(self):
+    def test_energy_pm3_methane(self):
         methane = self.G.make_mol("C")
         job = self.C.make_energy_job(methane, "semiempirical:pm3")
         job.run_local()
         self.assertAlmostEqual(-6.634465, job.energy, places=5)
         self.assertAlmostEqual(-0.020660, job.heat_of_formation, places=5)
 
-    def test_methane_energy_mndo(self):
+    def test_energy_mndo_methane(self):
         methane = self.G.make_mol("C")
         job = self.C.make_energy_job(methane, "semiempirical:mndo")
         job.run_local()
         self.assertAlmostEqual(-6.801522, job.energy, places=5)
         self.assertAlmostEqual(-0.018578, job.heat_of_formation, places=5)
 
-    def test_methane_energy_am1(self):
+    def test_energy_am1_methane(self):
         methane = self.G.make_mol("C")
         job = self.C.make_energy_job(methane, "semiempirical:am1")
         job.run_local()
         self.assertAlmostEqual(-6.7324746, job.energy, places=5)
         self.assertAlmostEqual(-0.012894, job.heat_of_formation, places=5)
 
-    def test_methane_energy_mindo3(self):
+    def test_energy_mindo3_methane(self):
         methane = self.G.make_mol("C")
         job = self.C.make_energy_job(methane, "semiempirical:mindo/3")
         job.run_local()
