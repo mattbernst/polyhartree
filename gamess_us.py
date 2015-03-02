@@ -21,8 +21,11 @@ class GAMESSUSJob(cpinterface.Job):
             if "FINAL " in line and "ENERGY IS" in line:
                 energy = self.n_number_from_line(line, 0, 2)
 
-                #what are the units on this energy???
-                #doesn't match mopac7 as au, ev, or kcal/mol
+                #units are already Hartree
+                #Note: slight differences from other Mopac implementations
+                #because GAMESS-US, as of release 1 MAY 2013 (R1),
+                #treats the Hartree as 27.211652 eV whereas current accepted
+                #value is 27.211385 eV (see value TOHART in GAMESS mpcint.src)
                 self.energy = energy
                 self.log_once("NOTE: energies from semiempirical methods are not directly comparable to ab initio energies")
 
