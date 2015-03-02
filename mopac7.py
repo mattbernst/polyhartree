@@ -17,11 +17,23 @@ class Mopac7Job(cpinterface.Job):
         @type data : str
         """
 
+        electronic_energy = None
+        core_repulsion = None
+        
         for line in data.split("\n"):
             if "ELECTRONIC ENERGY" in line:
-                energy = self.n_number_from_line(line, 0, 1)
-                self.energy = self.ev_to_au(energy)
-                self.log_once("NOTE: energies from semiempirical methods are not directly comparable to ab initio energies")
+                electronic_energy = self.n_number_from_line(line, 0, 1)
+
+            elif "CORE-CORE REPULSION" in line:
+                core_repulsion = self.n_number_from_line(line, 0, 1)
+
+        #total energy is the sum of electronic energy and core repulsion
+        if electronic_energy is not None and core_repulsion is not None:
+            self.energy = self.ev_to_au(electronic_energy + core_repulsion)
+            self.log("NOTE: energies from semiempirical methods are not directly comparable to ab initio energies")
+
+        else:
+            self.log("Unable to find energy. Electronic energy: {0} Core-core repulsion: {1}".format(electronic_energy, core_repulsion))
 
     def extract_heat_of_formation(self, data, options={}):
         """Get heat of formation from log file and store it
