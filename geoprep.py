@@ -41,9 +41,9 @@ class Geotool(object):
         """
 
         molecule = pybel.readstring(kind, representation)
-        #iupac = webel.Molecule(molecule).write('iupac')
+        #iupac = webel.Molecule(molecule).write('iupac').strip()
         iupac = "NOT A REAL IUPAC NAME"
-        smiles = molecule.write("smiles")
+        smiles = molecule.write("smi").strip()
         molecule.make3D()
         molecule.title = "{0} SMILES: {1}".format(iupac, smiles)
         enriched = self.enrich_molecule(molecule)
@@ -71,7 +71,7 @@ class Geotool(object):
 
         molecule = pybel.readfile(fmt, file_name).next()
         iupac = "NOT A REAL IUPAC NAME"
-        smiles = molecule.write("smiles")
+        smiles = molecule.write("smi").strip()
 
         molecule.title = "{0} SMILES: {1}".format(iupac, smiles)
         enriched = self.enrich_molecule(molecule)
