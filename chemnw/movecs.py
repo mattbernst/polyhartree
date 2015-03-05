@@ -10,8 +10,8 @@ except ImportError:
 
 #http://svn.assembla.com/svn/Zori/branches/DZori/python/nw_movecs.py
 #nw_movecs.py:
-#  extract mo coefficients from nwchem"s .movecs file
-#  a python port of Tim Heaton-Burgess" nwchem_movecs.F
+#  extract mo coefficients from nwchem's .movecs file
+#  a python port of Tim Heaton-Burgess' nwchem_movecs.F
 #
 #  nw_read_movecs returns a list of mo coefficient matrices: mo_set
 #    C_alpha=mo_set[0];  C_beta=mo_set[1];  C[i][mu]
@@ -163,7 +163,7 @@ class MOVecsReader(object):
     def get_doubles(self, open_file):
         """Fetch data from a record that represents contiguous
         double precision floating point numbers. Convert the
-        numbers to Python"s float type (which is really a double) and
+        numbers to Python's float type (which is really a double) and
         return them in a list.
 
         @param open_file: open file to read a record from
@@ -591,7 +591,7 @@ class MOVecsWriterBig32(MOVecsWriter):
         self.init_formats()
 
 class PickleReader(object):
-    """This is for reading previously translated, pickled files. It"s provided
+    """This is for reading previously translated, pickled files. It's provided
     to avoid special casing readers and writers when translating files.
     """
 
@@ -606,7 +606,7 @@ class PickleReader(object):
 
 class PickleWriter(object):
     """This is for serializing previously translated vectors as a platform
-    independent pickle file. It"s provided to avoid special casing readers
+    independent pickle file. It's provided to avoid special casing readers
     and writers when translating files.
     """
 
