@@ -135,7 +135,7 @@ def runSuite(cls, verbosity=2, name=None):
 
 def runTests():
     try:
-        test_name = sys.argv[2]
+        test_name = sys.argv[1]
         
     except IndexError:
         test_name = None
