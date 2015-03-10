@@ -168,12 +168,6 @@ class PDRunner(object):
         elems = [elements[a - 1] for a in atnos]
         aes = [self.get_se_atom_isol(semiempirical_method, e) for e in elems]
 
-        #For reasons unknown the electronic and nuclear energies are somewhat
-        #different vs Mopac7, e.g. in a methane calculation with identical
-        #geometries Mopac7 gives -387.187423 eV electronic 206.676675 eV nuclear
-        #and this gives -389.187352 eV electronic 206.098290 eV nuclear
-        electronic_ev = electronic * 27.21138505
-        nuclear_ev = nuclear * 27.21138505
         total = (electronic + nuclear) - (sum(aes) / 27.21138505)
         total_kcalm = total * 627.509469
 
