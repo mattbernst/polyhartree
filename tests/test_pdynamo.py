@@ -3,10 +3,10 @@
 ##
 
 """
-    test_mopac
+    test_pdynamo
     ~~~~~~~~~~~~~~
 
-    Test MOPAC 7 implementations for energy, minimum geometry,
+    Test pDynamo implementations for semiempirical energy, minimum geometry,
     transition state geometry, and frequencies.
 """
 
@@ -14,13 +14,13 @@ import sys
 import unittest
 from cinfony import pybel
 import geoprep
-import mopac7
+import pdynamo
 
-class MOPACTestCase(unittest.TestCase):
+class PDTestCase(unittest.TestCase):
 
     def setUp(self):
         self.G = geoprep.Geotool()
-        self.C = mopac7.Mopac7()
+        self.C = pdynamo.PDynamo()
 
     def tearDown(self):
         pass
@@ -29,68 +29,79 @@ class MOPACTestCase(unittest.TestCase):
         methylium = self.G.make_mol("[CH3+]")
         job = self.C.make_energy_job(methylium, "semiempirical:pm3")
         job.run_local()
-        self.assertAlmostEqual(-5.641481, job.energy, places=5)
+        self.assertAlmostEqual(-5.641487, job.energy, places=5)
         self.assertAlmostEqual(0.408868, job.heat_of_formation, places=5)
 
     def test_energy_pm3_carbanide(self):
         carbanide = self.G.make_mol("[CH3-]")
         job = self.C.make_energy_job(carbanide, "semiempirical:pm3")
         job.run_local()
-        self.assertAlmostEqual(-5.967380, job.energy, places=5)
+        self.assertAlmostEqual(-5.967391, job.energy, places=5)
         self.assertAlmostEqual(0.082962, job.heat_of_formation, places=5)
 
     def test_energy_pm3_methyl_radical(self):
+        #This deviates from GAMESS and Mopac7 by ~2.9 mH
         mradical = self.G.make_mol("[CH3]")
         job = self.C.make_energy_job(mradical, "semiempirical:pm3")
         job.run_local()
-        self.assertAlmostEqual(-6.002616, job.energy, places=5)
-        self.assertAlmostEqual(0.047725, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(-6.005549, job.energy, places=5)
+        self.assertAlmostEqual(0.044801, job.heat_of_formation, places=5)
 
     def test_energy_pm3_methane(self):
         methane = self.G.make_mol("C")
         job = self.C.make_energy_job(methane, "semiempirical:pm3")
         job.run_local()
-        self.assertAlmostEqual(-6.634465, job.energy, places=5)
+        self.assertAlmostEqual(-6.634475, job.energy, places=5)
         self.assertAlmostEqual(-0.020660, job.heat_of_formation, places=5)
 
     def test_energy_mndo_methane(self):
         methane = self.G.make_mol("C")
         job = self.C.make_energy_job(methane, "semiempirical:mndo")
         job.run_local()
-        self.assertAlmostEqual(-6.801522, job.energy, places=5)
-        self.assertAlmostEqual(-0.018578, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(-6.801557, job.energy, places=5)
+        self.assertAlmostEqual(-0.018602, job.heat_of_formation, places=5)
 
     def test_energy_am1_methane(self):
         methane = self.G.make_mol("C")
         job = self.C.make_energy_job(methane, "semiempirical:am1")
         job.run_local()
-        self.assertAlmostEqual(-6.7324746, job.energy, places=5)
-        self.assertAlmostEqual(-0.012894, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(-6.732507, job.energy, places=5)
+        self.assertAlmostEqual(-0.012914, job.heat_of_formation, places=5)
 
-    def test_energy_mindo3_methane(self):
+    def test_energy_pm6_methane(self):
         methane = self.G.make_mol("C")
-        job = self.C.make_energy_job(methane, "semiempirical:mindo/3")
+        job = self.C.make_energy_job(methane, "semiempirical:pm6")
         job.run_local()
-        self.assertAlmostEqual(-6.842761, job.energy, places=5)
-        self.assertAlmostEqual(-0.009680, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(-6.510840, job.energy, places=5)
+        self.assertAlmostEqual(-0.019537, job.heat_of_formation, places=5)
 
-    def test_bad_input_error(self):
-        #This doesn't work. At least the job status says so.
-        #"THE FIRST THREE ATOMS MUST NOT LIE IN A STRAIGHT LINE"
-        P2 = self.G.make_mol("P#P")
-        job = self.C.make_energy_job(P2, "semiempirical:pm3")
+    def test_energy_rm1_methane(self):
+        methane = self.G.make_mol("C")
+        job = self.C.make_energy_job(methane, "semiempirical:rm1")
         job.run_local()
-        self.assertEqual("error", job.runstate)
+        self.assertAlmostEqual(-6.716257, job.energy, places=5)
+        self.assertAlmostEqual(-0.022076, job.heat_of_formation, places=5)
 
-    def test_element_error(self):
-        #Try to create a system containing an element unparameterized for
-        #MINDO/3. Should raise an error.
-        #N.B.: The generated input file would actually run in practice,
-        #rather contrary to the Mopac 7 manual's parameterization information,
-        #but it seems best to err on the side of caution.
-        SbCl3 = self.G.make_mol("Cl[Sb](Cl)Cl")
-        self.assertRaises(ValueError, self.C.make_energy_job, SbCl3,
-                          "semiempirical:mindo/3")
+    def test_energy_pddgmndo_methane(self):
+        methane = self.G.make_mol("C")
+        job = self.C.make_energy_job(methane, "semiempirical:pddg/mndo")
+        job.run_local()
+        self.assertAlmostEqual(-6.949286, job.energy, places=5)
+        self.assertAlmostEqual(-0.026589, job.heat_of_formation, places=5)
+
+    def test_energy_pddgpm3_methane(self):
+        methane = self.G.make_mol("C")
+        job = self.C.make_energy_job(methane, "semiempirical:pddg/pm3")
+        job.run_local()
+        self.assertAlmostEqual(-6.727189, job.energy, places=5)
+        self.assertAlmostEqual(-0.025640, job.heat_of_formation, places=5)
+
+    def test_energy_am1dphot_methane(self):
+        methane = self.G.make_mol("C")
+        job = self.C.make_energy_job(methane, "semiempirical:am1/d-phot")
+        job.run_local()
+        self.assertAlmostEqual(-6.654096, job.energy, places=5)
+        self.assertAlmostEqual(-0.002390, job.heat_of_formation, places=5)
 
 def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.
@@ -123,10 +134,10 @@ def runTests():
         test_name = None
 
     if test_name:
-        result = runSuite(MOPACTestCase, name = test_name)
+        result = runSuite(PDTestCase, name = test_name)
 
     else:
-        result = runSuite(MOPACTestCase)
+        result = runSuite(PDTestCase)
 
     return result
 

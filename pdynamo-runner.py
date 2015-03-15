@@ -18,7 +18,8 @@ controls = [("--xyzfile", {"help" : "XYZ file containing system atoms and geomet
             ("--method", {"help" : "Method for calculation: semiempirical:am1, semiempirical:mndo, semiempirical:pm3, semiempirical:pm6, semiempirical:rm1"}),
             ("--charge", {"help" : "System charge", "default" : 0, "type" : int}),
             ("--multiplicity", {"help" : "System multiplicity", "default" : 1, "type" : int}),
-            ("--restricted", {"help" : "Restricted or unrestricted Hartree-Fock calculation (RHF or UHF)", "default" : "RHF"})]
+            ("--restricted", {"help" : "Restricted or unrestricted Hartree-Fock calculation (RHF or UHF)", "default" : "RHF"}),
+            ("--outfile", {"help" : "Output log file. Output goes to stdout if unspecified.", "default" : ""})]
 
 class PDRunner(object):
     """A wrapper intended to call pDynamo for common computational chemistry
@@ -39,9 +40,15 @@ class PDRunner(object):
         @type **kw : dict
         """
 
+        self.ai_cache = {}
         self.logfile = StringIO.StringIO()
         self.logger = TextLogFileWriter()
         self.logger.file = self.logfile
+        outfile = kw.get("outfile")
+        if outfile:
+            self.outstream = open(outfile, "w")
+        else:
+            self.outstream = sys.stdout
         
         system = XYZFile_ToSystem(kw["xyzfile"])
 
@@ -66,7 +73,9 @@ class PDRunner(object):
             v = "Heat of Formation: {:.6f} kcal/mol".format(hof)
             t.Title(v)
             t.Stop()
-            sys.stdout.write(self.logfile.getvalue())
+            self.outstream.write(self.logfile.getvalue())
+            if self.outstream != sys.stdout:
+                self.outstream.close()
         else:
             raise ValueError("Unrecognized job type {0}".format(jobtype))
 
@@ -100,7 +109,7 @@ class PDRunner(object):
         
         return system
 
-    def get_se_atom_isol(self, semiempirical_method, element):
+    def _get_se_atom_isol(self, semiempirical_method, element):
         """Get E(isol-atom) for the given semiempirical method and element.
         The value is returned in eV.
 
@@ -129,6 +138,15 @@ class PDRunner(object):
         eatom_ev = eatom * 0.04336410268575565
 
         return (eisol - eatom_ev)
+
+    def get_se_atom_isol(self, semiempirical_method, element):
+        try:
+            v = self.ai_cache[(semiempirical_method, element)]
+        except KeyError:
+            v = self._get_se_atom_isol(semiempirical_method, element)
+            self.ai_cache[(semiempirical_method, element)] = v
+
+        return v
 
     def get_heat_of_formation(self, converged_system, semiempirical_method):
         """Calculate the heat of formation for a system that has reached
@@ -168,7 +186,7 @@ class PDRunner(object):
         elems = [elements[a - 1] for a in atnos]
         aes = [self.get_se_atom_isol(semiempirical_method, e) for e in elems]
 
-        total = (electronic + nuclear) - (sum(aes) / 27.21138505)
+        total = (electronic + nuclear) - (sum(aes) / 27.211385)
         total_kcalm = total * 627.509469
 
         return total_kcalm
