@@ -40,9 +40,9 @@ class PDTestCase(unittest.TestCase):
         self.assertAlmostEqual(0.082962, job.heat_of_formation, places=5)
 
     def test_energy_pm3_methyl_radical(self):
-        #This deviates from GAMESS and Mopac7 by ~2.9 mH
         mradical = self.G.make_mol("[CH3]")
         job = self.C.make_energy_job(mradical, "semiempirical:pm3")
+        self.assertEqual("Forcing UHF for multiplicity 2", self.C.messages[0])
         job.run_local()
         self.assertAlmostEqual(-6.005549, job.energy, places=5)
         self.assertAlmostEqual(0.044801, job.heat_of_formation, places=5)

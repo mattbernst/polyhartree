@@ -219,7 +219,7 @@ class Mopac7(cpinterface.MolecularCalculator):
 
         reference = rmap[options["reference"].upper()]
         self.check_electronic_reference(reference or options["reference"].upper())
-        if system.spin > 1 and reference == "RHF":
+        if system.spin > 1 and reference != "UHF":
             self.log("Forcing UHF for multiplicity {0}".format(system.spin))
             reference = "UHF"
             

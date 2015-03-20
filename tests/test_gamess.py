@@ -65,6 +65,7 @@ class GAMESSTestCase(unittest.TestCase):
     def test_energy_pm3_methyl_radical(self):
         methyl_radical = self.G.make_mol("[CH3]")
         job = self.C.make_energy_job(methyl_radical, "semiempirical:pm3")
+        self.assertEqual("Forcing UHF for multiplicity 2", self.C.messages[0])
         job.run_local()
         self.assertAlmostEqual(-6.005483, job.energy, places=5)
         self.assertAlmostEqual(0.044800, job.heat_of_formation, places=5)

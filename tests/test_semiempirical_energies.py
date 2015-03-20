@@ -124,20 +124,19 @@ class PDTestCase(unittest.TestCase):
         self._test_energy_differences(geometry, "semiempirical:mndo", 5, 4)
 
     def test_methyl_radical(self):
-        #Much poorer agreement on the methyl radical with mopac7
         geometry = self.G.make_mol("[CH3]")
         pm3 = self._test_energy_differences(geometry, "semiempirical:pm3",
-                                            3, 3)
+                                            6, 4)
         am1 = self._test_energy_differences(geometry, "semiempirical:am1",
-                                            3, 3)
+                                            5, 4)
         mndo = self._test_energy_differences(geometry, "semiempirical:mndo",
-                                             3, 3)
+                                             5, 4)
         #pprint.pprint(pm3)
         #pprint.pprint(am1)
         #pprint.pprint(mndo)
 
     def test_nitric_oxide(self):
-        #Really dreadful agreement here, thanks to mopac7
+        #Mopac7 cannot achieve self consistence here -- needs work
         geometry = self.G.make_mol("[N]=O")
         self._test_energy_differences(geometry, "semiempirical:pm3", 1, 1)
         self._test_energy_differences(geometry, "semiempirical:am1", 1, 1)

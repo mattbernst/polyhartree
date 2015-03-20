@@ -42,9 +42,10 @@ class MOPACTestCase(unittest.TestCase):
     def test_energy_pm3_methyl_radical(self):
         mradical = self.G.make_mol("[CH3]")
         job = self.C.make_energy_job(mradical, "semiempirical:pm3")
+        self.assertEqual("Forcing UHF for multiplicity 2", self.C.messages[0])
         job.run_local()
-        self.assertAlmostEqual(-6.002616, job.energy, places=5)
-        self.assertAlmostEqual(0.047725, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(-6.005541, job.energy, places=5)
+        self.assertAlmostEqual(0.044800, job.heat_of_formation, places=5)
 
     def test_energy_pm3_methane(self):
         methane = self.G.make_mol("C")
