@@ -16,7 +16,7 @@ from cinfony import pybel
 import geoprep
 import gamess_us
 
-class MOPACTestCase(unittest.TestCase):
+class GAMESSTestCase(unittest.TestCase):
     def setUp(self):
         self.G = geoprep.Geotool()
         self.C = gamess_us.GAMESSUS()
@@ -66,8 +66,8 @@ class MOPACTestCase(unittest.TestCase):
         methyl_radical = self.G.make_mol("[CH3]")
         job = self.C.make_energy_job(methyl_radical, "semiempirical:pm3")
         job.run_local()
-        self.assertAlmostEqual(-6.002558, job.energy, places=5)
-        self.assertAlmostEqual(0.047725, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(-6.005483, job.energy, places=5)
+        self.assertAlmostEqual(0.044800, job.heat_of_formation, places=5)
 
     def test_energy_pm3_methane(self):
         methane = self.G.make_mol("C")
@@ -141,10 +141,10 @@ def runTests():
         test_name = None
 
     if test_name:
-        result = runSuite(MOPACTestCase, name = test_name)
+        result = runSuite(GAMESSTestCase, name = test_name)
 
     else:
-        result = runSuite(MOPACTestCase)
+        result = runSuite(GAMESSTestCase)
 
     return result
 

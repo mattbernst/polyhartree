@@ -224,7 +224,7 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         @rtype : Job
         """
 
-        defaults = {"reference" : "rhf"}
+        defaults = {"reference" : "rhf", "scf_iterations" : 200}
         options = dict(defaults.items() + options.items())
 
         self.check_method(method)
@@ -236,13 +236,14 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         reference = options.get("reference").upper()
         self.check_electronic_reference(reference or options["reference"].upper())
         if system.spin > 1 and reference == "RHF":
-            self.log("Forcing ROHF for multiplicity {0}".format(system.spin))
-            reference = "ROHF"
+            self.log("Forcing UHF for multiplicity {0}".format(system.spin))
+            reference = "UHF"
 
         control_options = {"runtyp" : runtyp, "mult" : system.spin,
-                           "icharg" : system.charge, "reference" : reference}
+                           "icharg" : system.charge, "reference" : reference,
+                           "scf_iterations" : options.get("scf_iterations")}
             
-        contrl = "SCFTYP={reference} RUNTYP={runtyp} ICHARG={icharg} MULT={mult} ".format(**control_options)
+        contrl = "SCFTYP={reference} RUNTYP={runtyp} ICHARG={icharg} MULT={mult} MAXIT={scf_iterations} ".format(**control_options)
         deck = deck.replace("$CONTRL ", "$CONTRL " + contrl)
 
         pieces, begin, end = self.reformat_long_line(deck, "$CONTRL", "$END")

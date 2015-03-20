@@ -190,7 +190,7 @@ class Mopac7(cpinterface.MolecularCalculator):
         """
 
         defaults = {"reference" : "rhf", "gnorm" : 0.0001, "precise" : True,
-                    "let" : True}
+                    "let" : True, "scf_iterations" : 200}
         options = dict(defaults.items() + options.items())
 
         self.check_method(method)
@@ -239,6 +239,9 @@ class Mopac7(cpinterface.MolecularCalculator):
 
         if options.get("let"):
             controls.append("LET")
+
+        if options.get("scf_iterations"):
+            controls.append("ITRY={0}".format(options.get("scf_iterations")))
 
         if system.charge != 0:
             controls.append("CHARGE={0}".format(system.charge))
