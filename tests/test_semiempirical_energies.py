@@ -136,11 +136,10 @@ class PDTestCase(unittest.TestCase):
         #pprint.pprint(mndo)
 
     def test_nitric_oxide(self):
-        #Mopac7 cannot achieve self consistence here -- needs work
         geometry = self.G.make_mol("[N]=O")
-        self._test_energy_differences(geometry, "semiempirical:pm3", 1, 1)
-        self._test_energy_differences(geometry, "semiempirical:am1", 1, 1)
-        self._test_energy_differences(geometry, "semiempirical:mndo", 1, 1)
+        self._test_energy_differences(geometry, "semiempirical:pm3", 4, 4)
+        self._test_energy_differences(geometry, "semiempirical:am1", 4, 4)
+        self._test_energy_differences(geometry, "semiempirical:mndo", 4, 4)
 
     def test_ammonia(self):
         geometry = self.G.make_mol("N")

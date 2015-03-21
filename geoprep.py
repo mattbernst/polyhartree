@@ -24,7 +24,43 @@ class Geotool(object):
 
         molecule.nelec = types.MethodType(nelec, molecule)
         return molecule
-        
+
+    def set_zero_to_origin(self, molecule):
+        """Set coordinates of atom 0 to the origin coordinates: 0, 0, 0
+        Also translate other atoms to match
+
+        This may make Mopac7 a little less finicky.
+
+        @param molecule: a molecule with 3D geometry
+        @type molecule: cinfony.pybel.Molecule
+        """
+
+        base = molecule.atoms[0].coords
+        neg = [a * -1 for a in base]
+        self.translate(molecule, neg)
+
+    def translate(self, molecule, vec):
+        """Translate every atom in molecule by the coordinates in vec.
+
+        It seems like it should be possible to call the underlying
+        molecule.OBMol.Translate method directly, but unable to pass correct
+        data type from python.
+
+        @param molecule: molecule to be translated
+        @type molecule : cinfony.pybel.Molecule
+        @param vec: x, y, z coordinates
+        @type vec : list
+        """
+
+        for k in range(len(molecule.atoms)):
+            coords = molecule.atoms[k].coords
+            translated = []
+            for j in range(3):
+                t = coords[j] + vec[j]
+                translated.append(t)
+
+            molecule.atoms[k].OBAtom.SetVector(*translated)
+            
     def make_mol(self, representation, kind="smiles"):
         """Take a representation of a molecule and add a title with IUPAC
         and SMILES designations. Convert a linear or 2D molecular specification
@@ -45,6 +81,7 @@ class Geotool(object):
         iupac = "NOT A REAL IUPAC NAME"
         smiles = molecule.write("smi").strip()
         molecule.make3D()
+        self.set_zero_to_origin(molecule)
         molecule.title = "{0} SMILES: {1}".format(iupac, smiles)
         enriched = self.enrich_molecule(molecule)
         return enriched
