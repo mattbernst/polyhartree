@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 # -*- coding:utf-8 mode:python; tab-width:4; indent-tabs-mode:nil; py-indent-offset:4 -*-
 ##
 
@@ -146,6 +146,49 @@ class PDTestCase(unittest.TestCase):
         self._test_energy_differences(geometry, "semiempirical:pm3", 4, 4)
         self._test_energy_differences(geometry, "semiempirical:am1", 5, 4)
         self._test_energy_differences(geometry, "semiempirical:mndo", 5, 4)
+
+    def test_translation_sensitivity(self):
+        #Translating a system should not meaningfully affect its calculated
+        #energy. But with Mopac7 there is an effect when translating linear
+        #molecules like NO, CO, H2...
+
+        M = mopac7.Mopac7()
+        P = pdynamo.PDynamo()
+        G = gamess_us.GAMESSUS()
+        
+        results = {}
+        CO = self.G.make_mol("[C-]#[O+]")
+        formaldehyde = self.G.make_mol("C=O")
+        
+        #translate a little on the x axis each time
+        dx = 0.25
+        tx = 0.0
+        for j in range(4):
+            r1 = (self.run_multi(CO, "semiempirical:pm3"), "CO")
+            r2 = (self.run_multi(formaldehyde, "semiempirical:pm3"),
+                  "formaldehyde")
+            for r, name in (r1, r2):
+                for entry in r:
+                    key = entry["implementation"] + "-" + name
+                    hof = entry["HoF"]
+                    try:
+                        results[key].append(hof)
+                    except KeyError:
+                        results[key] = [hof]
+            
+            v = (dx, 0, 0)
+            tx += dx
+            self.G.translate(CO, v)
+
+        #For linear carbon monoxide, mopac7 produces a different result with
+        #each x-axis translation. Otherwise all calculations behave as
+        #expected: translation does not change energy
+        for key in results:
+            num_unique = len(set(results[key]))
+            if key == "mopac7-CO":
+                self.assertEqual(len(results[key]), num_unique)
+            else:
+                self.assertEqual(1, num_unique)
 
 def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.

@@ -190,7 +190,7 @@ class Mopac7(cpinterface.MolecularCalculator):
         """
 
         defaults = {"reference" : "rhf", "gnorm" : 0.0001, "precise" : True,
-                    "let" : True, "scf_iterations" : 200}
+                    "let" : True, "scf_iterations" : 999}
         options = dict(defaults.items() + options.items())
 
         self.check_method(method)
