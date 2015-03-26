@@ -12,7 +12,6 @@
 
 import sys
 import unittest
-from cinfony import pybel
 import geoprep
 import mopac7
 
@@ -26,21 +25,21 @@ class MOPACTestCase(unittest.TestCase):
         pass
 
     def test_energy_pm3_methylium(self):
-        methylium = self.G.make_mol("[CH3+]")
+        methylium = self.G.make_fragment("[CH3+]")
         job = self.C.make_energy_job(methylium, "semiempirical:pm3")
         job.run_local()
         self.assertAlmostEqual(-5.641481, job.energy, places=5)
         self.assertAlmostEqual(0.408868, job.heat_of_formation, places=5)
 
     def test_energy_pm3_carbanide(self):
-        carbanide = self.G.make_mol("[CH3-]")
+        carbanide = self.G.make_fragment("[CH3-]")
         job = self.C.make_energy_job(carbanide, "semiempirical:pm3")
         job.run_local()
         self.assertAlmostEqual(-5.967380, job.energy, places=5)
         self.assertAlmostEqual(0.082962, job.heat_of_formation, places=5)
 
     def test_energy_pm3_methyl_radical(self):
-        mradical = self.G.make_mol("[CH3]")
+        mradical = self.G.make_fragment("[CH3]")
         job = self.C.make_energy_job(mradical, "semiempirical:pm3")
         self.assertEqual("Forcing UHF for multiplicity 2", self.C.messages[0])
         job.run_local()
@@ -48,28 +47,28 @@ class MOPACTestCase(unittest.TestCase):
         self.assertAlmostEqual(0.044800, job.heat_of_formation, places=5)
 
     def test_energy_pm3_methane(self):
-        methane = self.G.make_mol("C")
+        methane = self.G.make_fragment("C")
         job = self.C.make_energy_job(methane, "semiempirical:pm3")
         job.run_local()
         self.assertAlmostEqual(-6.634465, job.energy, places=5)
         self.assertAlmostEqual(-0.020660, job.heat_of_formation, places=5)
 
     def test_energy_mndo_methane(self):
-        methane = self.G.make_mol("C")
+        methane = self.G.make_fragment("C")
         job = self.C.make_energy_job(methane, "semiempirical:mndo")
         job.run_local()
         self.assertAlmostEqual(-6.801522, job.energy, places=5)
         self.assertAlmostEqual(-0.018578, job.heat_of_formation, places=5)
 
     def test_energy_am1_methane(self):
-        methane = self.G.make_mol("C")
+        methane = self.G.make_fragment("C")
         job = self.C.make_energy_job(methane, "semiempirical:am1")
         job.run_local()
         self.assertAlmostEqual(-6.7324746, job.energy, places=5)
         self.assertAlmostEqual(-0.012894, job.heat_of_formation, places=5)
 
     def test_energy_mindo3_methane(self):
-        methane = self.G.make_mol("C")
+        methane = self.G.make_fragment("C")
         job = self.C.make_energy_job(methane, "semiempirical:mindo/3")
         job.run_local()
         self.assertAlmostEqual(-6.842761, job.energy, places=5)
@@ -78,7 +77,7 @@ class MOPACTestCase(unittest.TestCase):
     def test_bad_input_error(self):
         #This doesn't work. At least the job status says so.
         #"THE FIRST THREE ATOMS MUST NOT LIE IN A STRAIGHT LINE"
-        P2 = self.G.make_mol("P#P")
+        P2 = self.G.make_fragment("P#P")
         job = self.C.make_energy_job(P2, "semiempirical:pm3")
         job.run_local()
         self.assertEqual("error", job.runstate)
@@ -89,7 +88,7 @@ class MOPACTestCase(unittest.TestCase):
         #N.B.: The generated input file would actually run in practice,
         #rather contrary to the Mopac 7 manual's parameterization information,
         #but it seems best to err on the side of caution.
-        SbCl3 = self.G.make_mol("Cl[Sb](Cl)Cl")
+        SbCl3 = self.G.make_fragment("Cl[Sb](Cl)Cl")
         self.assertRaises(ValueError, self.C.make_energy_job, SbCl3,
                           "semiempirical:mindo/3")
 

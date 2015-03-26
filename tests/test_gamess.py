@@ -12,7 +12,6 @@
 
 import sys
 import unittest
-from cinfony import pybel
 import geoprep
 import gamess_us
 
@@ -33,7 +32,7 @@ class GAMESSTestCase(unittest.TestCase):
 
         for key in smiles:
             s = smiles[key]
-            mol = self.G.make_mol(s)
+            mol = self.G.make_fragment(s)
             for reference in ["uhf", "rohf"]:
                 j = self.C.make_energy_job(mol, "semiempirical:pm3",
                                            options={"reference" : reference})
@@ -49,21 +48,21 @@ class GAMESSTestCase(unittest.TestCase):
         self.assertAlmostEqual(0.044800, hofs["methyl_radical-uhf"], places=5)
 
     def test_energy_pm3_methylium(self):
-        methylium = self.G.make_mol("[CH3+]")
+        methylium = self.G.make_fragment("[CH3+]")
         job = self.C.make_energy_job(methylium, "semiempirical:pm3")
         job.run_local()
         self.assertAlmostEqual(-5.641425, job.energy, places=5)
         self.assertAlmostEqual(0.408868, job.heat_of_formation, places=5)
 
     def test_energy_pm3_carbanide(self):
-        carbanide = self.G.make_mol("[CH3-]")
+        carbanide = self.G.make_fragment("[CH3-]")
         job = self.C.make_energy_job(carbanide, "semiempirical:pm3")
         job.run_local()
         self.assertAlmostEqual(-5.967321, job.energy, places=5)
         self.assertAlmostEqual(0.082962, job.heat_of_formation, places=5)
 
     def test_energy_pm3_methyl_radical(self):
-        methyl_radical = self.G.make_mol("[CH3]")
+        methyl_radical = self.G.make_fragment("[CH3]")
         job = self.C.make_energy_job(methyl_radical, "semiempirical:pm3")
         self.assertEqual("Forcing UHF for multiplicity 2", self.C.messages[0])
         job.run_local()
@@ -71,35 +70,35 @@ class GAMESSTestCase(unittest.TestCase):
         self.assertAlmostEqual(0.044800, job.heat_of_formation, places=5)
 
     def test_energy_pm3_methane(self):
-        methane = self.G.make_mol("C")
+        methane = self.G.make_fragment("C")
         job = self.C.make_energy_job(methane, 'semiempirical:pm3')
         job.run_local()
         self.assertAlmostEqual(-6.634400, job.energy, places=5)
         self.assertAlmostEqual(-0.020660, job.heat_of_formation, places=5)
 
     def test_energy_mndo_methane(self):
-        methane = self.G.make_mol("C")
+        methane = self.G.make_fragment("C")
         job = self.C.make_energy_job(methane, "semiempirical:mndo")
         job.run_local()
         self.assertAlmostEqual(-6.801455, job.energy, places=5)
         self.assertAlmostEqual(-0.018578, job.heat_of_formation, places=5)
 
     def test_energy_am1_methane(self):
-        methane = self.G.make_mol("C")
+        methane = self.G.make_fragment("C")
         job = self.C.make_energy_job(methane, "semiempirical:am1")
         job.run_local()
         self.assertAlmostEqual(-6.732408, job.energy, places=5)
         self.assertAlmostEqual(-0.012894, job.heat_of_formation, places=5)
 
     def test_energy_rm1_methane(self):
-        methane = self.G.make_mol("C")
+        methane = self.G.make_fragment("C")
         job = self.C.make_energy_job(methane, "semiempirical:rm1")
         job.run_local()
         self.assertAlmostEqual(-6.716163, job.energy, places=5)
         self.assertAlmostEqual(-0.022059, job.heat_of_formation, places=5)
 
     def test_bad_input_error(self):
-        methane = self.G.make_mol("C")
+        methane = self.G.make_fragment("C")
         job = self.C.make_energy_job(methane, "semiempirical:pm3")
 
         #introduce an error in the input deck: misspell SCFTYP as SCFTYPE

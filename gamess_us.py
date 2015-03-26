@@ -146,7 +146,7 @@ class GAMESSUS(cpinterface.MolecularCalculator):
 
         #add title
         geometry = geometry.replace(" $DATA\n\n",
-                                    " $DATA\n\n" + system.title + "\n")
+                                    " $DATA\n" + system.title + "\n")
 
         return geometry
 

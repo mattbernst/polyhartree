@@ -3,44 +3,59 @@ import os
 import types
 from cinfony import pybel, webel
 
-class Geotool(object):
-    def enrich_molecule(self, molecule):
-        """Monkey patch a pybel molecule to add new methods.
+class Fragment(object):
+    def __init__(self, molecule):
+        self.molecule = molecule
 
-        @param molecule: molecule to gain new methods
-        @type molecule : cinfony.pybel.Molecule
-        @return: enriched molecule
-        @rtype : cinfony.pybel.Molecule
+        #Try to pass through these attributes/methods of the underlying
+        #molecule as attributes/methods of the fragment
+        for attr in ['addh', 'atoms', 'calcdesc', 'calcfp', 'charge',
+                     'conformers', 'data', 'dim', 'draw', 'energy',
+                     'exactmass', 'formula', 'localopt', 'make3D', 'molwt',
+                     'removeh', 'sssr', 'title', 'write']:
+            try:
+                p = getattr(molecule, attr)
+                setattr(self, attr, p)
+            except AttributeError:
+                pass
+
+    @property
+    def nelec(self):
+        """Return number of electrons in system
+
+        @return: number of electrons
+        @rtype : int
         """
 
-        def nelec(self):
-            """Return number of electrons in system
+        total = sum([a.atomicnum for a in self.atoms]) - self.charge
+        return total
 
-            @return: number of electrons
-            @rtype : int
-            """
+    @property
+    def spin(self):
+        return self.molecule.spin
 
-            total = sum([a.atomicnum for a in self.atoms]) + self.charge
-            return total
+    @spin.setter
+    def spin(self, s):
+        """Set spin by using the setter on the underlying hidden OBMol.
 
-        molecule.nelec = types.MethodType(nelec, molecule)
-        return molecule
+        @param s: spin to set
+        @type s : int
+        """
+        
+        self.molecule.OBMol.SetTotalSpinMultiplicity(s)
 
-    def set_zero_to_origin(self, molecule):
+    def set_zero_to_origin(self):
         """Set coordinates of atom 0 to the origin coordinates: 0, 0, 0
         Also translate other atoms to match
 
         This may make Mopac7 a little less finicky.
-
-        @param molecule: a molecule with 3D geometry
-        @type molecule: cinfony.pybel.Molecule
         """
 
-        base = molecule.atoms[0].coords
+        base = self.molecule.atoms[0].coords
         neg = [a * -1 for a in base]
-        self.translate(molecule, neg)
+        self.translate(neg)
 
-    def translate(self, molecule, vec):
+    def translate(self, vec):
         """Translate every atom in molecule by the coordinates in vec.
 
         It seems like it should be possible to call the underlying
@@ -53,16 +68,18 @@ class Geotool(object):
         @type vec : list
         """
 
-        for k in range(len(molecule.atoms)):
-            coords = molecule.atoms[k].coords
+        for k in range(len(self.molecule.atoms)):
+            coords = self.molecule.atoms[k].coords
             translated = []
             for j in range(3):
                 t = coords[j] + vec[j]
                 translated.append(t)
 
-            molecule.atoms[k].OBAtom.SetVector(*translated)
-            
-    def make_mol(self, representation, kind="smiles"):
+            self.molecule.atoms[k].OBAtom.SetVector(*translated)
+
+
+class Geotool(object):
+    def make_fragment(self, representation, kind="smiles"):
         """Take a representation of a molecule and add a title with IUPAC
         and SMILES designations. Convert a linear or 2D molecular specification
         to a 3D form.
@@ -73,8 +90,8 @@ class Geotool(object):
         @type representation : str
         @param kind: smiles, inchi, etc. (default smiles)
         @type kind : str
-        @return: 3D-form molecule
-        @rtype: cinfony.pybel.Molecule
+        @return: 3D-form molecular fragment
+        @rtype: Fragment
         """
 
         molecule = pybel.readstring(kind, representation)
@@ -82,10 +99,10 @@ class Geotool(object):
         iupac = "NOT A REAL IUPAC NAME"
         smiles = molecule.write("smi").strip()
         molecule.make3D()
-        self.set_zero_to_origin(molecule)
-        molecule.title = "{0} SMILES: {1}".format(iupac, smiles)
-        enriched = self.enrich_molecule(molecule)
-        return enriched
+        fragment = Fragment(molecule)
+        fragment.set_zero_to_origin()
+        fragment.title = "{0} SMILES: {1}".format(iupac, smiles)
+        return fragment
 
     def read_mol(self, file_name, fmt=None):
         """Load a molecular structure from a file. Guess at the file type
@@ -114,8 +131,3 @@ class Geotool(object):
         molecule.title = "{0} SMILES: {1}".format(iupac, smiles)
         enriched = self.enrich_molecule(molecule)
         return enriched
-        
-
-    
-        
-        
