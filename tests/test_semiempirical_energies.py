@@ -144,6 +144,18 @@ class PDTestCase(unittest.TestCase):
         self._test_energy_differences(geometry, "semiempirical:am1", 5, 4)
         self._test_energy_differences(geometry, "semiempirical:mndo", 5, 4)
 
+    def test_water_dimer(self):
+        #run a very crude water sort of water dimer calculation, since we
+        #don't have geometry loading yet (no actual H-bond here!)
+        w1 = self.G.make_fragment("O")
+        w2 = self.G.make_fragment("O")
+        w2.translate((0, 2.0, 0))
+        s = geoprep.System([w1, w2])
+
+        self._test_energy_differences(s, "semiempirical:pm3", 4, 4)
+        self._test_energy_differences(s, "semiempirical:am1", 4, 4)
+        self._test_energy_differences(s, "semiempirical:mndo", 5, 4)
+
     def test_translation_sensitivity(self):
         #Translating a system should not meaningfully affect its calculated
         #energy. But with Mopac7 there is an effect when translating linear
