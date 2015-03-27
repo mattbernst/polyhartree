@@ -1,10 +1,89 @@
 # -*- coding:utf-8 mode:python; tab-width:4; indent-tabs-mode:nil; py-indent-offset:4 -*-
 import os
-import types
 from cinfony import pybel, webel
+
+class System(object):
+    def __init__(self, fragment_or_fragments):
+        """Create a System containing one or more fragments. If there is just
+        one fragment it will be promoted to a one-item list; sequences will
+        become lists.
+
+        @param fragment_or_fragments: a fragment or sequence of fragments
+        @type fragment_or_fragments : Fragment | tuple | list
+        """
+        
+        try:
+            self.fragments = [f for f in fragment_or_fragments]
+        except TypeError:
+            self.fragments = [fragment_or_fragments]
+
+        self.explicit_spin = None
+
+    @property
+    def charge(self):
+        """Return sum of charges across all fragments to give system charge
+
+        @return: total charge
+        @rtype : int
+        """
+
+        total = sum([f.charge for f in self.fragments])
+        return total
+
+    @property
+    def nelec(self):
+        """Return number of electrons in system
+
+        @return: number of electrons
+        @rtype : int
+        """
+
+        total = sum([f.nelec for f in self.fragments])
+        return total
+
+    @property
+    def spin(self):
+        """Return the explicitly set spin multiplicity, if present, or the
+        spin multiplicity of the first fragment otherwise. This is probably
+        an ok guess if you have all closed shell fragments or just one open
+        shell fragment, appearing first in the list.
+
+        N.B.: Assigning/computing with the "right" multiplicity is non-trivial
+        for transition states, open shell molecule clusters, diradicals,
+        transition metals, and probably more.
+
+        @return: spin multiplicity for the system
+        @rtype : int
+        """
+        
+        if self.explicit_spin is not None:
+            s = self.explicit_spin
+        else:
+            s = self.fragments[0].spin
+
+        return s
+
+    @spin.setter
+    def spin(self, s):
+        """Set explicit spin multiplicity
+
+        @param s: spin to set
+        @type s : int
+        """
+        
+        self.explicit_spin = s
+
 
 class Fragment(object):
     def __init__(self, molecule):
+        """Create a Fragment which is a wrapper around one of the cinfony
+        Molecule types (currently pybel only tested) with extra convenience
+        methods.
+
+        @param molecule: underlying cinfony molecule
+        @type molecule : cinfony.*.Molecule
+        """
+        
         self.molecule = molecule
 
         #Try to pass through these attributes/methods of the underlying
@@ -21,7 +100,7 @@ class Fragment(object):
 
     @property
     def nelec(self):
-        """Return number of electrons in system
+        """Return number of electrons in fragment
 
         @return: number of electrons
         @rtype : int
