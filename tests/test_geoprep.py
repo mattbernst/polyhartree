@@ -83,6 +83,30 @@ class GTestCase(unittest.TestCase):
 
         self.assertEqual(-1, s.charge)
 
+    def test_system_elements(self):
+        #unique elements in system, ordered by ascending atomic number
+        
+        halothane = self.G.make_fragment("C(C(F)(F)F)(Cl)Br")
+        cysteine = self.G.make_fragment("C([C@@H](C(=O)O)N)S")
+        s = geoprep.System([halothane, cysteine])
+        expected = ["H", "C", "N", "O", "F", "S", "Cl", "Br"]
+        
+        self.assertEqual(expected, s.elements)
+
+    def test_system_title(self):
+        #system title can be set explicitly or inherits from first fragment
+        name = "azanide"
+        azanide = self.G.make_fragment("[NH2-]")
+        azanide.title = name
+        methylium = self.G.make_fragment("[CH3+]")
+        s = geoprep.System([azanide, methylium, azanide])
+
+        self.assertEqual(name, s.title)
+
+        name2 = "amide ion"
+        s.title = name2
+        self.assertEqual(name2, s.title)
+
 def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.
 

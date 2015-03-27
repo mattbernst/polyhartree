@@ -1,15 +1,20 @@
 # -*- coding:utf-8 mode:python; tab-width:4; indent-tabs-mode:nil; py-indent-offset:4 -*-
 import os
+import string
 from cinfony import pybel, webel
 
 class System(object):
-    def __init__(self, fragment_or_fragments):
+    def __init__(self, fragment_or_fragments, spin=None, title=None):
         """Create a System containing one or more fragments. If there is just
         one fragment it will be promoted to a one-item list; sequences will
         become lists.
 
         @param fragment_or_fragments: a fragment or sequence of fragments
         @type fragment_or_fragments : Fragment | tuple | list
+        @param spin: optional spin multiplicity for the entire system
+        @type spin : int
+        @param title: optional title for the entire system
+        @type title : str
         """
         
         try:
@@ -17,7 +22,8 @@ class System(object):
         except TypeError:
             self.fragments = [fragment_or_fragments]
 
-        self.explicit_spin = None
+        self.explicit_spin = spin
+        self.explicit_title = title
 
     @property
     def charge(self):
@@ -40,6 +46,31 @@ class System(object):
 
         total = sum([f.nelec for f in self.fragments])
         return total
+
+    @property
+    def title(self):
+        """Return the explicitly set title, if present, or the title of the
+        first fragment otherwise.
+
+        @return: title
+        @rtype : str
+        """
+
+        t = self.explicit_title
+        if t is None:
+            t = self.fragments[0].title
+
+        return t
+
+    @title.setter
+    def title(self, title):
+        """Set the explicit title.
+
+        @param title: new title to set
+        @type title : str
+        """
+
+        self.explicit_title = title
 
     @property
     def spin(self):
@@ -73,6 +104,82 @@ class System(object):
         
         self.explicit_spin = s
 
+    @property
+    def atoms(self):
+        """Get all atoms in a system as a concatenated list of atoms in each
+        fragment in the system.
+
+        @return: all system atoms
+        @rtype : list
+        """
+
+        atoms = []
+        for f in self.fragments:
+            atoms += f.atoms
+
+        return atoms
+
+    @property
+    def elements(self):
+        """Get all elements incorporated in system.
+
+        @param system: System
+        @type system : geoprep.System
+        @return: unique list of system elements, in order of atomic number
+        @rtype : list
+        """
+        
+        elements = ["H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne",
+                    "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca",
+                    "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn",
+                    "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y", "Zr",
+                    "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn",
+                    "Sb", "Te", "I", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd",
+                    "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb",
+                    "Lu", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg",
+                    "Tl", "Pb", "Bi", "Po", "At", "Rn", "Fr", "Ra", "Ac", "Th",
+                    "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm",
+                    "Md", "No", "Lr"]
+
+        included_elements = set()
+
+        for atom in self.atoms:
+            symbol = elements[atom.atomicnum - 1]
+            included_elements.add(symbol)
+
+        indexed = [(elements.index(e), e) for e in included_elements]
+        indexed.sort()
+        finals = [e[1] for e in indexed]
+        return finals
+
+    def write(self, fmt):
+        """Write all fragments into a single molecular system, by way of an
+        intermediate fused xyz. There might be a better way to do this,
+        but it's not obvious.
+
+        There may be strange results trying to write systems containing
+        multiple fragments as a linear format like SMILES or InChI
+
+        @param fmt: final format to write, e.g. "mopin" or "pdb"
+        @type fmt : str
+        """
+
+        natoms = len(self.atoms)
+        xyzs = []
+        for f in self.fragments:
+            #clip header and get right to the atom geometry
+            xyz = f.write("xyz").strip().split("\n\n")[1]
+            xyzs.append(xyz)
+
+        geoblock = "\n".join(xyzs)
+        fused = "{0}\n\n{1}\n".format(natoms, geoblock)
+        reread = pybel.readstring("xyz", fused)
+        reread.title = self.title
+
+        written = reread.write(fmt)
+
+        return written
+
 
 class Fragment(object):
     def __init__(self, molecule):
@@ -84,6 +191,9 @@ class Fragment(object):
         @type molecule : cinfony.*.Molecule
         """
         
+        #keep a "universal SMILES" representation of the fragment handy
+        m = pybel.Molecule(molecule)
+        self.smiles = m.write("smi", opt={"U" : True})
         self.molecule = molecule
 
         #Try to pass through these attributes/methods of the underlying
@@ -159,8 +269,8 @@ class Fragment(object):
 
 class Geotool(object):
     def make_fragment(self, representation, kind="smiles"):
-        """Take a representation of a molecule and add a title with IUPAC
-        and SMILES designations. Convert a linear or 2D molecular specification
+        """Take a linear representation of a molecule and add a title with
+        IUPAC and SMILES designations. Convert a linear molecular specification
         to a 3D form.
 
         TODO: Allow IUPAC, trivial-name input. Cache webel calls.
@@ -181,7 +291,20 @@ class Geotool(object):
         fragment = Fragment(molecule)
         fragment.set_zero_to_origin()
         fragment.title = "{0} SMILES: {1}".format(iupac, smiles)
+        
         return fragment
+
+    def make_system(self, items, kind="smiles"):
+        fragments = []
+        if type(items) == str:
+            items = [items]
+
+        for item in items:
+            fragment = self.make_fragment(item, kind=kind)
+            fragments.append(fragment)
+
+        s = System(fragments)
+        return s
 
     def read_mol(self, file_name, fmt=None):
         """Load a molecular structure from a file. Guess at the file type

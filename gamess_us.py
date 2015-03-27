@@ -109,7 +109,7 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         #otherwise AM1 parameters are used
         emap["semiempirical:rm1"] = emap["semiempirical:am1"]
 
-        elements = self.get_elements(system)
+        elements = system.elements
         allowed = emap[method]
         for e in elements:
             if e not in allowed:

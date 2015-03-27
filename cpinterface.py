@@ -1,6 +1,5 @@
 # -*- coding:utf-8 mode:python; tab-width:4; indent-tabs-mode:nil; py-indent-offset:4 -*-
 
-import string
 from sharedutilities import Utility
 
 class Messages(object):
@@ -46,45 +45,14 @@ class MolecularCalculator(Messages):
     def extract_energy(self, data, options={}):
         raise NotImplementedError
 
-    def make_energy_job(self, molecule, method, options={}):
+    def make_energy_job(self, system, method, options={}):
         raise NotImplementedError
 
-    def make_opt_job(self, molecule, method, options={}):
+    def make_opt_job(self, system, method, options={}):
         raise NotImplementedError
 
     def check_element_support(self, system, options={}):
         raise NotImplementedError
-
-    def get_elements(self, system):
-        """Get all elements incorporated in system.
-
-        @param system: molecular system
-        @type system : cinfony molecule
-        @return: unique list of system elements, in order of atomic number
-        @rtype : list
-        """
-        
-        elements = ["H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne",
-                    "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca",
-                    "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn",
-                    "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y", "Zr",
-                    "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn",
-                    "Sb", "Te", "I", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd",
-                    "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb",
-                    "Lu", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg",
-                    "Tl", "Pb", "Bi", "Po", "At", "Rn", "Fr", "Ra", "Ac", "Th",
-                    "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm",
-                    "Md", "No", "Lr"]
-        
-        formula = system.formula
-        for char in formula:
-            if char not in string.ascii_letters:
-                formula = formula.replace(char, " ")
-
-        formula_elements = set(formula.split())
-        included_elements = [e for e in elements if e in formula_elements]
-        
-        return included_elements
 
     def check_electronic_reference(self, reference):
         """Check that electronic reference is supported for calculation to

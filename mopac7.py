@@ -116,7 +116,7 @@ class Mopac7(cpinterface.MolecularCalculator):
                 "semiempirical:mindo/3" : ["H", "B", "C", "N", "O", "F", "Si",
                                            "P", "S", "Cl"]}
         
-        elements = self.get_elements(system)
+        elements = system.elements
         allowed = emap[method]
         for e in elements:
             if e not in allowed:
@@ -161,7 +161,7 @@ class Mopac7(cpinterface.MolecularCalculator):
         """Create an input specification for a single point energy calculation.
 
         @param system: molecular system for energy calculation
-        @type system : cinfony molecule
+        @type system : geoprep.System
         @param method: calculation method
         @type method : str
         @return: a Mopac7 single point energy calculation job
@@ -182,7 +182,7 @@ class Mopac7(cpinterface.MolecularCalculator):
         See Chapter 2 of the Mopac 7 manual for keyword details.
 
         @param system: molecular system for energy calculation
-        @type system : cinfony molecule
+        @type system : geoprep.System
         @param method: a semiempirical calculation method
         @type method : str
         @return: a Mopac7 semiempirical job

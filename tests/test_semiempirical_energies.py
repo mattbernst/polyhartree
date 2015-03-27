@@ -1,4 +1,3 @@
-
 # -*- coding:utf-8 mode:python; tab-width:4; indent-tabs-mode:nil; py-indent-offset:4 -*-
 ##
 
@@ -107,43 +106,40 @@ class PDTestCase(unittest.TestCase):
         return differences
 
     def test_methylium(self):
-        geometry = self.G.make_fragment("[CH3+]")
+        geometry = self.G.make_system("[CH3+]")
         self._test_energy_differences(geometry, "semiempirical:pm3", 6, 4)
         self._test_energy_differences(geometry, "semiempirical:am1", 5, 4)
         self._test_energy_differences(geometry, "semiempirical:mndo", 5, 4)
 
     def test_methane(self):
-        geometry = self.G.make_fragment("C")
+        geometry = self.G.make_system("C")
         self._test_energy_differences(geometry, "semiempirical:pm3", 6, 4)
         self._test_energy_differences(geometry, "semiempirical:am1", 5, 4)
         self._test_energy_differences(geometry, "semiempirical:mndo", 5, 4)
 
     def test_carbanide(self):
-        geometry = self.G.make_fragment("[CH3-]")
+        geometry = self.G.make_system("[CH3-]")
         self._test_energy_differences(geometry, "semiempirical:pm3", 6, 4)
         self._test_energy_differences(geometry, "semiempirical:am1", 5, 4)
         self._test_energy_differences(geometry, "semiempirical:mndo", 5, 4)
 
     def test_methyl_radical(self):
-        geometry = self.G.make_fragment("[CH3]")
+        geometry = self.G.make_system("[CH3]")
         pm3 = self._test_energy_differences(geometry, "semiempirical:pm3",
                                             6, 4)
         am1 = self._test_energy_differences(geometry, "semiempirical:am1",
                                             5, 4)
         mndo = self._test_energy_differences(geometry, "semiempirical:mndo",
                                              5, 4)
-        #pprint.pprint(pm3)
-        #pprint.pprint(am1)
-        #pprint.pprint(mndo)
 
     def test_nitric_oxide(self):
-        geometry = self.G.make_fragment("[N]=O")
-        self._test_energy_differences(geometry, "semiempirical:pm3", 4, 4)
-        self._test_energy_differences(geometry, "semiempirical:am1", 4, 4)
+        geometry = self.G.make_system("[N]=O")
+        self._test_energy_differences(geometry, "semiempirical:pm3", 5, 4)
+        self._test_energy_differences(geometry, "semiempirical:am1", 5, 4)
         self._test_energy_differences(geometry, "semiempirical:mndo", 4, 4)
 
     def test_ammonia(self):
-        geometry = self.G.make_fragment("N")
+        geometry = self.G.make_system("N")
         self._test_energy_differences(geometry, "semiempirical:pm3", 4, 4)
         self._test_energy_differences(geometry, "semiempirical:am1", 5, 4)
         self._test_energy_differences(geometry, "semiempirical:mndo", 5, 4)
@@ -158,8 +154,8 @@ class PDTestCase(unittest.TestCase):
         G = gamess_us.GAMESSUS()
         
         results = {}
-        CO = self.G.make_fragment("[C-]#[O+]")
-        formaldehyde = self.G.make_fragment("C=O")
+        CO = self.G.make_system("[C-]#[O+]")
+        formaldehyde = self.G.make_system("C=O")
         
         #translate a little on the x axis each time
         dx = 0.25
@@ -179,7 +175,8 @@ class PDTestCase(unittest.TestCase):
             
             v = (dx, 0, 0)
             tx += dx
-            CO.translate(v)
+            CO.fragments[0].translate(v)
+            formaldehyde.fragments[0].translate(v)
 
         #For linear carbon monoxide, mopac7 produces a different result with
         #each x-axis translation. Otherwise all calculations behave as
