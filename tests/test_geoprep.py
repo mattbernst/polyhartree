@@ -107,6 +107,43 @@ class GTestCase(unittest.TestCase):
         s.title = name2
         self.assertEqual(name2, s.title)
 
+    def test_hydrogen_selectors(self):
+        triethylamine = self.G.make_fragment("CCN(CC)CC")
+        ethyl = "[#6][#6]"
+
+        #heavy atoms (carbon) of ethyl groups alone
+        e1 = [[0, 1], [3, 4], [5, 6]]
+        #hydrogen atoms attached to ethyl groups, alone
+        e2 = [[7, 8, 9, 10, 11], [12, 13, 14, 15, 16], [17, 18, 19, 20, 21]]
+        #ethyl groups each including hydrogens
+        e3 = [[0, 1, 7, 8, 9, 10, 11], [3, 4, 12, 13, 14, 15, 16],
+              [5, 6, 17, 18, 19, 20, 21]]
+        m1 = triethylamine.select(ethyl, hydrogen="exclude")
+        m2 = triethylamine.select(ethyl, hydrogen="only")
+        m3 = triethylamine.select(ethyl, hydrogen="include")
+        self.assertEqual(e1, m1)
+        self.assertEqual(e2, m2)
+        self.assertEqual(e3, m3)
+
+    def test_select_hydrogens(self):
+        triethylamine = self.G.make_fragment("CCN(CC)CC")
+        ethyl = "[#6][#6]"
+        s = pybel.Smarts(ethyl)
+        
+        selected = s.findall(triethylamine.molecule)
+        expectations = [[7, 8, 9, 10, 11],
+                        [12, 13, 14, 15, 16],
+                        [17, 18, 19, 20, 21]]
+
+        for k, ethyl in enumerate(selected):
+            #cinfony.pybel uses 0-based indexing while the lower level pybel
+            #uses 1-based indexing, so subtract 1 from each index in match
+            e = [s - 1 for s in ethyl]
+            hydrogens = triethylamine.select_hydrogens(e)
+            self.assertEqual(expectations[k], hydrogens)
+            for h in hydrogens:
+                self.assertEqual(1, triethylamine.atoms[h].atomicnum)
+
 def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.
 

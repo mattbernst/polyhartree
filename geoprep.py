@@ -266,6 +266,87 @@ class Fragment(object):
 
             self.molecule.atoms[k].OBAtom.SetVector(*translated)
 
+    def select(self, smarts, hydrogen="include"):
+        """Select atoms matching a SMARTS pattern with different treatments
+        for hydrogen atoms.
+
+        http://www.daylight.com/dayhtml/doc/theory/theory.smarts.html
+
+        Hydrogen treatment:
+        "include": hydrogen atoms attached to heavies become part of selection
+        "exclude": return heavy atoms only
+        "only": hydrogen atoms attached to heavies are returned without heavies
+
+        @param smarts: a SMARTS pattern
+        @type smarts : str
+        @param hydrogen: "include", "exclude", or "only" (see above)
+        @type hydrogen : str
+        @return: indexes of atoms matching the selection
+        @rtype : list
+        """
+
+        finder = pybel.Smarts(smarts)
+        h = finder.findall(self.molecule)
+        heavies = []
+        results = []
+
+        #shift indexes of initial heavy atom match to compensate for
+        #0-based indexing in cinfony.pybel
+        for group in h:
+            g = [i - 1 for i in group]
+            heavies.append(g)
+
+        if hydrogen == "exclude":
+            results = heavies
+
+        elif hydrogen == "only":
+            for group in heavies:
+                hydrogens = self.select_hydrogens(group)
+                results.append(hydrogens)
+
+        elif hydrogen == "include":
+            for group in heavies:
+                hydrogens = self.select_hydrogens(group)
+                merged = group + hydrogens
+                results.append(merged)
+
+        else:
+            raise ValueError("Unrecognized option for hydrogen selection")
+            
+        return results
+
+    def select_hydrogens(self, atoms):
+        """Get indexes of any hydrogen atoms attached to input atom indexes.
+
+        N.B.: Internal pybel indexes use 1-based indexing and cinfony.pybel
+        uses 0-based indexing, so indexes of target atoms need to be reduced
+        by 1
+
+        @param atoms: indexes of atoms that may have hydrogen attached
+        @type atoms : list
+        @return: indexes of attached hydrogen atoms
+        @rtype : list
+        """
+
+        hydrogens = set()
+        
+        for j in atoms:
+            atom = self.molecule.atoms[j].OBAtom
+            for neighbor in pybel.ob.OBAtomAtomIter(atom):
+                bond = atom.GetBond(neighbor)
+                a_i = bond.GetBeginAtomIdx() - 1
+                a_n = bond.GetBeginAtom().GetAtomicNum()
+                b_i = bond.GetEndAtomIdx() - 1
+                b_n = bond.GetEndAtom().GetAtomicNum()
+
+                if a_n == 1:
+                    hydrogens.add(a_i)
+                if b_n == 1:
+                    hydrogens.add(b_i)
+
+        h = sorted(list(hydrogens))
+        return h
+
 
 class Geotool(object):
     def make_fragment(self, representation, kind="smiles"):
