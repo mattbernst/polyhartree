@@ -147,7 +147,7 @@ class GTestCase(unittest.TestCase):
                 self.assertEqual(1, triethylamine.atoms[h].atomicnum)
 
     def test_set_basis_name(self):
-        #test basis set assignment: first one basis set for all atoms and
+        #test basis set assignment: assign one basis set for all atoms and
         #then another for ethyl carbons
         expected = ["cc-pVTZ", "cc-pVTZ", "cc-pVDZ", "cc-pVTZ", "cc-pVTZ",
                     "cc-pVTZ", "cc-pVTZ", "cc-pVDZ", "cc-pVDZ", "cc-pVDZ",
@@ -156,11 +156,44 @@ class GTestCase(unittest.TestCase):
                     "cc-pVDZ", "cc-pVDZ"]
         
         triethylamine = self.G.make_fragment("CCN(CC)CC")
-        selection = triethylamine.select("[C][C]", hydrogen="exclude")
+        ethyl_carbons = triethylamine.select("[C][C]", hydrogen="exclude")
 
-        triethylamine.set_basis_name([], "cc-pVDZ")
-        triethylamine.set_basis_name(selection, "cc-pVTZ")
+        triethylamine.set_basis_name("cc-pVDZ")
+        triethylamine.set_basis_name("cc-pVTZ", selection=ethyl_carbons)
         self.assertEqual(expected, triethylamine.atom_properties["basis_name"])
+
+    def test_system_atom_properties(self):
+        #test atom property retrieval across all fragments in a system, using
+        #basis set names as properties
+        expected = ["cc-pVDZ", "cc-pVDZ", "cc-pVDZ", "cc-pVDZ", "cc-pVDZ",
+                    "cc-pVDZ", "cc-pVDZ", "cc-pVDZ", "cc-pVDZ", "cc-pVDZ",
+                    "cc-pVDZ",
+                    "cc-pVQZ", "cc-pVQZ", "cc-pVQZ", "cc-pVQZ", "cc-pVQZ",
+                    "cc-pVQZ", "cc-pVQZ", "cc-pVQZ",
+                    None, None, None, None, None]
+        
+        propane = self.G.make_fragment("CCC")
+        propane.set_basis_name("cc-pVDZ")
+        ethane = self.G.make_fragment("CC")
+        ethane.set_basis_name("cc-pVQZ")
+        methane = self.G.make_fragment("C")
+
+        s = geoprep.System([propane, ethane, methane])
+        props = s.atom_properties("basis_name")
+        self.assertEqual(expected, props)
+
+    def test_system_select(self):
+        #test selector operating across all fragments in system
+
+        pg = self.G.make_fragment("CC(O)CO")
+        ethanol = self.G.make_fragment("CCO")
+        hydroxyl = "[OX2H]"
+
+        s = geoprep.System([pg, ethanol])
+        selected = s.select(hydroxyl)
+        for k in selected:
+            symbol = s.atom_properties("symbols")[k]
+            self.assertTrue(symbol in "OH")
 
 def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.

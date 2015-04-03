@@ -4,6 +4,18 @@ import os
 import string
 from cinfony import pybel, webel
 
+ELEMENTS = ["H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne",
+            "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca",
+            "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn",
+            "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y", "Zr",
+            "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn",
+            "Sb", "Te", "I", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd",
+            "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb",
+            "Lu", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg",
+            "Tl", "Pb", "Bi", "Po", "At", "Rn", "Fr", "Ra", "Ac", "Th",
+            "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm",
+            "Md", "No", "Lr"]
+
 class System(object):
     def __init__(self, fragment_or_fragments, spin=None, title=None):
         """Create a System containing one or more fragments. If there is just
@@ -120,6 +132,46 @@ class System(object):
 
         return atoms
 
+    def atom_properties(self, name):
+        """Get named atom properties across all fragments in the system.
+
+        @return: per-atom properties across all atoms in fragments
+        @rtype : list
+        """
+
+        properties = []
+        for f in self.fragments:
+            try:
+                p = f.atom_properties[name]
+            except KeyError:
+                p = [None] * len(f.atoms)
+                
+            properties += p
+
+        return properties
+
+    def select(self, smarts, hydrogen="include"):
+        """Select atoms matching a SMARTS pattern with different treatments
+        for hydrogen atoms, and do it across all fragments in the system.
+
+        @param smarts: a SMARTS pattern
+        @type smarts : str
+        @param hydrogen: "include", "exclude", or "only"
+        @type hydrogen : str
+        @return: indexes of atoms matching the selection
+        @rtype : list
+        """
+
+        selected = []
+        natoms_last = 0
+        for f in self.fragments:
+            s = f.select(smarts, hydrogen=hydrogen)
+            s = [k + natoms_last for k in s]
+            selected += s
+            natoms_last += len(f.atoms)
+
+        return selected
+
     @property
     def elements(self):
         """Get all elements incorporated in system.
@@ -130,25 +182,9 @@ class System(object):
         @rtype : list
         """
         
-        elements = ["H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne",
-                    "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca",
-                    "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn",
-                    "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y", "Zr",
-                    "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn",
-                    "Sb", "Te", "I", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd",
-                    "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb",
-                    "Lu", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg",
-                    "Tl", "Pb", "Bi", "Po", "At", "Rn", "Fr", "Ra", "Ac", "Th",
-                    "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm",
-                    "Md", "No", "Lr"]
+        included_elements = set(self.atom_properties("symbols"))
 
-        included_elements = set()
-
-        for atom in self.atoms:
-            symbol = elements[atom.atomicnum - 1]
-            included_elements.add(symbol)
-
-        indexed = [(elements.index(e), e) for e in included_elements]
+        indexed = [(ELEMENTS.index(e), e) for e in included_elements]
         indexed.sort()
         finals = [e[1] for e in indexed]
         return finals
@@ -210,6 +246,15 @@ class Fragment(object):
                 setattr(self, attr, p)
             except AttributeError:
                 pass
+
+        self.assign_elements()
+
+    def assign_elements(self):
+        """Assign element symbols to all atoms as atom_properties["symbols"]
+        """
+
+        symbols = [ELEMENTS[atom.atomicnum - 1] for atom in self.atoms]
+        self.set_properties("symbols", range(len(symbols)), symbols)
 
     @property
     def nelec(self):
@@ -380,7 +425,6 @@ class Fragment(object):
             k = selection[j]
             value = properties[j]
             self.atom_properties[name][k] = value
-            
 
     def set_basis_name_general(self, selection, mapfn, **kw):
         """Assign basis set names to selected atoms.
@@ -408,14 +452,14 @@ class Fragment(object):
 
         self.set_properties(name, selection, values)
 
-    def set_basis_name(self, selection, basis_name):
+    def set_basis_name(self, basis_name, selection=[]):
         """Simple name based assignment: same basis name on every atom in
         selection.
 
-        @param selection: initial selection (all atoms if empty)
-        @type selection : list
         @param basis_name: basis set name for selection
         @type basis_name : str
+        @param selection: initial selection (all atoms if empty)
+        @type selection : list
         """
 
         def namer(atom, **kw):
@@ -424,7 +468,6 @@ class Fragment(object):
 
         kw = {"basis_name" : basis_name}
         self.set_basis_name_general(selection, namer, **kw)
-
 
 class Geotool(object):
     def make_fragment(self, representation, kind="smiles"):
