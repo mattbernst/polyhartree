@@ -1,4 +1,5 @@
 # -*- coding:utf-8 mode:python; tab-width:4; indent-tabs-mode:nil; py-indent-offset:4 -*-
+import functools
 import os
 import string
 from cinfony import pybel, webel
@@ -191,11 +192,13 @@ class Fragment(object):
         @type molecule : cinfony.*.Molecule
         """
         
+        self.molecule = molecule
+        self.atom_properties = {}
+        
         #keep a "universal SMILES" representation of the fragment handy
         m = pybel.Molecule(molecule)
         self.smiles = m.write("smi", opt={"U" : True})
-        self.molecule = molecule
-
+        
         #Try to pass through these attributes/methods of the underlying
         #molecule as attributes/methods of the fragment
         for attr in ['addh', 'atoms', 'calcdesc', 'calcfp', 'charge',
@@ -237,7 +240,7 @@ class Fragment(object):
         """Set coordinates of atom 0 to the origin coordinates: 0, 0, 0
         Also translate other atoms to match
 
-        This may make Mopac7 a little less finicky.
+        This may make Mopac7 a little less finicky with linear molecules.
         """
 
         base = self.molecule.atoms[0].coords
@@ -266,7 +269,7 @@ class Fragment(object):
 
             self.molecule.atoms[k].OBAtom.SetVector(*translated)
 
-    def select(self, smarts, hydrogen="include"):
+    def select(self, smarts, hydrogen="include", flatten=True):
         """Select atoms matching a SMARTS pattern with different treatments
         for hydrogen atoms.
 
@@ -281,6 +284,8 @@ class Fragment(object):
         @type smarts : str
         @param hydrogen: "include", "exclude", or "only" (see above)
         @type hydrogen : str
+        @param flatten: if True, merge all selections
+        @type flatten : bool
         @return: indexes of atoms matching the selection
         @rtype : list
         """
@@ -312,6 +317,9 @@ class Fragment(object):
 
         else:
             raise ValueError("Unrecognized option for hydrogen selection")
+
+        if flatten:
+            results = sum(results, [])
             
         return results
 
@@ -346,6 +354,76 @@ class Fragment(object):
 
         h = sorted(list(hydrogens))
         return h
+
+    def set_properties(self, name, selection, properties):
+        """Assign properties grouped by name to selected atoms. Any unselected
+        atoms will get a None property.
+
+        @param name: name of property group, e.g. "basis_name", "fukui_mu_n(+)"
+        @type name : str
+        @param selection: atom indices
+        @type selection : list
+        @param properties: any sequence of values, length same as selection
+        @type properties : list
+        """
+
+        slen = len(selection)
+        plen = len(properties)
+        if slen != plen:
+            raise ValueError("Got selection of {0} atoms but {1} properties: {2} {3}".format(slen, plen, selection, properties))
+
+        #initialize property group with a list of None
+        if name not in self.atom_properties:
+            self.atom_properties[name] = [None] * len(self.atoms)
+
+        for j in range(slen):
+            k = selection[j]
+            value = properties[j]
+            self.atom_properties[name][k] = value
+            
+
+    def set_basis_name_general(self, selection, mapfn, **kw):
+        """Assign basis set names to selected atoms.
+
+        @param selection: initial selection (all atoms if empty)
+        @type selection : list
+        @param mapfn: a method that produces names for selection
+        @type mapfn : method
+        @param **kw: optional keyword arguments for mapfn
+        @type **kw : dict
+        """
+        
+        name = "basis_name"
+        values = []
+
+        #no selection is equivalent to selecting everything
+        if not selection:
+            selection = range(len(self.atoms))
+
+        atoms = self.atoms
+        for index in selection:
+            atom = atoms[index]
+            v = mapfn(atom, **kw)
+            values.append(v)
+
+        self.set_properties(name, selection, values)
+
+    def set_basis_name(self, selection, basis_name):
+        """Simple name based assignment: same basis name on every atom in
+        selection.
+
+        @param selection: initial selection (all atoms if empty)
+        @type selection : list
+        @param basis_name: basis set name for selection
+        @type basis_name : str
+        """
+
+        def namer(atom, **kw):
+            basis_name = kw["basis_name"]
+            return basis_name
+
+        kw = {"basis_name" : basis_name}
+        self.set_basis_name_general(selection, namer, **kw)
 
 
 class Geotool(object):

@@ -109,7 +109,7 @@ class GTestCase(unittest.TestCase):
 
     def test_hydrogen_selectors(self):
         triethylamine = self.G.make_fragment("CCN(CC)CC")
-        ethyl = "[#6][#6]"
+        ethyl = "[C][C]"
 
         #heavy atoms (carbon) of ethyl groups alone
         e1 = [[0, 1], [3, 4], [5, 6]]
@@ -118,16 +118,18 @@ class GTestCase(unittest.TestCase):
         #ethyl groups each including hydrogens
         e3 = [[0, 1, 7, 8, 9, 10, 11], [3, 4, 12, 13, 14, 15, 16],
               [5, 6, 17, 18, 19, 20, 21]]
-        m1 = triethylamine.select(ethyl, hydrogen="exclude")
-        m2 = triethylamine.select(ethyl, hydrogen="only")
-        m3 = triethylamine.select(ethyl, hydrogen="include")
+        
+        m1 = triethylamine.select(ethyl, hydrogen="exclude", flatten=False)
+        m2 = triethylamine.select(ethyl, hydrogen="only", flatten=False)
+        m3 = triethylamine.select(ethyl, hydrogen="include", flatten=False)
+
         self.assertEqual(e1, m1)
         self.assertEqual(e2, m2)
         self.assertEqual(e3, m3)
 
     def test_select_hydrogens(self):
         triethylamine = self.G.make_fragment("CCN(CC)CC")
-        ethyl = "[#6][#6]"
+        ethyl = "[C][C]"
         s = pybel.Smarts(ethyl)
         
         selected = s.findall(triethylamine.molecule)
@@ -143,6 +145,22 @@ class GTestCase(unittest.TestCase):
             self.assertEqual(expectations[k], hydrogens)
             for h in hydrogens:
                 self.assertEqual(1, triethylamine.atoms[h].atomicnum)
+
+    def test_set_basis_name(self):
+        #test basis set assignment: first one basis set for all atoms and
+        #then another for ethyl carbons
+        expected = ["cc-pVTZ", "cc-pVTZ", "cc-pVDZ", "cc-pVTZ", "cc-pVTZ",
+                    "cc-pVTZ", "cc-pVTZ", "cc-pVDZ", "cc-pVDZ", "cc-pVDZ",
+                    "cc-pVDZ", "cc-pVDZ", "cc-pVDZ", "cc-pVDZ", "cc-pVDZ",
+                    "cc-pVDZ", "cc-pVDZ", "cc-pVDZ", "cc-pVDZ", "cc-pVDZ",
+                    "cc-pVDZ", "cc-pVDZ"]
+        
+        triethylamine = self.G.make_fragment("CCN(CC)CC")
+        selection = triethylamine.select("[C][C]", hydrogen="exclude")
+
+        triethylamine.set_basis_name([], "cc-pVDZ")
+        triethylamine.set_basis_name(selection, "cc-pVTZ")
+        self.assertEqual(expected, triethylamine.atom_properties["basis_name"])
 
 def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.
