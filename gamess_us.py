@@ -15,6 +15,8 @@ class GAMESSUSJob(cpinterface.Job):
 
         @param data: log file contents
         @type data : str
+        @param options: ignored
+        @type options : dict
         """
 
         for line in data.split("\n"):
@@ -35,6 +37,8 @@ class GAMESSUSJob(cpinterface.Job):
 
         @param data: log file contents
         @type data : str
+        @param options: ignored
+        @type options : dict
         """
 
         for line in data.split("\n"):
@@ -43,6 +47,12 @@ class GAMESSUSJob(cpinterface.Job):
                 self.heat_of_formation = self.kcalm_to_au(hof)
 
     def run_local(self, options={}):
+        """Run a GAMESS-US job using the rungms script, on the local host.
+
+        @param options: ignored
+        @type options : dict
+        """
+        
         workdir = self.backend + "-" + str(uuid.uuid1()).replace('-', '')[:16]
         path = "/tmp/{0}/".format(workdir)
         os.makedirs(path)
@@ -126,6 +136,8 @@ class GAMESSUS(cpinterface.MolecularCalculator):
 
         @param system: molecular system data to convert to input geometry
         @type system : geoprep.System
+        @param options: select coordinate system
+        @type options : dict
         @return: a GAMESS-US input with geometry specifications
         @rtype : str
         """
@@ -158,6 +170,8 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         @type system : geoprep.System
         @param method: calculation method
         @type method : str
+        @param options: additional keyword based control options
+        @type optoins : dict
         @return: a GAMESS-US input for single point energy calculation
         @rtype : str
         """
@@ -166,6 +180,9 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         if method.startswith("semiempirical"):
             return self.make_semiempirical_job(system, method, "ENERGY",
                                                options=options)
+
+        elif method.startswith("hf"):
+            return self.make_hf_job(system, method, "ENERGY", options=options)
 
         else:
             raise ValueError("GAMESS-US does not currently support {0}".method)
@@ -221,6 +238,8 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         @type system : geoprep.System
         @param method: a semiempirical calculation method
         @type method : str
+        @param options: additional keyword based control options
+        @type options : dict
         @return: a GAMESS-US semiempirical job
         @rtype : Job
         """
@@ -276,6 +295,8 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         @param system: molecular system for calculation
         @type system : geoprep.System
         @param method: a HF calculation method
+        @param options: additional keyword based control options
+        @type options : dict
         @type method : str
         @return: a GAMESS-US HF job
         @rtype : Job
@@ -287,7 +308,7 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         self.check_method(method)
 
         deck = self.create_geometry(system, options=options)
-        semethod = method.split("hf:")[-1].upper()
+        method = method.split("hf:")[-1].upper()
 
         reference = options.get("reference").upper()
         self.check_electronic_reference(reference or options["reference"].upper())
@@ -306,7 +327,7 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         new_contrl = "\n ".join(pieces).strip()
 
         deck = deck[:begin] + new_contrl + deck[end:]
-        basis = " $BASIS GBASIS={0} $END".format(semethod)
+        basis = " $BASIS GBASIS={0} $END".format(method)
         lines = deck.split("\n")
         joblines = []
         inserted = False
@@ -320,4 +341,19 @@ class GAMESSUS(cpinterface.MolecularCalculator):
 
         job = GAMESSUSJob(deck=deck, system=system)
         return job
+
+    def get_basis_data(self, system, options={}):
+        """Collect basis set data across an entire system and translate
+        symbols to actual concrete data, e.g "6-31G" to a collection of
+        basis set functions.
+
+        @param system: molecular system
+        @type system : geoprep.System
+        @param options: ignored
+        @type options : dict
+        @return: basis data block
+        @rtype : str
+        """
+
+        return ""
 

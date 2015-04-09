@@ -17,6 +17,8 @@ class PDynamoJob(cpinterface.Job):
 
         @param data: log file contents
         @type data : str
+        @param options: ignored
+        @type options : dict
         """
 
         electronic_energy = None
@@ -42,6 +44,8 @@ class PDynamoJob(cpinterface.Job):
 
         @param data: log file contents
         @type data : str
+        @param options: ignored
+        @type options : dict
         """
 
         for line in data.split("\n"):
@@ -50,10 +54,14 @@ class PDynamoJob(cpinterface.Job):
                 self.heat_of_formation = self.kcalm_to_au(hof)
         
     def run_local(self, options={}):
-        """The pdynamo-runner.py gets geometry from an .xyz file and everything
-        else from command line arguments. This runner needs to copy the
-        geometry and the runner to the working directory before executing the
-        runner.
+        """Run pdynamo using the the pdynamo-runner.py script on the local
+        host. The pdynamo-runner.py gets geometry from an .xyz file and
+        everything else from command line arguments. This runner needs to copy
+        the geometry and the runner to the working directory before executing
+        the runner.
+
+        @param options: ignored
+        @type options : dict
         """
         
         workdir = self.backend + "-" + str(uuid.uuid1()).replace('-', '')[:16]
@@ -103,6 +111,7 @@ class PDynamo(cpinterface.MolecularCalculator):
                         "semiempirical:pm6", "semiempirical:mndo",
                         "semiempirical:rm1", "semiempirical:pddg/pm3",
                         "semiempirical:pddg/mndo", "semiempirical:am1/d-phot"]
+        
         self.coordinate_choices = ["cartesian"]
         self.references = ["RHF", "UHF"]
 
@@ -130,6 +139,8 @@ class PDynamo(cpinterface.MolecularCalculator):
         @type system : geoprep.System
         @param method: calculation method
         @type method : str
+        @param options: additional keyword based control options
+        @type optoins : dict
         @return: a pDynamo single point energy calculation job
         @rtype : cpinterface.Job
         """
@@ -150,6 +161,8 @@ class PDynamo(cpinterface.MolecularCalculator):
         @type system : geoprep.System
         @param method: a semiempirical calculation method
         @type method : str
+        @param options: additional keyword based control options
+        @type optoins : dict
         @return: a PDynamo semiempirical job
         @rtype : Job
         """

@@ -15,6 +15,8 @@ class Mopac7Job(cpinterface.Job):
 
         @param data: log file contents
         @type data : str
+        @param options: ignored
+        @type options : dict
         """
 
         electronic_energy = None
@@ -41,6 +43,8 @@ class Mopac7Job(cpinterface.Job):
 
         @param data: log file contents
         @type data : str
+        @param options: ignored
+        @type options : ignored
         """
 
         for line in data.split("\n"):
@@ -49,6 +53,12 @@ class Mopac7Job(cpinterface.Job):
                 self.heat_of_formation = self.kcalm_to_au(hof)
         
     def run_local(self, options={}):
+        """Run MOPAC7 on the local host using the run_mopac7 script.
+
+        @param options: ignored
+        @type options : dict
+        """
+        
         workdir = self.backend + "-" + str(uuid.uuid1()).replace('-', '')[:16]
         path = "/tmp/{0}/".format(workdir)
         os.makedirs(path)
@@ -140,6 +150,8 @@ class Mopac7(cpinterface.MolecularCalculator):
 
         @param system: molecular system data to convert to input geometry
         @type system : geoprep.System
+        @param options: select coordinate system
+        @type options : dict
         @return: a Mopac7 input with geometry specifications
         @rtype : str
         """
@@ -164,6 +176,8 @@ class Mopac7(cpinterface.MolecularCalculator):
         @type system : geoprep.System
         @param method: calculation method
         @type method : str
+        @param options: additional keyword based control options
+        @type optoins : dict
         @return: a Mopac7 single point energy calculation job
         @rtype : cpinterface.Job
         """
@@ -185,6 +199,8 @@ class Mopac7(cpinterface.MolecularCalculator):
         @type system : geoprep.System
         @param method: a semiempirical calculation method
         @type method : str
+        @param options: additional keyword based control options
+        @type optoins : dict
         @return: a Mopac7 semiempirical job
         @rtype : Job
         """
