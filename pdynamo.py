@@ -127,7 +127,7 @@ class PDynamo(cpinterface.MolecularCalculator):
         """Create an input specification for a single point energy calculation.
 
         @param system: molecular system for energy calculation
-        @type system : cinfony molecule
+        @type system : geoprep.System
         @param method: calculation method
         @type method : str
         @return: a pDynamo single point energy calculation job
@@ -146,8 +146,8 @@ class PDynamo(cpinterface.MolecularCalculator):
         pDynamo supports AM1, MNDO, PM3, PM6, RM1, AM1/d-PhoT, PDDG/PM3,
         PDDG/MNDO
 
-        @param system: molecular system for energy calculation
-        @type system : cinfony molecule
+        @param system: molecular system for calculation
+        @type system : geoprep.System
         @param method: a semiempirical calculation method
         @type method : str
         @return: a PDynamo semiempirical job

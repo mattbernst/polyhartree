@@ -96,7 +96,7 @@ class Mopac7(cpinterface.MolecularCalculator):
         pair-aware.
 
         @param system: molecular system
-        @type system : cinfony molecule
+        @type system : geoprep.System
         @param method: name of method
         @type method : str
         @return: elements from system
@@ -139,7 +139,7 @@ class Mopac7(cpinterface.MolecularCalculator):
          coordinates: "cartesian" or "zmatrix"
 
         @param system: molecular system data to convert to input geometry
-        @type system : cinfony molecule
+        @type system : geoprep.System
         @return: a Mopac7 input with geometry specifications
         @rtype : str
         """
@@ -181,7 +181,7 @@ class Mopac7(cpinterface.MolecularCalculator):
 
         See Chapter 2 of the Mopac 7 manual for keyword details.
 
-        @param system: molecular system for energy calculation
+        @param system: molecular system for calculation
         @type system : geoprep.System
         @param method: a semiempirical calculation method
         @type method : str

@@ -51,6 +51,9 @@ class MolecularCalculator(Messages):
     def make_opt_job(self, system, method, options={}):
         raise NotImplementedError
 
+    def get_basis_data(self, system, options={}):
+        raise NotImplementedError
+
     def check_element_support(self, system, options={}):
         raise NotImplementedError
 

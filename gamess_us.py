@@ -75,7 +75,8 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         super(GAMESSUS, self).__init__(*args, **kw)
         
         self.methods = ["semiempirical:am1", "semiempirical:pm3",
-                        "semiempirical:rm1", "semiempirical:mndo"]
+                        "semiempirical:rm1", "semiempirical:mndo",
+                        "hf:rhf", "hf:uhf", "hf:rohf"]
         self.coordinate_choices = ["cartesian", "zmatrix"]
         self.references = ["RHF", "ROHF", "UHF"]
 
@@ -86,7 +87,7 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         http://www.msg.ameslab.gov/gamess/GAMESS_Manual/refs.pdf
 
         @param system: molecular system
-        @type system : cinfony molecule
+        @type system : geoprep.System
         @param method: name of method
         @type method : str
         @return: elements from system
@@ -124,7 +125,7 @@ class GAMESSUS(cpinterface.MolecularCalculator):
          coordinates: "cartesian" or "zmatrix"
 
         @param system: molecular system data to convert to input geometry
-        @type system : cinfony molecule
+        @type system : geoprep.System
         @return: a GAMESS-US input with geometry specifications
         @rtype : str
         """
@@ -154,7 +155,7 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         """Create an input specification for a single point energy calculation.
 
         @param system: molecular system for energy calculation
-        @type system : cinfony molecule
+        @type system : geoprep.System
         @param method: calculation method
         @type method : str
         @return: a GAMESS-US input for single point energy calculation
@@ -216,8 +217,8 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         """Create a semiempirical input specification for a calculation.
         GAMESS-US supports MNDO, RM1, AM1, and PM3 methods.
 
-        @param system: molecular system for energy calculation
-        @type system : cinfony molecule
+        @param system: molecular system for calculation
+        @type system : geoprep.System
         @param method: a semiempirical calculation method
         @type method : str
         @return: a GAMESS-US semiempirical job
@@ -232,6 +233,61 @@ class GAMESSUS(cpinterface.MolecularCalculator):
 
         deck = self.create_geometry(system, options=options)
         semethod = method.split("semiempirical:")[-1].upper()
+
+        reference = options.get("reference").upper()
+        self.check_electronic_reference(reference or options["reference"].upper())
+        if system.spin > 1 and reference == "RHF":
+            self.log("Forcing UHF for multiplicity {0}".format(system.spin))
+            reference = "UHF"
+
+        control_options = {"runtyp" : runtyp, "mult" : system.spin,
+                           "icharg" : system.charge, "reference" : reference,
+                           "scf_iterations" : options.get("scf_iterations")}
+            
+        contrl = "SCFTYP={reference} RUNTYP={runtyp} ICHARG={icharg} MULT={mult} MAXIT={scf_iterations} ".format(**control_options)
+        deck = deck.replace("$CONTRL ", "$CONTRL " + contrl)
+
+        pieces, begin, end = self.reformat_long_line(deck, "$CONTRL", "$END")
+        new_contrl = "\n ".join(pieces).strip()
+
+        deck = deck[:begin] + new_contrl + deck[end:]
+        basis = " $BASIS GBASIS={0} $END".format(semethod)
+        lines = deck.split("\n")
+        joblines = []
+        inserted = False
+        for line in lines:
+            joblines.append(line)
+            if "$END" in line and not inserted:
+                inserted = True
+                joblines.append(basis)
+
+        deck = "\n".join(joblines)
+
+        job = GAMESSUSJob(deck=deck, system=system)
+        return job
+
+    def make_hf_job(self, system, method, runtyp, options={}):
+        """Create an input specification for a Hartree-Fock calculation.
+        
+        GAMESS-US supports RHF restricted Hartree-Fock,
+        UHF unrestricted Hartree-Fock, and
+        ROHF restricted open shell Hartree-Fock
+
+        @param system: molecular system for calculation
+        @type system : geoprep.System
+        @param method: a HF calculation method
+        @type method : str
+        @return: a GAMESS-US HF job
+        @rtype : Job
+        """
+
+        defaults = {"reference" : "rhf", "scf_iterations" : 200}
+        options = dict(defaults.items() + options.items())
+
+        self.check_method(method)
+
+        deck = self.create_geometry(system, options=options)
+        semethod = method.split("hf:")[-1].upper()
 
         reference = options.get("reference").upper()
         self.check_electronic_reference(reference or options["reference"].upper())
