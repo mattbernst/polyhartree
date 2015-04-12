@@ -1,6 +1,12 @@
 # -*- coding:utf-8 mode:python; tab-width:4; indent-tabs-mode:nil; py-indent-offset:4 -*-
+import sys
+from sharedutilities import Utility, ELEMENTS
 
-from sharedutilities import Utility
+try:
+    from ebsel import EMSL_api
+except ImportError:
+    msg = "Warning! Unable to import ebsel. Attempts to prepare calculations that need basis set data will fail. Make sure ebsel is on your PYTHONPATH to run calculations using basis sets. https://github.com/mattbernst/ebsel\n"
+    sys.stderr.write(msg)
 
 class Messages(object):
     def log(self, msg):
@@ -54,6 +60,62 @@ class MolecularCalculator(Messages):
     def get_basis_data(self, system, options={}):
         raise NotImplementedError
 
+    def get_basis_data(self, system, options={}):
+        """Get basis set data for all atoms, and raise errors for missing
+        or incorrectly specified basis sets.
+
+        options:
+         basis_format: "gamess-us", "nwchem", or "gaussian94"
+
+        @param system: molecular system
+        @type system : geoprep.System
+        @param options: ignored
+        @type options : dict
+        @return: basis data block
+        @rtype : str
+        """
+
+        basis_format = options["basis_format"]
+        basis_names = system.atom_properties("basis_name")
+        atoms = system.atoms
+        groups = {}
+        basis_groups = {}
+
+        if None in basis_names:
+            missing = []
+            for j, name in enumerate(basis_names):
+                if name is None:
+                    missing.append(j)
+                    
+            raise ValueError("Missing basis set names on atoms {0}".format(missing))
+
+        for j, name in enumerate(basis_names):
+            e_index = atoms[j].atomicnum - 1
+            symbol = ELEMENTS[e_index]
+            try:
+                groups[name].add(symbol)
+            except KeyError:
+                groups[name] = set([symbol])
+
+        el = EMSL_api.get_EMSL_local(fmt=basis_format)
+        for group in groups:
+            provided_elements = set(el.get_list_element_available(group))
+
+            #no provided elements at all means unknown basis set name
+            if not provided_elements:
+                raise ValueError("Unknown basis set {0}".format(group))
+                
+            elements = groups[group]
+            missing_elements = elements.difference(provided_elements)
+
+            if missing_elements:
+                raise ValueError("Basis set {0} missing parameters for elements {1}".format(repr(group), list(missing_elements)))
+                
+            basis_data = el.get_basis(group, list(elements))
+            basis_groups[group] = basis_data
+
+        return basis_groups
+
     def check_element_support(self, system, options={}):
         raise NotImplementedError
 
@@ -62,8 +124,8 @@ class MolecularCalculator(Messages):
         be attempted. Raise an exception on unsupported reference.
 
         Values that might be supported by individual packages/methods include
-        RHF, UHF, ROHF for wavefunction methods RDFT, UDFT, RODFT, UKS, ROKS,
-        RKS for density functional methods.
+        RHF, UHF, ROHF for wavefunction methods and RDFT, UDFT, RODFT, UKS,
+        ROKS, RKS for density functional methods.
 
         May need to do special things here for multi-reference methods.
 
@@ -80,10 +142,11 @@ class MolecularCalculator(Messages):
             raise ValueError("Unrecognized reference scheme {0}".format(repr(reference)))
 
     def check_method(self, method):
-        """Check that calculation method is supported by the quantum chemistry
-        back-end in use.
+        """Check that calculation method is supported by the computational
+        chemistry back-end in use.
 
-        Some examples: semiempirical:pm3, semiempirical:am1, hf:uhf, mp2:rhf...
+        Some examples: semiempirical:pm3, semiempirical:am1, hf:uhf,
+        dft:m05:roks, correlated:mp2:rhf, mm:amber-99...
 
         @param method: method name to check
         @type reference : str
