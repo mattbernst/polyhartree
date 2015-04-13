@@ -80,6 +80,7 @@ class MolecularCalculator(Messages):
         atoms = system.atoms
         groups = {}
         basis_groups = {}
+        function_types = {}
 
         if None in basis_names:
             missing = []
@@ -114,7 +115,21 @@ class MolecularCalculator(Messages):
             basis_data = el.get_basis(group, list(elements))
             basis_groups[group] = basis_data
 
-        return basis_groups
+            soc = el.spherical_or_cartesian(group)
+            try:
+                function_types[soc].append(group)
+            except KeyError:
+                function_types[soc] = [group]
+
+        #can't mix spherical and cartesian basis sets in a single system
+        if len(function_types) > 1:
+            raise ValueError("Attempted mixing spherical and cartesian basis sets: {0}".format(function_types))
+
+        #note the basis function type as an annotation
+        d = {"spherical_or_cartesian" : function_types.keys()[0],
+             "data" : basis_groups}
+        
+        return d
 
     def check_element_support(self, system, options={}):
         raise NotImplementedError

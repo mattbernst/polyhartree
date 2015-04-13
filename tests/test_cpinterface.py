@@ -44,6 +44,18 @@ class CPITestCase(unittest.TestCase):
         self.assertRaises(ValueError, self.C.get_basis_data, s,
                           {"basis_format" : "gamess-us"})
 
+    def test_mixed_basis_representation(self):
+        #error given for attempting to mix spherical and cartesian basis
+        #functions in a single system
+        methylium = self.G.make_fragment("[CH3+]")
+        methane = self.G.make_fragment("C")
+        methylium.set_basis_name("cc-pVDZ")
+        methane.set_basis_name("6-31G")
+
+        s = geoprep.System([methylium, methane])
+        self.assertRaises(ValueError, self.C.get_basis_data, s,
+                          {"basis_format" : "gamess-us"})
+
     def test_missing_basis_elements(self):
         #error given for elements unparameterized by chosen basis set
         lewisite = self.G.make_fragment("Cl[As](Cl)\C=C\Cl")
@@ -62,7 +74,10 @@ class CPITestCase(unittest.TestCase):
         lewisite.set_basis_name("cc-pVTZ", chlorines)
         
         s = geoprep.System([lewisite])
-        data = self.C.get_basis_data(s, {"basis_format" : "gamess-us"})
+        bd = self.C.get_basis_data(s, {"basis_format" : "gamess-us"})
+        self.assertEqual("spherical", bd["spherical_or_cartesian"])
+        
+        data = bd["data"]
         self.assertEqual(["cc-pVDZ", "cc-pVTZ"], sorted(data.keys()))
 
         tzd = "".join(data["cc-pVTZ"])
