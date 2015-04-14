@@ -1,6 +1,7 @@
 # -*- coding:utf-8 mode:python; tab-width:4; indent-tabs-mode:nil; py-indent-offset:4 -*-
 import sys
-from sharedutilities import Utility, ELEMENTS
+from sharedutilities import Utility
+import geoprep
 
 try:
     from ebsel import EMSL_api
@@ -54,10 +55,23 @@ class MolecularCalculator(Messages):
     def make_energy_job(self, system, method, options={}):
         raise NotImplementedError
 
-    def make_opt_job(self, system, method, options={}):
-        raise NotImplementedError
+    def fragment_to_system(self, sf):
+        """It's convenient to be able to pass in a single-fragment system as
+        a fragment without manually converting it to a system.
 
-    def get_basis_data(self, system, options={}):
+        @param sf: a system or a single fragment
+        @type sf : geoprep.Fragment | geoprep.System
+        @return: a system
+        @rtype : geoprep.System
+        """
+
+        if type(sf) != geoprep.System:
+            s = geoprep.System(sf)
+            return s
+        else:
+            return sf
+
+    def make_opt_job(self, system, method, options={}):
         raise NotImplementedError
 
     def get_basis_data(self, system, options={}):
@@ -77,7 +91,7 @@ class MolecularCalculator(Messages):
 
         basis_format = options["basis_format"]
         basis_names = system.atom_properties("basis_name")
-        atoms = system.atoms
+        symbols = system.atom_properties("symbols")
         groups = {}
         basis_groups = {}
         function_types = {}
@@ -91,8 +105,7 @@ class MolecularCalculator(Messages):
             raise ValueError("Missing basis set names on atoms {0}".format(missing))
 
         for j, name in enumerate(basis_names):
-            e_index = atoms[j].atomicnum - 1
-            symbol = ELEMENTS[e_index]
+            symbol = symbols[j]
             try:
                 groups[name].add(symbol)
             except KeyError:
@@ -111,8 +124,12 @@ class MolecularCalculator(Messages):
 
             if missing_elements:
                 raise ValueError("Basis set {0} missing parameters for elements {1}".format(repr(group), list(missing_elements)))
+
+            basis_data = {}
+            for element in elements:
+                bd = el.get_basis(group, [element])[0]
+                basis_data[element] = bd
                 
-            basis_data = el.get_basis(group, list(elements))
             basis_groups[group] = basis_data
 
             soc = el.spherical_or_cartesian(group)

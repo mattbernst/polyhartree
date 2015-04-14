@@ -80,10 +80,10 @@ class CPITestCase(unittest.TestCase):
         data = bd["data"]
         self.assertEqual(["cc-pVDZ", "cc-pVTZ"], sorted(data.keys()))
 
-        tzd = "".join(data["cc-pVTZ"])
+        tzd = "".join(data["cc-pVTZ"].values())
         self.assertTrue("CHLORINE" in tzd)
-        
-        dzd = "".join(data["cc-pVDZ"])
+
+        dzd = "".join(data["cc-pVDZ"].values())
         for name in ["HYDROGEN", "CARBON", "ARSENIC"]:
             self.assertTrue(name in dzd)
 

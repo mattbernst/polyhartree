@@ -97,8 +97,15 @@ class GAMESSTestCase(unittest.TestCase):
         self.assertAlmostEqual(-6.716163, job.energy, places=5)
         self.assertAlmostEqual(-0.022059, job.heat_of_formation, places=5)
 
+    def test_energy_rhf_321g_methane(self):
+        methane = self.G.make_fragment("C")
+        methane.set_basis_name("3-21G")
+        job = self.C.make_energy_job(methane, "hf:rhf")
+        job.run_local()
+        self.assertAlmostEqual(-39.976642, job.energy, places=5)
+
     def test_bad_input_error(self):
-        methane = self.G.make_system("C")
+        methane = self.G.make_fragment("C")
         job = self.C.make_energy_job(methane, "semiempirical:pm3")
 
         #introduce an error in the input deck: misspell SCFTYP as SCFTYPE
@@ -108,6 +115,34 @@ class GAMESSTestCase(unittest.TestCase):
         job.run_local()
 
         self.assertEqual("error", job.runstate)
+
+    def test_reformat_long_line(self):
+        #verify splitting of long directives so as to comfortably fit within
+        #the 80 character per line limit of GAMESS-US
+        maxlen = 50
+        line = " $BASIS basnam(1)=ClBAS0, AsBAS0, ClBAS0, CBAS0, CBAS0, ClBAS0, HBAS0, HBAS0 $END"
+        pieces, begin, end = self.C.reformat_long_line(line, " $BASIS", "$END",
+                                                       maxlen=maxlen)
+        for piece in pieces:
+            self.assertTrue(len(piece) <= maxlen)
+
+    def test_prepare_basis_data(self):
+        #test generation of inline basis set data with water
+        #should generate one basis set assignment for oxygen and two for
+        #hydrogen, since one hydrogen gets assigned a different basis
+        expected_comments = "!Basis set assignments:\n!\tO 3-21G\n!\tH 6-31G\n!\tH 3-21G"
+        expected_labels = ["$HBAS0", "$HBAS1", "$OBAS0"]
+
+        water = self.G.make_fragment("O")
+        water.set_basis_name("3-21G")
+        hydrogens = water.select("[O]", hydrogen="only")
+        water.set_basis_name("6-31G", hydrogens[:1])
+        
+        s = geoprep.System([water])
+        job = self.C.make_energy_job(s, "hf:rhf")
+        self.assertTrue(expected_comments in job.deck)
+        for label in expected_labels:
+            self.assertTrue(label in job.deck)
 
 
 def runSuite(cls, verbosity=2, name=None):
