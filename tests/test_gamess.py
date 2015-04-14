@@ -97,12 +97,38 @@ class GAMESSTestCase(unittest.TestCase):
         self.assertAlmostEqual(-6.716163, job.energy, places=5)
         self.assertAlmostEqual(-0.022059, job.heat_of_formation, places=5)
 
-    def test_energy_rhf_321g_methane(self):
+    def test_energy_scf_methane(self):
+        #very basic minimal basis set test for methane
         methane = self.G.make_fragment("C")
         methane.set_basis_name("3-21G")
         job = self.C.make_energy_job(methane, "hf:rhf")
         job.run_local()
         self.assertAlmostEqual(-39.976642, job.energy, places=5)
+
+    def test_energy_rohf_uhf_scf_methane(self):
+        #compare UHF and ROHF across methyl radicals for HF energy
+        
+        smiles = {"methyl_radical" : "[CH3]"}
+        jobs = {}
+
+        for key in smiles:
+            s = smiles[key]
+            fragment = self.G.make_fragment(s)
+            fragment.set_basis_name("cc-pVDZ")
+
+            for reference in ["uhf", "rohf"]:
+                j = self.C.make_energy_job(fragment,
+                                           "hf:{0}".format(reference))
+                j.run_local()
+                name = "{0}-{1}".format(key, reference)
+                jobs[name] = j
+
+        energies = dict([(j, jobs[j].energy) for j in jobs])
+
+        self.assertAlmostEqual(-39.5638133, energies["methyl_radical-rohf"],
+                               places=6)
+        self.assertAlmostEqual(-39.5638132, energies["methyl_radical-uhf"],
+                               places=6)
 
     def test_bad_input_error(self):
         methane = self.G.make_fragment("C")

@@ -151,8 +151,8 @@ class GAMESSUS(cpinterface.MolecularCalculator):
             geometry = system.write("inp")
 
             #change now-obsolete CART coordinate designation to
-            #synonymous PRINAXIS
-            geometry=geometry.replace("COORD=CART", "COORD=PRINAXIS")
+            #synonymous UNIQUE
+            geometry=geometry.replace("COORD=CART", "COORD=UNIQUE")
 
         elif coord_choice == "zmatrix":
             raise ValueError("GAMESS-US zmatrix input currently unsupported")
@@ -412,7 +412,6 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         deck += "\n!Basis set assignments:\n"
         deck += "\n".join(["!\t" + x for x in bd["comments"]]) + "\n\n"
         deck += bd["basis_data"]
-        deck = deck.strip()
 
         job = GAMESSUSJob(deck=deck, system=system)
         return job
