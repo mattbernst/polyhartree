@@ -95,13 +95,26 @@ class PDTestCase(unittest.TestCase):
 
     def _test_energy_differences(self, geometry, method, min_places_hof,
                                  min_places_energy):
+        """Compare energy differences when running the same energy method with
+        the same geometry across different chemistry back-ends.
+
+        @param geometry: a trial geometry
+        @type geometry : geoprep.System
+        @param method: a method name, e.g. "semiempirical:am1"
+        @type method : str
+        @param min_places_hof: minimum number of decimal places agreement for heat of formation
+        @type min_places_hof : int
+        @param min_places_energy: minimum number of decimal places agreement for energy
+        @return: differences among packages, using the first run as reference
+        @rtype : list
+        """
         
         jobs = self.run_multi(geometry, method)
         differences = self.find_differences(jobs)
         energy_places = [x["places_energy"] for x in differences]
         hof_places = [x["places_hof"] for x in differences]
-        self.assertEqual(min_places_hof, min(hof_places))
-        self.assertEqual(min_places_energy, min(energy_places))
+        self.assertTrue(min_places_hof <= min(hof_places))
+        self.assertTrue(min_places_energy <= min(energy_places))
 
         return differences
 
