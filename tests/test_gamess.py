@@ -13,7 +13,7 @@
 import sys
 import unittest
 import geoprep
-import gamess_us
+from adapters import gamess_us
 
 class GAMESSTestCase(unittest.TestCase):
     def setUp(self):

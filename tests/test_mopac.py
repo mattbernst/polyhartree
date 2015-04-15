@@ -13,7 +13,7 @@
 import sys
 import unittest
 import geoprep
-import mopac7
+from adapters import mopac7
 
 class MOPACTestCase(unittest.TestCase):
 

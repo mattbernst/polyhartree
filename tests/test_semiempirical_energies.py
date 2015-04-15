@@ -15,9 +15,9 @@ import unittest
 import pprint
 from cinfony import pybel
 import geoprep
-import gamess_us
-import mopac7
-import pdynamo
+from adapters import gamess_us
+from adapters import mopac7
+from adapters import pdynamo
 
 class PDTestCase(unittest.TestCase):
 
@@ -113,6 +113,7 @@ class PDTestCase(unittest.TestCase):
         differences = self.find_differences(jobs)
         energy_places = [x["places_energy"] for x in differences]
         hof_places = [x["places_hof"] for x in differences]
+
         self.assertTrue(min_places_hof <= min(hof_places))
         self.assertTrue(min_places_energy <= min(energy_places))
 
@@ -167,7 +168,7 @@ class PDTestCase(unittest.TestCase):
 
         self._test_energy_differences(s, "semiempirical:pm3", 4, 4)
         self._test_energy_differences(s, "semiempirical:am1", 4, 4)
-        self._test_energy_differences(s, "semiempirical:mndo", 5, 4)
+        self._test_energy_differences(s, "semiempirical:mndo", 4, 4)
 
     def test_translation_sensitivity(self):
         #Translating a system should not meaningfully affect its calculated

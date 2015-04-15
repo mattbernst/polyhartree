@@ -13,7 +13,7 @@
 import sys
 import unittest
 import geoprep
-import pdynamo
+from adapters import pdynamo
 
 class PDTestCase(unittest.TestCase):
 
