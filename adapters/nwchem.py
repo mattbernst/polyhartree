@@ -162,7 +162,7 @@ class NWChem(cpinterface.MolecularCalculator):
         @param method: calculation method
         @type method : str
         @param options: additional keyword based control options
-        @type optoins : dict
+        @type options : dict
         @return: a NWChem input for single point energy calculation
         @rtype : str
         """

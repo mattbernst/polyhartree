@@ -130,6 +130,16 @@ class GAMESSTestCase(unittest.TestCase):
         self.assertAlmostEqual(-39.5638132, energies["methyl_radical-uhf"],
                                places=6)
 
+    def test_create_geometry_td_symmetry(self):
+        #test explicit symmetry setting (creation) for GAMESS-US
+        #N.B.: actual specified geometry is wrong for TD -- job will not work!
+        methane = self.G.make_fragment("C")
+        methane.set_basis_name("3-21G")
+        symmetry_group = "TD"
+        options = {"symmetry" : symmetry_group}
+        job = self.C.make_energy_job(methane, "hf:rhf", options=options)
+        self.assertTrue(symmetry_group in job.deck)
+
     def test_bad_input_error(self):
         methane = self.G.make_fragment("C")
         job = self.C.make_energy_job(methane, "semiempirical:pm3")

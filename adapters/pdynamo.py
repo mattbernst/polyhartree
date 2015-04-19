@@ -140,7 +140,7 @@ class PDynamo(cpinterface.MolecularCalculator):
         @param method: calculation method
         @type method : str
         @param options: additional keyword based control options
-        @type optoins : dict
+        @type options : dict
         @return: a pDynamo single point energy calculation job
         @rtype : cpinterface.Job
         """
@@ -162,7 +162,7 @@ class PDynamo(cpinterface.MolecularCalculator):
         @param method: a semiempirical calculation method
         @type method : str
         @param options: additional keyword based control options
-        @type optoins : dict
+        @type options : dict
         @return: a PDynamo semiempirical job
         @rtype : Job
         """

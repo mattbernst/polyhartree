@@ -135,6 +135,7 @@ class GAMESSUS(cpinterface.MolecularCalculator):
 
         options:
          coordinates: "cartesian" or "zmatrix"
+         symmetry: optional symmetry group
 
         @param system: molecular system data to convert to input geometry
         @type system : geoprep.System
@@ -146,6 +147,7 @@ class GAMESSUS(cpinterface.MolecularCalculator):
 
         defaults = {"coordinates" : "cartesian"}
         options = dict(defaults.items() + options.items())
+        symmetry = options.get("symmetry")
         
         coord_choice = self.check_coordinates(options.get("coordinates"))
 
@@ -155,6 +157,12 @@ class GAMESSUS(cpinterface.MolecularCalculator):
             #change now-obsolete CART coordinate designation to
             #synonymous UNIQUE
             geometry=geometry.replace("COORD=CART", "COORD=UNIQUE")
+
+            #set explicit symmetry
+            if symmetry:
+                lines = geometry.split("\n")
+                lines[4] = symmetry
+                geometry = "\n".join(lines)
 
         elif coord_choice == "zmatrix":
             raise ValueError("GAMESS-US zmatrix input currently unsupported")
@@ -173,7 +181,7 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         @param method: calculation method
         @type method : str
         @param options: additional keyword based control options
-        @type optoins : dict
+        @type options : dict
         @return: a GAMESS-US input for single point energy calculation
         @rtype : str
         """

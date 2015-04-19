@@ -141,10 +141,10 @@ end"""
             self.assertTrue(tag in geometry)
 
     def test_create_geometry_c1_symmetry(self):
-        #test generation of geometry block with explicit c1 symmetry
+        #test generation of geometry block with explicit C1 symmetry
         btag = "basis_tag"
         options = {"basis_tag_name" : btag, "property_name" : btag,
-                   "symmetry" : "c1"}
+                   "symmetry" : "C1"}
 
         peroxide = self.G.make_fragment("OO")
         peroxide.set_basis_name("3-21G")
@@ -153,7 +153,7 @@ end"""
         self.C.prepare_basis_data(s, options=options)
         geometry = self.C.create_geometry(s, options=options)
 
-        self.assertTrue("symmetry c1" in geometry)
+        self.assertTrue("symmetry C1" in geometry)
 
 def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.
