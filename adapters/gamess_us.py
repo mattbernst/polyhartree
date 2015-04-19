@@ -24,12 +24,14 @@ class GAMESSUSJob(cpinterface.Job):
                 energy = self.n_number_from_line(line, 0, 2)
 
                 #units are already Hartree
+                self.energy = energy
+
                 #Note: slight differences from other Mopac implementations
                 #because GAMESS-US, as of release 1 MAY 2013 (R1),
                 #treats the Hartree as 27.211652 eV whereas current accepted
                 #value is 27.211385 eV (see value TOHART in GAMESS mpcint.src)
-                self.energy = energy
-                self.log_once("NOTE: energies from semiempirical methods are not directly comparable to ab initio energies")
+                if self.extras.get("semiempirical"):
+                    self.log_once("NOTE: energies from semiempirical methods are not directly comparable to ab initio energies")
 
     def extract_heat_of_formation(self, data, options={}):
         """Get heat of formation from log file and store it
@@ -180,6 +182,11 @@ class GAMESSUS(cpinterface.MolecularCalculator):
 
         self.check_method(method)
         if method.startswith("semiempirical"):
+            try:
+                options["extras"]["semiempirical"] = True
+            except KeyError:
+                options["extras"] = {"semiempirical" : True}
+                
             return self.make_semiempirical_job(system, method, "ENERGY",
                                                options=options)
 
@@ -284,7 +291,8 @@ class GAMESSUS(cpinterface.MolecularCalculator):
 
         deck = "\n".join(joblines)
 
-        job = GAMESSUSJob(deck=deck, system=system)
+        job = GAMESSUSJob(deck=deck, system=system,
+                          extras=options.get("extras", {}))
         return job
 
     def prepare_basis_data(self, system, options={}):
