@@ -333,7 +333,7 @@ class GAMESSUS(cpinterface.MolecularCalculator):
                 add_new_block = True
 
             basis_index = ubb[element].index(basis_element)
-            basis_alias = "{0}BAS{1}".format(element, basis_index)
+            basis_alias = "{0}{1}".format(element, basis_index)
             basis_names.append(basis_alias)
             comment = "{0} {1}".format(element, basis_name)
             comments.append(comment)

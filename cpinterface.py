@@ -18,7 +18,7 @@ class Messages(object):
             self.messages.append(msg)
 
 class Job(Utility, Messages):
-    def __init__(self, deck="", system=None, runstate="begin"):
+    def __init__(self, deck="", system=None, runstate="begin", extras={}):
         #states: begin, running, complete, error
         self.runstate = runstate
         self.system = system
@@ -29,6 +29,7 @@ class Job(Utility, Messages):
         self.heat_of_formation = None
         self.geometry = None
         self.messages = []
+        self.extras = extras
 
     def run_local(self, options={}):
         raise NotImplementedError

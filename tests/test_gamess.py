@@ -146,7 +146,7 @@ class GAMESSTestCase(unittest.TestCase):
         #verify splitting of long directives so as to comfortably fit within
         #the 80 character per line limit of GAMESS-US
         maxlen = 50
-        line = " $BASIS basnam(1)=ClBAS0, AsBAS0, ClBAS0, CBAS0, CBAS0, ClBAS0, HBAS0, HBAS0 $END"
+        line = " $BASIS basnam(1)=Cl0, As0, Cl0, C0, C0, Cl0, H0, Cl1 $END"
         pieces, begin, end = self.C.reformat_long_line(line, " $BASIS", "$END",
                                                        maxlen=maxlen)
         for piece in pieces:
@@ -157,7 +157,7 @@ class GAMESSTestCase(unittest.TestCase):
         #should generate one basis set assignment for oxygen and two for
         #hydrogen, since one hydrogen gets assigned a different basis
         expected_comments = "!Basis set assignments:\n!\tO 3-21G\n!\tH 6-31G\n!\tH 3-21G"
-        expected_labels = ["$HBAS0", "$HBAS1", "$OBAS0"]
+        expected_labels = ["$H0", "$H1", "$O0"]
 
         water = self.G.make_fragment("O")
         water.set_basis_name("3-21G")
