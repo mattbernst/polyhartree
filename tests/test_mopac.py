@@ -88,8 +88,8 @@ class MOPACTestCase(unittest.TestCase):
         #N.B.: The generated input file would actually run in practice,
         #rather contrary to the Mopac 7 manual's parameterization information,
         #but it seems best to err on the side of caution.
-        SbCl3 = self.G.make_system("Cl[Sb](Cl)Cl")
-        self.assertRaises(ValueError, self.C.make_energy_job, SbCl3,
+        stibine = self.G.make_system("[SbH3]")
+        self.assertRaises(ValueError, self.C.make_energy_job, stibine,
                           "semiempirical:mindo/3")
 
 def runSuite(cls, verbosity=2, name=None):
