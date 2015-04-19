@@ -26,6 +26,7 @@ class System(object):
 
         self.explicit_spin = spin
         self.explicit_title = title
+        self.explicit_atom_properties = {}
 
     @property
     def charge(self):
@@ -122,22 +123,63 @@ class System(object):
         return atoms
 
     def atom_properties(self, name):
-        """Get named atom properties across all fragments in the system.
+        """Get named atom properties from explicit system properties or from
+        the underlying fragments in the system.
 
-        @return: per-atom properties across all atoms in fragments
+        @return: per-atom properties across all atoms
         @rtype : list
         """
 
-        properties = []
+        fragment_props = []
         for f in self.fragments:
             try:
                 p = f.atom_properties[name]
             except KeyError:
                 p = [None] * len(f.atoms)
                 
-            properties += p
+            fragment_props += p
+
+        e_props = self.explicit_atom_properties.get(name,
+                                                    [None] * len(self.atoms))
+        properties = []
+
+        #try to get properties from explicit system-level values first, then
+        #attempt to fill in from fragment properties if explicit data absent
+        for k in range(len(e_props)):
+            e_p = e_props[k]
+            if e_p is not None:
+                properties.append(e_p)
+            else:
+                f_p = fragment_props[k]
+                properties.append(f_p)
 
         return properties
+
+    def set_properties(self, name, selection, properties):
+        """Assign properties grouped by name to selected atoms. Any unselected
+        atoms will get a None property.
+
+        @param name: name of property group, e.g. "basis_name", "fukui_mu_n(+)"
+        @type name : str
+        @param selection: atom indices
+        @type selection : list
+        @param properties: any sequence of values, length same as selection
+        @type properties : list
+        """
+
+        slen = len(selection)
+        plen = len(properties)
+        if slen != plen:
+            raise ValueError("Got selection of {0} atoms but {1} properties: {2} {3}".format(slen, plen, selection, properties))
+
+        #initialize property group with a list of None
+        if name not in self.explicit_atom_properties:
+            self.explicit_atom_properties[name] = [None] * len(self.atoms)
+
+        for j in range(slen):
+            k = selection[j]
+            value = properties[j]
+            self.explicit_atom_properties[name][k] = value
 
     def select(self, smarts, hydrogen="include"):
         """Select atoms matching a SMARTS pattern with different treatments

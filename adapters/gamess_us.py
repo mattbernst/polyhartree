@@ -307,6 +307,7 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         @rtype : dict
         """
 
+        property_name = options["basis_tag_name"]
         ubb = {}
         basis_names = []
         basis_blocks = []
@@ -358,6 +359,10 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         r = {"ispher" : ispher, "basis_control" : new_bn,
              "basis_data" : blocks, "comments" : comments}
 
+        #set basis tag for each atom
+        system.set_properties(property_name, range(len(system.atoms)),
+                              basis_names)
+
         return r
 
     def make_hf_job(self, system, method, runtyp, options={}):
@@ -377,7 +382,8 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         @rtype : Job
         """
 
-        defaults = {"reference" : "rhf", "scf_iterations" : 200}
+        defaults = {"reference" : "rhf", "scf_iterations" : 200,
+                    "basis_tag_name" : "basis_tag"}
         options = dict(defaults.items() + options.items())
 
         self.check_method(method)
@@ -391,7 +397,7 @@ class GAMESSUS(cpinterface.MolecularCalculator):
             self.log("Forcing UHF for multiplicity {0}".format(system.spin))
             reference = "UHF"
 
-        bd = self.prepare_basis_data(system)
+        bd = self.prepare_basis_data(system, options=options)
 
         control_options = {"runtyp" : runtyp, "mult" : system.spin,
                            "icharg" : system.charge, "reference" : reference,

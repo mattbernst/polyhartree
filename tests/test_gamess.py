@@ -153,22 +153,26 @@ class GAMESSTestCase(unittest.TestCase):
             self.assertTrue(len(piece) <= maxlen)
 
     def test_prepare_basis_data(self):
-        #test generation of inline basis set data with water
+        #test generation of inline basis set data with hydrogen peroxide
         #should generate one basis set assignment for oxygen and two for
         #hydrogen, since one hydrogen gets assigned a different basis
-        expected_comments = "!Basis set assignments:\n!\tO 3-21G\n!\tH 6-31G\n!\tH 3-21G"
+        btag = "basis_tag"
         expected_labels = ["$H0", "$H1", "$O0"]
+        expected_tags = ["O0", "O0", "H0", "H1"]
 
-        water = self.G.make_fragment("O")
-        water.set_basis_name("3-21G")
-        hydrogens = water.select("[O]", hydrogen="only")
-        water.set_basis_name("6-31G", hydrogens[:1])
+        peroxide = self.G.make_fragment("OO")
+        peroxide.set_basis_name("3-21G")
+        hydrogens = peroxide.select("[O]", hydrogen="only")
+        peroxide.set_basis_name("6-31G", hydrogens[:1])
         
-        s = geoprep.System([water])
-        job = self.C.make_energy_job(s, "hf:rhf")
-        self.assertTrue(expected_comments in job.deck)
+        s = geoprep.System([peroxide])
+        b = self.C.prepare_basis_data(s, options={"basis_tag_name" : btag})
+        
         for label in expected_labels:
-            self.assertTrue(label in job.deck)
+            self.assertTrue(label in b["basis_data"])
+
+        basis_tags = s.atom_properties(btag)
+        self.assertEqual(expected_tags, basis_tags)
 
 
 def runSuite(cls, verbosity=2, name=None):

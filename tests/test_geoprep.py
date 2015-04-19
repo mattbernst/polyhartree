@@ -162,7 +162,7 @@ class GTestCase(unittest.TestCase):
         triethylamine.set_basis_name("cc-pVTZ", selection=ethyl_carbons)
         self.assertEqual(expected, triethylamine.atom_properties["basis_name"])
 
-    def test_system_atom_properties(self):
+    def test_system_atom_properties_basic(self):
         #test atom property retrieval across all fragments in a system, using
         #basis set names as properties
         expected = ["cc-pVDZ", "cc-pVDZ", "cc-pVDZ", "cc-pVDZ", "cc-pVDZ",
@@ -179,6 +179,32 @@ class GTestCase(unittest.TestCase):
         methane = self.G.make_fragment("C")
 
         s = geoprep.System([propane, ethane, methane])
+        props = s.atom_properties("basis_name")
+        self.assertEqual(expected, props)
+
+    def test_system_atom_properties_mixed(self):
+        #test atom property retrieval with a mixture of system-level
+        #properties and fragment-level properties
+        expected = ["cc-pVDZ", "cc-pVDZ", "cc-pVDZ", "cc-pVDZ", "cc-pVDZ",
+                    "cc-pVDZ", "cc-pVDZ", "cc-pVDZ", "cc-pVDZ", "cc-pVDZ",
+                    "cc-pVDZ",
+                    "cc-pVQZ", "cc-pVQZ", "cc-pVQZ", "cc-pVQZ", "cc-pVQZ",
+                    "cc-pVQZ", "cc-pVQZ", "cc-pVTZ",
+                    "cc-pVTZ", "cc-pVTZ", "cc-pVTZ", "cc-pVTZ", "cc-pVTZ"]
+        
+        propane = self.G.make_fragment("CCC")
+        propane.set_basis_name("cc-pVDZ")
+        ethane = self.G.make_fragment("CC")
+        ethane.set_basis_name("cc-pVQZ")
+        methane = self.G.make_fragment("C")
+
+        s = geoprep.System([propane, ethane, methane])
+
+        #overlay a different basis for the last 6 atoms, which will take
+        #precedence over fragment-level settings
+        s_props = [None] * len(s.atoms)
+        s_indexes = range(len(s.atoms))[-6:]
+        s.set_properties("basis_name", s_indexes, ["cc-pVTZ"] * 6)
         props = s.atom_properties("basis_name")
         self.assertEqual(expected, props)
 
