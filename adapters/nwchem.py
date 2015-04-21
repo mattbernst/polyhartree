@@ -26,13 +26,19 @@ class NWChemJob(cpinterface.Job):
                 #units are already Hartree
                 self.energy = energy
 
-    def run_local(self, options={}):
-        """Run a NWChem job using mpirun, on the local host.
+    def run(self, host="localhost", options={}):
+        """Run a NWChem job on the given host.
 
+        @param host: name of host where job should execute
+        @type host : str
         @param options: ignored
         @type options : dict
         """
-        
+
+        if host != "localhost":
+            raise NotImplementedError("Remote job execution not yet ready")
+
+        run_params = self.get_run_config(host)
         workdir = self.backend + "-" + str(uuid.uuid1()).replace('-', '')[:16]
         path = "/tmp/{0}/".format(workdir)
         os.makedirs(path)
@@ -44,8 +50,9 @@ class NWChemJob(cpinterface.Job):
         with open(abs_file, "w") as deckfile:
             deckfile.write(self.deck)
 
-        cmd = "cd {0} && mpirun -np 1 nwchem {1} &> {2}".format(path, dat_file,
-                                                                log_file)
+        rp = {"path" : path, "input" : dat_file, "output" : log_file,
+              "ncores" : run_params["cores"]}
+        cmd = run_params["cli"].format(**rp)
         
         stdout, returncode = self.execute(cmd, cwd=path, bash_shell=True)
         self.stdout = stdout

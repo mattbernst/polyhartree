@@ -46,7 +46,7 @@ class PDTestCase(unittest.TestCase):
         for implementation in sorted(self.implementations.keys()):
             k = self.implementations[implementation]
             job = k.make_energy_job(geometry, method)
-            job.run_local()
+            job.run()
 
             result = {"energy" : job.energy, "HoF" : job.heat_of_formation,
                       "implementation" : implementation}

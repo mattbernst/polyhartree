@@ -53,17 +53,23 @@ class PDynamoJob(cpinterface.Job):
                 hof = self.n_number_from_line(line, 0, 1)
                 self.heat_of_formation = self.kcalm_to_au(hof)
         
-    def run_local(self, options={}):
-        """Run pdynamo using the the pdynamo-runner.py script on the local
+    def run(self, host="localhost", options={}):
+        """Run pdynamo using the the pdynamo-runner.py script on the given
         host. The pdynamo-runner.py gets geometry from an .xyz file and
         everything else from command line arguments. This runner needs to copy
         the geometry and the runner to the working directory before executing
         the runner.
 
+        @param host: name of host where job should execute
+        @type host : str
         @param options: ignored
         @type options : dict
         """
-        
+
+        if host != "localhost":
+            raise NotImplementedError("Remote job execution not yet ready")
+
+        run_params = self.get_run_config(host)
         workdir = self.backend + "-" + str(uuid.uuid1()).replace('-', '')[:16]
         path = "/tmp/{0}/".format(workdir)
         os.makedirs(path)
@@ -80,15 +86,10 @@ class PDynamoJob(cpinterface.Job):
         self.deck += " --xyzfile={0} --outfile={1}".format(xyzfull, log_file)
 
         #copy runner to working directory
-        try:
-            here = os.environ["POLYHARTREE_ROOT"]
-            src = "{0}/pdynamo-runner.py".format(here)
-            dst = path + "pdynamo-runner.py"
-            shutil.copy(src, dst)
-        except KeyError:
-            msg = "You need to set the environment variable POLYHARTREE_ROOT to point to the top level polyhartree directory, e.g. export POLYHARTREE_ROOT=/home/steve/polyhartree\n"
-            sys.stderr.write(msg)
-            sys.exit(1)
+        here = os.path.dirname(os.path.dirname(__file__))
+        src = "{0}/pdynamo-runner.py".format(here)
+        dst = path + "pdynamo-runner.py"
+        shutil.copy(src, dst)
             
         cmd = self.deck
         

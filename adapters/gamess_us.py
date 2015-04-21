@@ -8,7 +8,7 @@ import cpinterface
 class GAMESSUSJob(cpinterface.Job):
     def __init__(self, *args, **kw):
         super(GAMESSUSJob, self).__init__(*args, **kw)
-        self.backend = "gamess-us"
+        self.backend = "gamess_us"
 
     def extract_last_energy(self, data, options={}):
         """Get last energy message from log file and store it as energy.
@@ -48,13 +48,19 @@ class GAMESSUSJob(cpinterface.Job):
                 hof = self.n_number_from_line(line, 0, 1)
                 self.heat_of_formation = self.kcalm_to_au(hof)
 
-    def run_local(self, options={}):
-        """Run a GAMESS-US job using the rungms script, on the local host.
+    def run(self, host="localhost", options={}):
+        """Run a GAMESS-US job on the given host.
 
+        @param host: name of host where job should execute
+        @type host : str
         @param options: ignored
         @type options : dict
         """
-        
+
+        if host != "localhost":
+            raise NotImplementedError("Remote job execution not yet ready")
+
+        run_params = self.get_run_config(host)
         workdir = self.backend + "-" + str(uuid.uuid1()).replace('-', '')[:16]
         path = "/tmp/{0}/".format(workdir)
         os.makedirs(path)
@@ -66,18 +72,24 @@ class GAMESSUSJob(cpinterface.Job):
         with open(abs_file, "w") as deckfile:
             deckfile.write(self.deck)
 
-        cmd = "cd {0} && rungms {1} &> {2}".format(path, deck_hash, log_file)
+        rp = {"path" : path, "input" : deck_hash, "output" : log_file,
+              "ncores" : run_params["cores"]}
+        cmd = run_params["cli"].format(**rp)
         
         stdout, returncode = self.execute(cmd, cwd=path, bash_shell=True)
         self.stdout = stdout
 
+        errors = ["FATAL ERROR", "TYPING ERROR",
+                  "GAMESS TERMINATED -ABNORMALLY-"]
         with open(log_file, "r") as lfile:
             self.logdata = lfile.read()
 
-            if "FATAL ERROR DETECTED" in self.logdata.upper():
-                self.runstate = "error"
+            logupper = self.logdata.upper()
+            for e in errors:
+                if e in logupper:
+                    self.runstate = "error"
                 
-            else:
+            if self.runstate != "error":
                 self.extract_last_energy(self.logdata)
                 self.extract_heat_of_formation(self.logdata)
                 self.runstate = "complete"

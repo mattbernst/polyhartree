@@ -52,13 +52,19 @@ class Mopac7Job(cpinterface.Job):
                 hof = self.n_number_from_line(line, 0, 1)
                 self.heat_of_formation = self.kcalm_to_au(hof)
         
-    def run_local(self, options={}):
-        """Run MOPAC7 on the local host using the run_mopac7 script.
+    def run(self, host="localhost", options={}):
+        """Run MOPAC7 on the given host using the run_mopac7 script.
 
+        @param host: name of host where job should execute
+        @type host : str
         @param options: ignored
         @type options : dict
         """
-        
+
+        if host != "localhost":
+            raise NotImplementedError("Remote job execution not yet ready")
+            
+        run_params = self.get_run_config(host)
         workdir = self.backend + "-" + str(uuid.uuid1()).replace('-', '')[:16]
         path = "/tmp/{0}/".format(workdir)
         os.makedirs(path)
@@ -70,7 +76,8 @@ class Mopac7Job(cpinterface.Job):
             deckfile.write(self.deck)
 
         #N.B.: run_mopac7 does not like long paths!
-        cmd = "run_mopac7 {0}".format(abs_file.split(".dat")[0])
+        rp = {"input" : abs_file.split(".dat")[0]}
+        cmd = run_params["cli"].format(**rp)
         
         stdout, returncode = self.execute(cmd)
         self.stdout = stdout

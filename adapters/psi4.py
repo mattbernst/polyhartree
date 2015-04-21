@@ -26,13 +26,19 @@ class Psi4Job(cpinterface.Job):
                 #units are already Hartree
                 self.energy = energy
 
-    def run_local(self, options={}):
+    def run(self, host="localhost", options={}):
         """Run a Psi4 job using psi script, on the local host.
 
+        @param host: name of host where job should execute
+        @type host : str
         @param options: ignored
         @type options : dict
         """
-        
+
+        if host != "localhost":
+            raise NotImplementedError("Remote job execution not yet ready")
+
+        run_params = self.get_run_config(host)
         workdir = self.backend + "-" + str(uuid.uuid1()).replace('-', '')[:16]
         path = "/tmp/{0}/".format(workdir)
         os.makedirs(path)
@@ -44,10 +50,10 @@ class Psi4Job(cpinterface.Job):
         with open(abs_file, "w") as deckfile:
             deckfile.write(self.deck)
 
-        #N.B. psi4 build from git is currently screwed up and anaconda tries
-        #to take over all things Python-related... for now, hack around by
-        #activating anaconda for psi4 binary package only
-        cmd = "source ~/.bashrc-anaconda && cd {0} && psi4 -i {1} -o {2}".format(path, dat_file, log_file)
+        rp = {"path" : path, "input" : dat_file, "output" : log_file,
+              "ncores" : run_params["cores"]}
+        cmd = run_params["cli"].format(**rp)
+        #cmd = "source ~/.bashrc-anaconda && cd {0} && psi4 -i {1} -o {2}".format(path, dat_file, log_file)
         
         stdout, returncode = self.execute(cmd, cwd=path, bash_shell=True)
         self.stdout = stdout

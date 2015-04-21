@@ -1,5 +1,7 @@
 # -*- coding:utf-8 mode:python; tab-width:4; indent-tabs-mode:nil; py-indent-offset:4 -*-
+import os
 import sys
+import yaml
 from sharedutilities import Utility
 import geoprep
 
@@ -31,7 +33,45 @@ class Job(Utility, Messages):
         self.messages = []
         self.extras = extras
 
-    def run_local(self, options={}):
+    def get_run_config(self, host):
+        """Get the run configuration for the backend used by this job.
+        If config/runners.yaml is present it will take precedence over
+        the default config/runners-default.yaml.
+
+        @param host: name of host to use for job execution
+        @type host : str
+        @return: backend run configuration
+        @rtype : dict
+        """
+
+        #use location of script to find location of configs 
+        here = os.path.dirname(__file__)
+        data = None
+        
+        for fname in ["config/runners.yaml", "config/runners-default.yaml"]:
+            try:
+                with open(fname) as infile:
+                    data = yaml.safe_load(infile)
+                    break
+            except IOError:
+                continue
+
+        if data is None:
+            raise IOError("Unable to locate config file runners.yaml or runners-default.yaml")
+        configs = data[host]
+        config = None
+        for c in configs:
+            eflag = c["enabled"].lower()
+            if c["program"] == self.backend and eflag in ("y", "true"):
+                config = c
+                break
+
+        if config is None:
+            raise KeyError("Could not find enabled backend for {0} on {1}".format(self.backend, host))
+            
+        return config
+
+    def run(self, host="localhost", options={}):
         raise NotImplementedError
 
     def extract_last_energy(self, data, options={}):

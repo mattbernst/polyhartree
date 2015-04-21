@@ -36,7 +36,7 @@ class Psi4TestCase(unittest.TestCase):
         methane = self.G.make_fragment("C")
         methane.set_basis_name("3-21G")
         job = self.C.make_energy_job(methane, "hf:rhf")
-        job.run_local()
+        job.run()
         self.assertAlmostEqual(-39.976642, job.energy, places=5)
 
     def test_energy_rohf_uhf_scf_methane(self):
@@ -53,7 +53,7 @@ class Psi4TestCase(unittest.TestCase):
             for reference in ["uhf", "rohf"]:
                 j = self.C.make_energy_job(fragment,
                                            "hf:{0}".format(reference))
-                j.run_local()
+                j.run()
                 name = "{0}-{1}".format(key, reference)
                 jobs[name] = j
 
@@ -75,7 +75,7 @@ class Psi4TestCase(unittest.TestCase):
         job.deck = job.deck.replace("scf", "sfc")
 
         self.assertEqual("begin", job.runstate)
-        job.run_local()
+        job.run()
 
         self.assertEqual("error", job.runstate)
 
