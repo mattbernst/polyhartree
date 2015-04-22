@@ -15,7 +15,7 @@ ELEMENTS = ["H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne",
             "Md", "No", "Lr"]
 
 class Utility(object):
-    def execute(self, cmd, stdin_data="", bash_shell=False, cwd=None):
+    def execute_local(self, cmd, stdin_data="", bash_shell=False, cwd=None):
         """Execute a command with subprocess.Popen, optionally supplying
         data to the command through stdin, and return the results.
 

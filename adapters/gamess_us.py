@@ -73,7 +73,7 @@ class GAMESSUSJob(cpinterface.Job):
               "ncores" : run_params["cores"]}
         cmd = run_params["cli"].format(**rp)
         
-        stdout, returncode = self.execute(cmd, cwd=path, bash_shell=True)
+        stdout, returncode = self.execute(cmd, host, cwd=path, bash_shell=True)
         self.stdout = stdout
 
         errors = ["FATAL ERROR", "TYPING ERROR",

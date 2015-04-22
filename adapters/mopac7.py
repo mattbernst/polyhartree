@@ -76,7 +76,7 @@ class Mopac7Job(cpinterface.Job):
         rp = {"input" : abs_file.split(".dat")[0]}
         cmd = run_params["cli"].format(**rp)
         
-        stdout, returncode = self.execute(cmd)
+        stdout, returncode = self.execute(cmd, host)
         self.stdout = stdout
         if "DUE TO PROGRAM BUG" in stdout:
             self.runstate = "error"

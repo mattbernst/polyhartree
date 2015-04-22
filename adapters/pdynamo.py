@@ -91,7 +91,7 @@ class PDynamoJob(cpinterface.Job):
             
         cmd = self.deck
         
-        stdout, returncode = self.execute(cmd)
+        stdout, returncode = self.execute(cmd, host)
         
         self.stdout = stdout
 

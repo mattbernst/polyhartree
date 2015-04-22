@@ -115,6 +115,23 @@ class Job(Utility, Messages):
 
         return data
 
+    def execute(self, cmd, host, stdin_data="", bash_shell=False, cwd=None):
+        """Execute a command. Run locally if host is localhost or over ansible
+        otherwise.
+
+        @return: output, return code
+        @rtype : tuple
+        """
+
+        if host == "localhost":
+            output, rcode = self.execute_local(cmd, stdin_data=stdin_data,
+                                               bash_shell=bash_shell, cwd=cwd)
+
+        else:
+            pass
+
+        return (output, rcode)
+
     def extract_last_energy(self, data, options={}):
         raise NotImplementedError
 

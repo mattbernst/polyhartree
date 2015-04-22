@@ -273,7 +273,7 @@ endif
         """
 
         cmd = "diff {0} {1}".format(reference_file, trial_file)
-        diff = self.execute(cmd).split("\n")
+        diff = self.execute_local(cmd).split("\n")
 
         # lines starting with < are differences in reference file,
         # lines starting with > are differences in trial file,
