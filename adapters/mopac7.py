@@ -1,7 +1,6 @@
 # -*- coding:utf-8 mode:python; tab-width:4; indent-tabs-mode:nil; py-indent-offset:4 -*-
 
 import hashlib
-import os
 import uuid
 import cpinterface
 
@@ -67,13 +66,11 @@ class Mopac7Job(cpinterface.Job):
         run_params = self.get_run_config(host)
         workdir = self.backend + "-" + str(uuid.uuid1()).replace('-', '')[:16]
         path = "/tmp/{0}/".format(workdir)
-        os.makedirs(path)
 
         deck_hash = hashlib.sha1(self.deck).hexdigest()[:10]
         dat_file = "{0}.dat".format(deck_hash)
         abs_file = path + dat_file
-        with open(abs_file, "w") as deckfile:
-            deckfile.write(self.deck)
+        self.write_file(self.deck, abs_file, host)
 
         #N.B.: run_mopac7 does not like long paths!
         rp = {"input" : abs_file.split(".dat")[0]}

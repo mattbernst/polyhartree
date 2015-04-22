@@ -74,6 +74,28 @@ class Job(Utility, Messages):
     def run(self, host="localhost", options={}):
         raise NotImplementedError
 
+    def write_file(self, data, filename, host):
+        """Write the given data to filename on host. Also create the
+        destination directory first if it does not yet exist. If host is
+        anything other than localhost, use ansible for remote write.
+
+        @param data: data to write
+        @type data : str
+        @param filename: name of file to write, with absolute path prepended
+        @type filename : str
+        """
+
+        if host == "localhost":
+            dirname = os.path.dirname(filename)
+            if not os.path.exists(dirname):
+                os.makedirs(dirname)
+
+            with open(filename, "w") as outfile:
+                outfile.write(data)
+
+        else:
+            pass
+
     def extract_last_energy(self, data, options={}):
         raise NotImplementedError
 

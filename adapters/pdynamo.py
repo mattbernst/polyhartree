@@ -72,14 +72,12 @@ class PDynamoJob(cpinterface.Job):
         run_params = self.get_run_config(host)
         workdir = self.backend + "-" + str(uuid.uuid1()).replace('-', '')[:16]
         path = "/tmp/{0}/".format(workdir)
-        os.makedirs(path)
-        
+                
         #write .xyz geometry file to working directory
         xyzdata = self.system.write("xyz")
         xyzfile = "{0}.xyz".format(workdir)
         xyzfull = "{0}/{1}".format(path, xyzfile)
-        with open(xyzfull, "w") as geofile:
-            geofile.write(xyzdata)
+        self.write_file(xyzdata, xyzfull, host)
 
         #add geometry file specification to command line
         log_file = path + xyzfile.replace(".xyz", ".log")
