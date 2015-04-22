@@ -95,10 +95,9 @@ class PDynamoJob(cpinterface.Job):
         
         self.stdout = stdout
 
-        with open(log_file, "r") as lfile:
-            self.logdata = lfile.read()
-            self.extract_last_energy(self.logdata)
-            self.extract_heat_of_formation(self.logdata)
+        self.logdata = self.read_file(log_file, host)
+        self.extract_last_energy(self.logdata)
+        self.extract_heat_of_formation(self.logdata)
 
         self.runstate = "complete"
 

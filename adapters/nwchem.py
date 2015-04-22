@@ -54,15 +54,14 @@ class NWChemJob(cpinterface.Job):
         stdout, returncode = self.execute(cmd, cwd=path, bash_shell=True)
         self.stdout = stdout
 
-        with open(log_file, "r") as lfile:
-            self.logdata = lfile.read()
+        self.logdata = self.read_file(log_file, host)
 
-            if "There is an error in the input" in self.logdata:
-                self.runstate = "error"
-                
-            else:
-                self.extract_last_energy(self.logdata)
-                self.runstate = "complete"
+        if "There is an error in the input" in self.logdata:
+            self.runstate = "error"
+
+        else:
+            self.extract_last_energy(self.logdata)
+            self.runstate = "complete"
 
 class NWChem(cpinterface.MolecularCalculator):
     def __init__(self, *args, **kw):

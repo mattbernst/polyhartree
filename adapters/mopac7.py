@@ -83,10 +83,10 @@ class Mopac7Job(cpinterface.Job):
             return
 
         log_file = abs_file.replace(".dat", ".log")
-        with open(log_file, "r") as lfile:
-            self.logdata = lfile.read()
-            self.extract_last_energy(self.logdata)
-            self.extract_heat_of_formation(self.logdata)
+
+        self.logdata = self.read_file(log_file, host)
+        self.extract_last_energy(self.logdata)
+        self.extract_heat_of_formation(self.logdata)
 
         self.runstate = "complete"
 

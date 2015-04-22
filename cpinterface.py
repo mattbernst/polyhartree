@@ -90,11 +90,30 @@ class Job(Utility, Messages):
             if not os.path.exists(dirname):
                 os.makedirs(dirname)
 
-            with open(filename, "w") as outfile:
+            with open(filename, "wb") as outfile:
                 outfile.write(data)
 
         else:
             pass
+
+    def read_file(self, filename, host):
+        """Read and return the data from filename on host. If the data is on
+        a host other than localhost, copy it to the local machine first.
+
+        @param filename: name of file to read, with absolute path prepended
+        @type filename : str
+        @return: file contents
+        @rtype : str
+        """
+
+        if host == "localhost":
+            with open(filename, "rb") as infile:
+                data = infile.read()
+
+        else:
+            pass
+
+        return data
 
     def extract_last_energy(self, data, options={}):
         raise NotImplementedError

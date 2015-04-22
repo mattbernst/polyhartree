@@ -50,20 +50,18 @@ class Psi4Job(cpinterface.Job):
         rp = {"path" : path, "input" : dat_file, "output" : log_file,
               "ncores" : run_params["cores"]}
         cmd = run_params["cli"].format(**rp)
-        #cmd = "source ~/.bashrc-anaconda && cd {0} && psi4 -i {1} -o {2}".format(path, dat_file, log_file)
-        
+                
         stdout, returncode = self.execute(cmd, cwd=path, bash_shell=True)
         self.stdout = stdout
 
-        with open(log_file, "r") as lfile:
-            self.logdata = lfile.read()
+        self.logdata = self.read_file(log_file, host)
 
-            if "PsiException:" in self.logdata:
-                self.runstate = "error"
-                
-            else:
-                self.extract_last_energy(self.logdata)
-                self.runstate = "complete"
+        if "PsiException:" in self.logdata:
+            self.runstate = "error"
+
+        else:
+            self.extract_last_energy(self.logdata)
+            self.runstate = "complete"
 
 class Psi4(cpinterface.MolecularCalculator):
     def __init__(self, *args, **kw):

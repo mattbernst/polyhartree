@@ -78,18 +78,17 @@ class GAMESSUSJob(cpinterface.Job):
 
         errors = ["FATAL ERROR", "TYPING ERROR",
                   "GAMESS TERMINATED -ABNORMALLY-"]
-        with open(log_file, "r") as lfile:
-            self.logdata = lfile.read()
+        self.logdata = self.read_file(log_file, host)
+ 
+        logupper = self.logdata.upper()
+        for e in errors:
+            if e in logupper:
+                self.runstate = "error"
 
-            logupper = self.logdata.upper()
-            for e in errors:
-                if e in logupper:
-                    self.runstate = "error"
-                
-            if self.runstate != "error":
-                self.extract_last_energy(self.logdata)
-                self.extract_heat_of_formation(self.logdata)
-                self.runstate = "complete"
+        if self.runstate != "error":
+            self.extract_last_energy(self.logdata)
+            self.extract_heat_of_formation(self.logdata)
+            self.runstate = "complete"
 
 class GAMESSUS(cpinterface.MolecularCalculator):
     def __init__(self, *args, **kw):
