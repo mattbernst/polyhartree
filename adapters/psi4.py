@@ -34,9 +34,6 @@ class Psi4Job(cpinterface.Job):
         @type options : dict
         """
 
-        if host != "localhost":
-            raise NotImplementedError("Remote job execution not yet ready")
-
         run_params = self.get_run_config(host)
         workdir = self.backend + "-" + str(uuid.uuid1()).replace('-', '')[:16]
         path = "/tmp/{0}/".format(workdir)

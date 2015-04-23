@@ -60,9 +60,6 @@ class Mopac7Job(cpinterface.Job):
         @type options : dict
         """
 
-        if host != "localhost":
-            raise NotImplementedError("Remote job execution not yet ready")
-            
         run_params = self.get_run_config(host)
         workdir = self.backend + "-" + str(uuid.uuid1()).replace('-', '')[:16]
         path = "/tmp/{0}/".format(workdir)
@@ -73,10 +70,10 @@ class Mopac7Job(cpinterface.Job):
         self.write_file(self.deck, abs_file, host)
 
         #N.B.: run_mopac7 does not like long paths!
-        rp = {"input" : abs_file.split(".dat")[0]}
+        rp = {"path" : path, "input" : abs_file.split(".dat")[0]}
         cmd = run_params["cli"].format(**rp)
         
-        stdout, returncode = self.execute(cmd, host)
+        stdout, returncode = self.execute(cmd, host, bash_shell=True)
         self.stdout = stdout
         if "DUE TO PROGRAM BUG" in stdout:
             self.runstate = "error"

@@ -66,32 +66,34 @@ class PDynamoJob(cpinterface.Job):
         @type options : dict
         """
 
-        if host != "localhost":
-            raise NotImplementedError("Remote job execution not yet ready")
-
         run_params = self.get_run_config(host)
         workdir = self.backend + "-" + str(uuid.uuid1()).replace('-', '')[:16]
         path = "/tmp/{0}/".format(workdir)
                 
-        #write .xyz geometry file to working directory
+        #write .xyz geometry file to working directory with runner
         xyzdata = self.system.write("xyz")
         xyzfile = "{0}.xyz".format(workdir)
-        xyzfull = "{0}/{1}".format(path, xyzfile)
+        xyzfull = "{0}{1}".format(path, xyzfile)
         self.write_file(xyzdata, xyzfull, host)
 
-        #add geometry file specification to command line
+        #add geometry file specification and run location to command line
         log_file = path + xyzfile.replace(".xyz", ".log")
-        self.deck += " --xyzfile={0} --outfile={1}".format(xyzfull, log_file)
+        args = {"path" : path, "input" : xyzfull, "output" : log_file}
+        self.deck += " --xyzfile={input} --outfile={output}"
+        self.deck = self.deck.format(**args)
 
         #copy runner to working directory
         here = os.path.dirname(os.path.dirname(__file__))
         src = "{0}/pdynamo-runner.py".format(here)
+        with open(src) as runnerfile:
+            runsource = runnerfile.read()
         dst = path + "pdynamo-runner.py"
-        shutil.copy(src, dst)
+
+        self.write_file(runsource, dst, host)
             
         cmd = self.deck
         
-        stdout, returncode = self.execute(cmd, host)
+        stdout, returncode = self.execute(cmd, host, bash_shell=True)
         
         self.stdout = stdout
 
@@ -200,7 +202,7 @@ class PDynamo(cpinterface.MolecularCalculator):
         #pdynamo-runner.py. In the actual job runner we will add the name
         #of the geometry file, create a shell script, and copy the runner.
         args = " ".join([c for c in controls if c])
-        deck = "python pdynamo-runner.py " + args
+        deck = "cd {path} && python pdynamo-runner.py " + args
 
         job = PDynamoJob(deck=deck, system=system)
 

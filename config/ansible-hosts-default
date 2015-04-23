@@ -1,0 +1,4 @@
+#http://docs.ansible.com/intro_inventory.html#inventory
+#default sample ansible host configuration for 127.0.0.1 alone
+#copy to ansible-hosts and add entries to override this default
+127.0.0.1:22 ansible_connection=ssh ansible_ssh_user=matt

@@ -25,7 +25,7 @@ class NWChemJob(cpinterface.Job):
                 #units are already Hartree
                 self.energy = energy
 
-    def run(self, host="localhost", options={}):
+    def run(self, host="127.0.0.1", options={}):
         """Run a NWChem job on the given host.
 
         @param host: name of host where job should execute
@@ -33,9 +33,6 @@ class NWChemJob(cpinterface.Job):
         @param options: ignored
         @type options : dict
         """
-
-        if host != "localhost":
-            raise NotImplementedError("Remote job execution not yet ready")
 
         run_params = self.get_run_config(host)
         workdir = self.backend + "-" + str(uuid.uuid1()).replace('-', '')[:16]

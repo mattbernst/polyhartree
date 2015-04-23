@@ -32,6 +32,10 @@ class Job(Utility, Messages):
         self.geometry = None
         self.messages = []
         self.extras = extras
+        #use location of script to find location of configs 
+        self.here = os.path.dirname(__file__)
+        #2 days
+        self.timeout = 86400 * 2
 
     def get_run_config(self, host):
         """Get the run configuration for the backend used by this job.
@@ -44,8 +48,6 @@ class Job(Utility, Messages):
         @rtype : dict
         """
 
-        #use location of script to find location of configs 
-        here = os.path.dirname(__file__)
         data = None
         
         for fname in ["config/runners.yaml", "config/runners-default.yaml"]:
@@ -74,6 +76,41 @@ class Job(Utility, Messages):
     def run(self, host="localhost", options={}):
         raise NotImplementedError
 
+    def ansible_run(self, module_name, module_args, host, complex_args={}):
+        """Synchronously run an ansible command on a single host.
+
+        N.B.: You may need to edit ~/.bashrc on the machines where you are
+        running chemistry programs, if your .bashrc contains important setup
+        logic like extending PATH or setting other environment varables.
+        On most distributions the .bashrc is largely disabled when a
+        non-interactive shell is being executed. Ansible foolishly does not
+        permit you to run shell commands in full interactive mode.
+
+        Look in .bashrc for a line like this:
+        # If not running interactively, don't do anything
+
+        and then comment out the logic below it.
+
+        @param module_name: the ansible module to run
+        @type module_name : str
+        @param module_args: the ansible module arguments to pass
+        @type module_args : dict
+        @param host: the host to target with ansible
+        @type host : str
+        @param complex_args: more optional arguments to pass to the runner
+        @type complex_args : dict
+        """
+
+        self.load_ansible()
+        run_args = {"module_name" : module_name, "module_args" : module_args,
+                    "forks" : 1, "subset" : host, "timeout" : self.timeout,
+                    "inventory" : self.inventory,
+                    "complex_args" : complex_args}
+
+        r = ansible.runner.Runner(**run_args)
+        result = r.run()
+        return result
+
     def write_file(self, data, filename, host):
         """Write the given data to filename on host. Also create the
         destination directory first if it does not yet exist. If host is
@@ -94,7 +131,22 @@ class Job(Utility, Messages):
                 outfile.write(data)
 
         else:
-            pass
+            #copy departing file to temporary location instead of directly
+            #passing data to ansible as 'content' parameter, because 'content'
+            #tries to examine data and can get confused
+            dirname = os.path.dirname(filename) + "/departing/"
+            if not os.path.exists(dirname):
+                os.makedirs(dirname)
+
+            localname = dirname + os.path.basename(filename)
+            with open(localname, "wb") as tempfile:
+                tempfile.write(data)
+                
+            mkdir_args = {"path" : os.path.dirname(filename),
+                          "state" : "directory"}
+            r1 = self.ansible_run("file", mkdir_args, host)
+            copy_args = {"src" : localname, "dest" : filename}
+            r2 = self.ansible_run("copy", copy_args, host)
 
     def read_file(self, filename, host):
         """Read and return the data from filename on host. If the data is on
@@ -111,7 +163,15 @@ class Job(Utility, Messages):
                 data = infile.read()
 
         else:
-            pass
+            dirname = os.path.dirname(filename) + "/arriving/"
+            if not os.path.exists(dirname):
+                os.makedirs(dirname)
+
+            destination = dirname + os.path.basename(filename)
+            args = {"src" : filename, "dest" : destination, "flat" : True}
+            self.ansible_run("fetch", args, host)
+            with open(destination, "rb") as infile:
+                data = infile.read()
 
         return data
 
@@ -128,9 +188,37 @@ class Job(Utility, Messages):
                                                bash_shell=bash_shell, cwd=cwd)
 
         else:
-            pass
+            output, rcode = "", 0
+            self.ansible_run("shell", cmd, host,
+                             complex_args={"executable" : "/bin/bash"})
 
         return (output, rcode)
+
+    def load_ansible(self):
+        """Import ansible modules just before executing remote tasks. This
+        way someone who just wants to run locally has one less dependency
+        to install."""
+        try:
+            global ansible
+            import ansible.inventory
+            import ansible.runner
+        except ImportError:
+            msg = "You must have ansible installed to run jobs on remote machines. See http://www.ansible.com/home\n"
+            sys.stderr.write(msg)
+            sys.exit(1)
+
+        try:
+            self.inventory
+        except AttributeError:
+            
+            for hostfile in ["config/ansible-hosts",
+                             "config/ansible-hosts-default"]:
+                full_file = "{0}/{1}".format(self.here, hostfile)
+                if os.path.exists(full_file):
+                    inv = ansible.inventory.Inventory(host_list=hostfile)
+                    break
+
+            self.inventory = inv
 
     def extract_last_energy(self, data, options={}):
         raise NotImplementedError
