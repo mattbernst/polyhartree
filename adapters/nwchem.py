@@ -25,7 +25,7 @@ class NWChemJob(cpinterface.Job):
                 #units are already Hartree
                 self.energy = energy
 
-    def run(self, host="127.0.0.1", options={}):
+    def run(self, host="localhost", options={}):
         """Run a NWChem job on the given host.
 
         @param host: name of host where job should execute
