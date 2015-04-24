@@ -36,7 +36,7 @@ class NWChemJob(cpinterface.Job):
 
         run_params = self.get_run_config(host)
         workdir = self.backend + "-" + str(uuid.uuid1()).replace('-', '')[:16]
-        path = "/tmp/{0}/".format(workdir)
+        path = "{0}/{1}/".format(self.tmpdir, workdir)
 
         deck_hash = hashlib.sha1(self.deck).hexdigest()[:10]
         dat_file = "{0}.nw".format(deck_hash)

@@ -20,13 +20,15 @@ class Messages(object):
             self.messages.append(msg)
 
 class Job(Utility, Messages):
-    def __init__(self, deck="", system=None, runstate="begin", extras={}):
+    def __init__(self, deck="", system=None, runstate="begin", tmpdir="/tmp",
+                 extras={}):
         #states: begin, running, complete, error
         self.runstate = runstate
         self.system = system
         self.deck = deck
         self.stdout = ""
         self.logdata = ""
+        self.tmpdir = tmpdir
         self.energy = None
         self.heat_of_formation = None
         self.geometry = None
@@ -102,6 +104,10 @@ class Job(Utility, Messages):
         """
 
         self.load_ansible()
+
+        loaded_host = self.inventory.get_host(host)
+        if loaded_host is None:
+            raise KeyError("Host {0} unknown -- check your ansible-hosts configuration".format(host))
         run_args = {"module_name" : module_name, "module_args" : module_args,
                     "forks" : 1, "subset" : host, "timeout" : self.timeout,
                     "inventory" : self.inventory,
@@ -109,7 +115,23 @@ class Job(Utility, Messages):
 
         r = ansible.runner.Runner(**run_args)
         result = r.run()
+        self.log_ansible_errors(result)
+        
         return result
+
+    def log_ansible_errors(self, result):
+        """Display and store any ansible command errors that might be
+        returned.
+
+        @param result: ansible output from calling runner.run()
+        @type result : dict
+        """
+
+        for host in result["dark"]:
+            msg = result["dark"][host].get("msg", "")
+            message = "{0} : {1}".format(host, msg)
+            sys.stderr.write(message + "\n")
+            self.log(message)
 
     def write_file(self, data, filename, host):
         """Write the given data to filename on host. Also create the
@@ -170,8 +192,11 @@ class Job(Utility, Messages):
             destination = dirname + os.path.basename(filename)
             args = {"src" : filename, "dest" : destination, "flat" : True}
             self.ansible_run("fetch", args, host)
-            with open(destination, "rb") as infile:
-                data = infile.read()
+            try:
+                with open(destination, "rb") as infile:
+                    data = infile.read()
+            except IOError:
+                data = None
 
         return data
 
@@ -188,9 +213,12 @@ class Job(Utility, Messages):
                                                bash_shell=bash_shell, cwd=cwd)
 
         else:
-            output, rcode = "", 0
-            self.ansible_run("shell", cmd, host,
-                             complex_args={"executable" : "/bin/bash"})
+            shell_binary = {"executable" : "/bin/bash"}
+            result = self.ansible_run("shell", cmd, host,
+                                      complex_args=shell_binary)
+            run = result["contacted"].get(host, {})
+            output = run.get("stdout")
+            rcode = run.get("rc")
 
         return (output, rcode)
 

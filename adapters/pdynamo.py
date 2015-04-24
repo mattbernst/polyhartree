@@ -68,7 +68,7 @@ class PDynamoJob(cpinterface.Job):
 
         run_params = self.get_run_config(host)
         workdir = self.backend + "-" + str(uuid.uuid1()).replace('-', '')[:16]
-        path = "/tmp/{0}/".format(workdir)
+        path = "{0}/{1}/".format(self.tmpdir, workdir)
                 
         #write .xyz geometry file to working directory with runner
         xyzdata = self.system.write("xyz")

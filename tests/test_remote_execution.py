@@ -43,6 +43,7 @@ class RETestCase(unittest.TestCase):
         self.assertAlmostEqual(expected_energy, job2.energy, places=5)
 
     def test_nwchem_bad_input_error(self):
+        #job will terminate abnormally
         methane = self.G.make_fragment("C")
         methane.set_basis_name("3-21G")
         job = self.C.make_energy_job(methane, "hf:rhf")
@@ -77,8 +78,24 @@ class RETestCase(unittest.TestCase):
         #over ansible
         job2 = self.C2.make_energy_job(methylium, "semiempirical:pm3")
         job2.run(host="127.0.0.1")
-        self.assertAlmostEqual(expected_energy, job.energy, places=5)
-        self.assertAlmostEqual(expected_hof, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(expected_energy, job2.energy, places=5)
+        self.assertAlmostEqual(expected_hof, job2.heat_of_formation, places=5)
+
+    def test_ansible_bad_host(self):
+        #try to use ansible on a badly configured host and confirm error state
+        methylium = self.G.make_system("[CH3+]")
+        job = self.C2.make_energy_job(methylium, "semiempirical:pm3")
+        result = job.ansible_run("shell", "ls", "notarealhost")
+        self.assertEqual(1, len(job.messages))
+        err = job.messages[0]
+        self.assertTrue("unknown error" in err or "sshpass" in err)
+
+    def test_ansible_missing_host(self):
+        #try to use ansible on a non-configured host and get an exception
+        methylium = self.G.make_system("[CH3+]")
+        job = self.C2.make_energy_job(methylium, "semiempirical:pm3")
+        self.assertRaises(KeyError, job.ansible_run, "shell", "ls",
+                          "nosuchhost")
 
 def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.
