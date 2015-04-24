@@ -270,7 +270,7 @@ class NWChem(cpinterface.MolecularCalculator):
         @rtype : Job
         """
 
-        defaults = {"reference" : "rhf", "scf_iterations" : 999,
+        defaults = {"scf_iterations" : 999,
                     "basis_tag_name" : "basis_tag",
                     "property_name" : "basis_tag"}
         options = dict(defaults.items() + options.items())
@@ -280,9 +280,8 @@ class NWChem(cpinterface.MolecularCalculator):
         bd = self.prepare_basis_data(system, options=options)
         geometry = self.create_geometry(system, options=options)
         
-        method = method.split("hf:")[-1].upper()
-
-        reference = options.get("reference").upper()
+        reference = method.split("hf:")[-1].upper()
+        
         self.check_electronic_reference(reference or options["reference"].upper())
         if system.spin > 1 and reference == "RHF":
             self.log("Forcing UHF for multiplicity {0}".format(system.spin))

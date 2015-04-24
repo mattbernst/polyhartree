@@ -53,6 +53,7 @@ class Psi4TestCase(unittest.TestCase):
             for reference in ["uhf", "rohf"]:
                 j = self.C.make_energy_job(fragment,
                                            "hf:{0}".format(reference))
+                self.assertTrue(reference in j.deck.lower())
                 j.run()
                 name = "{0}-{1}".format(key, reference)
                 jobs[name] = j
@@ -61,7 +62,7 @@ class Psi4TestCase(unittest.TestCase):
 
         #these don't match NWChem/GAMESS to 6 decimal places. Tighter SCF
         #convergence needed?
-        self.assertAlmostEqual(-39.5638189, energies["methyl_radical-rohf"],
+        self.assertAlmostEqual(-39.5596280, energies["methyl_radical-rohf"],
                                places=6)
         self.assertAlmostEqual(-39.5638189, energies["methyl_radical-uhf"],
                                places=6)

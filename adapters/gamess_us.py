@@ -395,16 +395,15 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         @rtype : Job
         """
 
-        defaults = {"reference" : "rhf", "scf_iterations" : 200,
+        defaults = {"scf_iterations" : 200,
                     "basis_tag_name" : "basis_tag"}
         options = dict(defaults.items() + options.items())
 
         self.check_method(method)
 
         deck = self.create_geometry(system, options=options)
-        method = method.split("hf:")[-1].upper()
+        reference = method.split("hf:")[-1].upper()
 
-        reference = options.get("reference").upper()
         self.check_electronic_reference(reference or options["reference"].upper())
         if system.spin > 1 and reference == "RHF":
             self.log("Forcing UHF for multiplicity {0}".format(system.spin))

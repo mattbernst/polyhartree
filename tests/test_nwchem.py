@@ -58,13 +58,14 @@ end"""
             for reference in ["uhf", "rohf"]:
                 j = self.C.make_energy_job(fragment,
                                            "hf:{0}".format(reference))
+                self.assertTrue(reference in j.deck.lower())
                 j.run()
                 name = "{0}-{1}".format(key, reference)
                 jobs[name] = j
 
         energies = dict([(j, jobs[j].energy) for j in jobs])
 
-        self.assertAlmostEqual(-39.5638133, energies["methyl_radical-rohf"],
+        self.assertAlmostEqual(-39.5596229, energies["methyl_radical-rohf"],
                                places=6)
         self.assertAlmostEqual(-39.5638132, energies["methyl_radical-uhf"],
                                places=6)
