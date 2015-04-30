@@ -60,12 +60,12 @@ class Psi4TestCase(unittest.TestCase):
 
         energies = dict([(j, jobs[j].energy) for j in jobs])
 
-        #these don't match NWChem/GAMESS to 6 decimal places. Tighter SCF
-        #convergence needed?
-        self.assertAlmostEqual(-39.5596280, energies["methyl_radical-rohf"],
-                               places=6)
-        self.assertAlmostEqual(-39.5638189, energies["methyl_radical-uhf"],
-                               places=6)
+        #These match NWChem/GAMESS to only 4 decimal places due to default
+        #use of density fitting. Direct SCF matches to 8 places.
+        self.assertAlmostEqual(-39.5596229, energies["methyl_radical-rohf"],
+                               places=4)
+        self.assertAlmostEqual(-39.5638132, energies["methyl_radical-uhf"],
+                               places=4)
 
     def test_bad_input_error(self):
         methane = self.G.make_fragment("C")
