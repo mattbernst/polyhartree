@@ -38,7 +38,7 @@ class PDTestCase(unittest.TestCase):
         @type geometry : cinfony.pybel.Molecule
         @param method: method name to use
         @type method : str
-        @return: energy and heat of formation results from each back end
+        @return: implementation and job results from each back end
         @rtype : list
         """
         
@@ -48,19 +48,22 @@ class PDTestCase(unittest.TestCase):
             job = k.make_energy_job(geometry, method)
             job.run()
 
-            result = {"energy" : job.energy, "HoF" : job.heat_of_formation,
-                      "implementation" : implementation}
+            result = {"job" : job, "implementation" : implementation}
             results.append(result)
 
         return results
 
-    def find_differences(self, results):
+    def find_differences(self, results, metric):
         """Determine the differences in results. Use the first calculation
         in the list as reference value and see how much other results
         deviate from it.
 
         @param results: results of calculations with different back ends
         @type results : list
+        @param metric: a measurable quantity to compare, e.g. "energy" or "hof"
+        @type metric : str
+        @return: calculation metric differences
+        @rtype : list
         """
 
         def places_of_agreement(a, b):
@@ -75,88 +78,98 @@ class PDTestCase(unittest.TestCase):
         
         transformed = []
         
-        reference_hof = results[0]["HoF"]
-        reference_energy = results[0]["energy"]
+        reference = getattr(results[0]["job"], metric)
 
         for result in results:
-            delta_hof = reference_hof - result["HoF"]
-            delta_energy = reference_energy - result["energy"]
-            places_hof = places_of_agreement(reference_hof, result["HoF"])
-            places_energy = places_of_agreement(reference_energy,
-                                                result["energy"])
-            changes = {"delta_hof" : delta_hof, "delta_energy" : delta_energy,
-                       "places_hof" : places_hof,
-                       "places_energy" : places_energy}
+            current = getattr(result["job"], metric)
+            delta = reference - current
+            places = places_of_agreement(reference, current)
+
+            changes = {"delta_{0}".format(metric) : delta,
+                       "places_{0}".format(metric) : places}
             t = result.copy()
             t.update(changes)
             transformed.append(t)
 
         return transformed
 
-    def _test_energy_differences(self, geometry, method, min_places_hof,
-                                 min_places_energy):
-        """Compare energy differences when running the same energy method with
-        the same geometry across different chemistry back-ends.
+    def _test_energy_differences(self, geometry, method, metric, min_places):
+        """Compare a metric when running the same energy method with the same
+        geometry across different chemistry back-ends.
 
         @param geometry: a trial geometry
         @type geometry : geoprep.System
         @param method: a method name, e.g. "semiempirical:am1"
         @type method : str
-        @param min_places_hof: minimum number of decimal places agreement for heat of formation
-        @type min_places_hof : int
-        @param min_places_energy: minimum number of decimal places agreement for energy
+        @param metric: a measurable quantity to compare, e.g. "energy" or "hof"
+        @type metric : str
+        @param min_places: minimum number of decimal places agreement for metric
         @return: differences among packages, using the first run as reference
         @rtype : list
         """
         
         jobs = self.run_multi(geometry, method)
-        differences = self.find_differences(jobs)
-        energy_places = [x["places_energy"] for x in differences]
-        hof_places = [x["places_hof"] for x in differences]
+        differences = self.find_differences(jobs, metric)
+        places_name = "places_{0}".format(metric)
+        places = [x[places_name] for x in differences]
 
-        self.assertTrue(min_places_hof <= min(hof_places))
-        self.assertTrue(min_places_energy <= min(energy_places))
+        self.assertTrue(min_places <= min(places))
 
         return differences
 
     def test_methylium(self):
         geometry = self.G.make_system("[CH3+]")
-        self._test_energy_differences(geometry, "semiempirical:pm3", 6, 4)
-        self._test_energy_differences(geometry, "semiempirical:am1", 5, 4)
-        self._test_energy_differences(geometry, "semiempirical:mndo", 5, 4)
+        self._test_energy_differences(geometry, "semiempirical:pm3",
+                                      "heat_of_formation", 6)
+        self._test_energy_differences(geometry, "semiempirical:am1",
+                                      "heat_of_formation", 5)
+        self._test_energy_differences(geometry, "semiempirical:mndo",
+                                      "heat_of_formation", 5)
 
     def test_methane(self):
         geometry = self.G.make_system("C")
-        self._test_energy_differences(geometry, "semiempirical:pm3", 6, 4)
-        self._test_energy_differences(geometry, "semiempirical:am1", 5, 4)
-        self._test_energy_differences(geometry, "semiempirical:mndo", 5, 4)
+        self._test_energy_differences(geometry, "semiempirical:pm3",
+                                      "heat_of_formation", 6)
+        self._test_energy_differences(geometry, "semiempirical:am1",
+                                      "heat_of_formation", 5)
+        self._test_energy_differences(geometry, "semiempirical:mndo",
+                                      "heat_of_formation", 5)
 
     def test_carbanide(self):
         geometry = self.G.make_system("[CH3-]")
-        self._test_energy_differences(geometry, "semiempirical:pm3", 6, 4)
-        self._test_energy_differences(geometry, "semiempirical:am1", 5, 4)
-        self._test_energy_differences(geometry, "semiempirical:mndo", 5, 4)
+        self._test_energy_differences(geometry, "semiempirical:pm3",
+                                      "heat_of_formation", 6)
+        self._test_energy_differences(geometry, "semiempirical:am1",
+                                      "heat_of_formation", 5)
+        self._test_energy_differences(geometry, "semiempirical:mndo",
+                                      "heat_of_formation", 5)
 
     def test_methyl_radical(self):
         geometry = self.G.make_system("[CH3]")
         pm3 = self._test_energy_differences(geometry, "semiempirical:pm3",
-                                            6, 4)
+                                            "heat_of_formation", 6)
         am1 = self._test_energy_differences(geometry, "semiempirical:am1",
-                                            5, 4)
+                                            "heat_of_formation", 5)
         mndo = self._test_energy_differences(geometry, "semiempirical:mndo",
-                                             5, 4)
+                                             "heat_of_formation", 5)
 
     def test_nitric_oxide(self):
         geometry = self.G.make_system("[N]=O")
-        self._test_energy_differences(geometry, "semiempirical:pm3", 5, 4)
-        self._test_energy_differences(geometry, "semiempirical:am1", 5, 4)
-        self._test_energy_differences(geometry, "semiempirical:mndo", 4, 4)
+        self._test_energy_differences(geometry, "semiempirical:pm3",
+                                      "heat_of_formation", 5)
+        self._test_energy_differences(geometry, "semiempirical:am1",
+                                      "heat_of_formation", 5)
+        self._test_energy_differences(geometry, "semiempirical:mndo",
+                                      "heat_of_formation", 4)
 
     def test_ammonia(self):
         geometry = self.G.make_system("N")
-        self._test_energy_differences(geometry, "semiempirical:pm3", 4, 4)
-        self._test_energy_differences(geometry, "semiempirical:am1", 5, 4)
-        self._test_energy_differences(geometry, "semiempirical:mndo", 5, 4)
+        self._test_energy_differences(geometry, "semiempirical:pm3",
+                                      "heat_of_formation", 4)
+        self._test_energy_differences(geometry, "semiempirical:am1",
+                                      "heat_of_formation", 5)
+        self._test_energy_differences(geometry, "semiempirical:mndo",
+                                      "heat_of_formation", 5)
 
     def test_water_dimer(self):
         #run a very crude water sort of water dimer calculation, since we
@@ -166,9 +179,12 @@ class PDTestCase(unittest.TestCase):
         w2.translate((0, 2.0, 0))
         s = geoprep.System([w1, w2])
 
-        self._test_energy_differences(s, "semiempirical:pm3", 4, 4)
-        self._test_energy_differences(s, "semiempirical:am1", 4, 4)
-        self._test_energy_differences(s, "semiempirical:mndo", 4, 4)
+        self._test_energy_differences(s, "semiempirical:pm3",
+                                      "heat_of_formation", 4)
+        self._test_energy_differences(s, "semiempirical:am1",
+                                      "heat_of_formation", 4)
+        self._test_energy_differences(s, "semiempirical:mndo",
+                                      "heat_of_formation", 4)
 
     def test_translation_sensitivity(self):
         #Translating a system should not meaningfully affect its calculated
@@ -193,7 +209,7 @@ class PDTestCase(unittest.TestCase):
             for r, name in (r1, r2):
                 for entry in r:
                     key = entry["implementation"] + "-" + name
-                    hof = entry["HoF"]
+                    hof = entry["job"].heat_of_formation
                     try:
                         results[key].append(hof)
                     except KeyError:

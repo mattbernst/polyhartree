@@ -15,6 +15,7 @@ import unittest
 import geoprep
 from adapters import nwchem
 from sharedutilities import Utility
+from tests import reference_values
 
 class NWChemTestCase(unittest.TestCase):
     def setUp(self):
@@ -42,7 +43,8 @@ end"""
         methane.set_basis_name("3-21G")
         job = self.C.make_energy_job(methane, "hf:rhf")
         job.run()
-        self.assertAlmostEqual(-39.9766425, job.energy, places=6)
+        self.assertAlmostEqual(reference_values.methane_rhf_321g,
+                               job.energy, places=6)
 
     def test_energy_rohf_uhf_scf_methane(self):
         #compare UHF and ROHF across methyl radicals for HF energy
@@ -65,10 +67,10 @@ end"""
 
         energies = dict([(j, jobs[j].energy) for j in jobs])
 
-        self.assertAlmostEqual(-39.5596229, energies["methyl_radical-rohf"],
-                               places=6)
-        self.assertAlmostEqual(-39.5638132, energies["methyl_radical-uhf"],
-                               places=6)
+        self.assertAlmostEqual(reference_values.methyl_rohf_ccpvdz,
+                               energies["methyl_radical-rohf"], places=6)
+        self.assertAlmostEqual(reference_values.methyl_uhf_ccpvdz,
+                               energies["methyl_radical-uhf"], places=6)
 
     def test_bad_input_error(self):
         methane = self.G.make_fragment("C")

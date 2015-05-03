@@ -14,6 +14,7 @@ import sys
 import unittest
 import geoprep
 from adapters import pdynamo
+from tests import reference_values
 
 class PDTestCase(unittest.TestCase):
 
@@ -28,79 +29,79 @@ class PDTestCase(unittest.TestCase):
         methylium = self.G.make_system("[CH3+]")
         job = self.C.make_energy_job(methylium, "semiempirical:pm3")
         job.run()
-        self.assertAlmostEqual(-5.641487, job.energy, places=5)
-        self.assertAlmostEqual(0.408868, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(reference_values.methylium_pm3_hof,
+                               job.heat_of_formation, places=5)
 
     def test_energy_pm3_carbanide(self):
         carbanide = self.G.make_system("[CH3-]")
         job = self.C.make_energy_job(carbanide, "semiempirical:pm3")
         job.run()
-        self.assertAlmostEqual(-5.967391, job.energy, places=5)
-        self.assertAlmostEqual(0.082962, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(reference_values.carbanide_pm3_hof,
+                               job.heat_of_formation, places=5)
 
     def test_energy_pm3_methyl_radical(self):
         mradical = self.G.make_system("[CH3]")
         job = self.C.make_energy_job(mradical, "semiempirical:pm3")
         self.assertEqual("Forcing UHF for multiplicity 2", self.C.messages[0])
         job.run()
-        self.assertAlmostEqual(-6.005549, job.energy, places=5)
-        self.assertAlmostEqual(0.044801, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(reference_values.methyl_uhf_pm3_hof,
+                               job.heat_of_formation, places=5)
 
     def test_energy_pm3_methane(self):
         methane = self.G.make_system("C")
         job = self.C.make_energy_job(methane, "semiempirical:pm3")
         job.run()
-        self.assertAlmostEqual(-6.634475, job.energy, places=5)
-        self.assertAlmostEqual(-0.020660, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(reference_values.methane_pm3_hof,
+                               job.heat_of_formation, places=5)
 
     def test_energy_mndo_methane(self):
         methane = self.G.make_system("C")
         job = self.C.make_energy_job(methane, "semiempirical:mndo")
         job.run()
-        self.assertAlmostEqual(-6.801557, job.energy, places=5)
-        self.assertAlmostEqual(-0.018602, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(reference_values.methane_mndo_hof,
+                               job.heat_of_formation, places=4)
 
     def test_energy_am1_methane(self):
         methane = self.G.make_system("C")
         job = self.C.make_energy_job(methane, "semiempirical:am1")
         job.run()
-        self.assertAlmostEqual(-6.732507, job.energy, places=5)
-        self.assertAlmostEqual(-0.012914, job.heat_of_formation, places=5)
-
-    def test_energy_pm6_methane(self):
-        methane = self.G.make_system("C")
-        job = self.C.make_energy_job(methane, "semiempirical:pm6")
-        job.run()
-        self.assertAlmostEqual(-6.510840, job.energy, places=5)
-        self.assertAlmostEqual(-0.019537, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(reference_values.methane_am1_hof,
+                               job.heat_of_formation, places=4)
 
     def test_energy_rm1_methane(self):
         methane = self.G.make_system("C")
         job = self.C.make_energy_job(methane, "semiempirical:rm1")
         job.run()
-        self.assertAlmostEqual(-6.716257, job.energy, places=5)
-        self.assertAlmostEqual(-0.022076, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(reference_values.methane_rm1_hof,
+                               job.heat_of_formation, places=4)
+
+    def test_energy_pm6_methane(self):
+        methane = self.G.make_system("C")
+        job = self.C.make_energy_job(methane, "semiempirical:pm6")
+        job.run()
+        self.assertAlmostEqual(reference_values.methane_pm6_hof,
+                               job.heat_of_formation, places=5)
 
     def test_energy_pddgmndo_methane(self):
         methane = self.G.make_system("C")
         job = self.C.make_energy_job(methane, "semiempirical:pddg/mndo")
         job.run()
-        self.assertAlmostEqual(-6.949286, job.energy, places=5)
-        self.assertAlmostEqual(-0.026589, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(reference_values.methane_pddgmndo_hof,
+                               job.heat_of_formation, places=5)
 
     def test_energy_pddgpm3_methane(self):
         methane = self.G.make_system("C")
         job = self.C.make_energy_job(methane, "semiempirical:pddg/pm3")
         job.run()
-        self.assertAlmostEqual(-6.727189, job.energy, places=5)
-        self.assertAlmostEqual(-0.025640, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(reference_values.methane_pddgpm3_hof,
+                               job.heat_of_formation, places=5)
 
     def test_energy_am1dphot_methane(self):
         methane = self.G.make_system("C")
         job = self.C.make_energy_job(methane, "semiempirical:am1/d-phot")
         job.run()
-        self.assertAlmostEqual(-6.654096, job.energy, places=5)
-        self.assertAlmostEqual(-0.002390, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(reference_values.methane_am1dphot_hof,
+                               job.heat_of_formation, places=5)
 
 def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.

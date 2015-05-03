@@ -14,6 +14,7 @@ import sys
 import unittest
 import geoprep
 from adapters import gamess_us
+from tests import reference_values
 
 class GAMESSTestCase(unittest.TestCase):
     def setUp(self):
@@ -42,60 +43,64 @@ class GAMESSTestCase(unittest.TestCase):
 
         hofs = dict([(j, jobs[j].heat_of_formation) for j in jobs])
 
-        self.assertAlmostEqual(0.126826, hofs["phenyl_radical-rohf"], places=5)
-        self.assertAlmostEqual(0.119951, hofs["phenyl_radical-uhf"], places=5)
-        self.assertAlmostEqual(0.047725, hofs["methyl_radical-rohf"], places=5)
-        self.assertAlmostEqual(0.044800, hofs["methyl_radical-uhf"], places=5)
+        self.assertAlmostEqual(reference_values.phenyl_rohf_pm3_hof,
+                               hofs["phenyl_radical-rohf"], places=5)
+        self.assertAlmostEqual(reference_values.phenyl_uhf_pm3_hof,
+                               hofs["phenyl_radical-uhf"], places=5)
+        self.assertAlmostEqual(reference_values.methyl_rohf_pm3_hof,
+                               hofs["methyl_radical-rohf"], places=5)
+        self.assertAlmostEqual(reference_values.methyl_uhf_pm3_hof,
+                               hofs["methyl_radical-uhf"], places=5)
 
     def test_energy_pm3_methylium(self):
         methylium = self.G.make_system("[CH3+]")
         job = self.C.make_energy_job(methylium, "semiempirical:pm3")
         job.run()
-        self.assertAlmostEqual(-5.641425, job.energy, places=5)
-        self.assertAlmostEqual(0.408868, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(reference_values.methylium_pm3_hof,
+                               job.heat_of_formation, places=5)
 
     def test_energy_pm3_carbanide(self):
         carbanide = self.G.make_system("[CH3-]")
         job = self.C.make_energy_job(carbanide, "semiempirical:pm3")
         job.run()
-        self.assertAlmostEqual(-5.967321, job.energy, places=5)
-        self.assertAlmostEqual(0.082962, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(reference_values.carbanide_pm3_hof,
+                               job.heat_of_formation, places=5)
 
     def test_energy_pm3_methyl_radical(self):
         methyl_radical = self.G.make_system("[CH3]")
         job = self.C.make_energy_job(methyl_radical, "semiempirical:pm3")
         self.assertEqual("Forcing UHF for multiplicity 2", self.C.messages[0])
         job.run()
-        self.assertAlmostEqual(-6.005483, job.energy, places=5)
-        self.assertAlmostEqual(0.044800, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(reference_values.methyl_uhf_pm3_hof,
+                               job.heat_of_formation, places=5)
 
     def test_energy_pm3_methane(self):
         methane = self.G.make_system("C")
         job = self.C.make_energy_job(methane, 'semiempirical:pm3')
         job.run()
-        self.assertAlmostEqual(-6.634400, job.energy, places=5)
-        self.assertAlmostEqual(-0.020660, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(reference_values.methane_pm3_hof,
+                               job.heat_of_formation, places=5)
 
     def test_energy_mndo_methane(self):
         methane = self.G.make_system("C")
         job = self.C.make_energy_job(methane, "semiempirical:mndo")
         job.run()
-        self.assertAlmostEqual(-6.801455, job.energy, places=5)
-        self.assertAlmostEqual(-0.018578, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(reference_values.methane_mndo_hof,
+                               job.heat_of_formation, places=5)
 
     def test_energy_am1_methane(self):
         methane = self.G.make_system("C")
         job = self.C.make_energy_job(methane, "semiempirical:am1")
         job.run()
-        self.assertAlmostEqual(-6.732408, job.energy, places=5)
-        self.assertAlmostEqual(-0.012894, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(reference_values.methane_am1_hof,
+                               job.heat_of_formation, places=5)
 
     def test_energy_rm1_methane(self):
         methane = self.G.make_system("C")
         job = self.C.make_energy_job(methane, "semiempirical:rm1")
         job.run()
-        self.assertAlmostEqual(-6.716163, job.energy, places=5)
-        self.assertAlmostEqual(-0.022059, job.heat_of_formation, places=5)
+        self.assertAlmostEqual(reference_values.methane_rm1_hof,
+                               job.heat_of_formation, places=5)
 
     def test_energy_scf_methane(self):
         #very basic minimal basis set test for methane
@@ -103,7 +108,8 @@ class GAMESSTestCase(unittest.TestCase):
         methane.set_basis_name("3-21G")
         job = self.C.make_energy_job(methane, "hf:rhf")
         job.run()
-        self.assertAlmostEqual(-39.9766425, job.energy, places=6)
+        self.assertAlmostEqual(reference_values.methane_rhf_321g,
+                               job.energy, places=6)
 
     def test_energy_rohf_uhf_scf_methane(self):
         #compare UHF and ROHF across methyl radicals for HF energy
@@ -126,10 +132,10 @@ class GAMESSTestCase(unittest.TestCase):
 
         energies = dict([(j, jobs[j].energy) for j in jobs])
 
-        self.assertAlmostEqual(-39.5596229, energies["methyl_radical-rohf"],
-                               places=6)
-        self.assertAlmostEqual(-39.5638132, energies["methyl_radical-uhf"],
-                               places=6)
+        self.assertAlmostEqual(reference_values.methyl_rohf_ccpvdz,
+                               energies["methyl_radical-rohf"], places=6)
+        self.assertAlmostEqual(reference_values.methyl_uhf_ccpvdz,
+                               energies["methyl_radical-uhf"], places=6)
 
     def test_create_geometry_td_symmetry(self):
         #test explicit symmetry setting (creation) for GAMESS-US
