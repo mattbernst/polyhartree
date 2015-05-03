@@ -9,10 +9,14 @@
     assignment...
 """
 
+import copy
+import cStringIO as StringIO
+import random
 import sys
 import unittest
-import random
+
 from cinfony import pybel
+
 import geoprep
 
 class GTestCase(unittest.TestCase):
@@ -250,6 +254,44 @@ class GTestCase(unittest.TestCase):
             methanol.write_fragment(name)
             read_fragment = self.G.read_fragment(name)
             self.assertSameGeometry(methanol, read_fragment, 0.001)
+
+    def test_mcs_basic(self):
+        #test maximum common substructure search across identical molecules
+
+        methanol = self.G.make_fragment("CO")
+        prefix = str(random.randint(10**10, 10**11))
+        fragments = [methanol]
+        
+        for fmt in ["pdb", "xyz", "sdf"]:
+            sio = StringIO.StringIO()
+            #name = "/tmp/{0}.{1}".format(prefix, fmt)
+            methanol.write_fragment(fmt=fmt, handle=sio)
+            sio.seek(0)
+            read_fragment = self.G.read_fragment(handle=sio, fmt=fmt)
+            sio.close()
+            fragments.append(read_fragment)
+
+        expected = {"numAtoms" : 2, "numBonds" : 1, "smarts" : "[#6]-[#8]"}
+        ss = self.G.mcs(fragments)
+        for k in expected:
+            v = expected[k]
+            self.assertEqual(v, getattr(ss, k))
+
+    def test_deepcopy_fragment(self):
+        #validate that deep copying duplicates a fragment and leaves the
+        #duplicate independent of the original
+
+        methanol = self.G.make_fragment("CO")
+        copied = copy.deepcopy(methanol)
+
+        self.assertTrue(methanol == copied)
+        self.assertFalse(methanol != copied)
+
+        #add new atom properties to copy; original is unaffected
+        copied.set_basis_name("cc-pVDZ")
+        self.assertFalse(methanol == copied)
+        self.assertTrue(methanol != copied)
+        self.assertNotEqual(methanol.atom_properties, copied.atom_properties)
 
     def test_translate(self):
         #test fragment geometry translation
