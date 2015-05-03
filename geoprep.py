@@ -722,8 +722,23 @@ class Geotool(object):
         return cs
 
     def align(self, reference, target):
-        """Align target fragment to reference.
+        """Optimize target fragment alignment to reference. Return a copied
+        fragment with aligned geometry and information about the fit.
 
+        @param reference: the fragment to align to
+        @type reference : Fragment
+        @param target: the fragment to be aligned
+        @type target: Fragment
+        @return: aligned fragment and fit data
+        @rtype : dict
         """
 
-        pass
+        copied = copy.deepcopy(target)
+        aligner = pybel.ob.OBAlign(False, False)
+        aligner.SetRefMol(reference.molecule.OBMol) 
+        aligner.SetTargetMol(copied.molecule.OBMol) 
+        aligner.Align() 
+        aligner.UpdateCoords(copied.molecule.OBMol)
+
+        r = {"rmsd" : aligner.GetRMSD(), "fragment" : copied}
+        return r

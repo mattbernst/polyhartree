@@ -226,22 +226,21 @@ class GTestCase(unittest.TestCase):
             symbol = s.atom_properties("symbols")[k]
             self.assertTrue(symbol in "OH")
 
-    def assertSameGeometry(self, f1, f2, max_deviation):
-        #test that two fragments have the same atoms and xyz coordinates equal
-        #to within max_deviation
+    def assertSameGeometry(self, f1, f2, max_rmsd):
+        #test that two fragments have the same atoms and xyz coordinates match
+        #to within max_rmsd
         l1 = f1.geometry_list
         l2 = f2.geometry_list
         self.assertEqual(len(l1), len(l2))
-        self.assertEqual([j[0] for j in l1], [k[0] for k in l2])
+        self.assertEqual(set([j[0] for j in l1]),
+                         set([k[0] for k in l2]))
 
-        for k in range(len(l1)):
-            e1 = l1[k]
-            e2 = l2[k]
-            for i in (1, 2, 3):
-                delta = abs(e1[i] - e2[i])
-                if delta > max_deviation:
-                    msg = "{0} and {1} differ by more than {2}".format(e1, e2, max_deviation)
-                    raise AssertionError(msg)
+        #Align geometry via pybel before comparison. Otherwise different atom
+        #ordering or simple translation/rotation can throw off comparison.
+        aligned = self.G.align(f1, f2)
+        if aligned["rmsd"] > max_rmsd:
+            msg = "Aligned fragment geometry RMSD {0} is greater than than {1}".format(aligned["rmsd"], max_rmsd)
+            raise AssertionError(msg)
 
     def test_fragment_read_write(self):
         #test reading and writing with a variety of file formats
@@ -276,6 +275,37 @@ class GTestCase(unittest.TestCase):
         for k in expected:
             v = expected[k]
             self.assertEqual(v, getattr(ss, k))
+
+    def test_align_basic(self):
+        #test easiest case for molecule alignment: molecules the very same
+        
+        methanol = self.G.make_fragment("CO")
+        copied = copy.deepcopy(methanol)
+        alignment = self.G.align(methanol, copied)
+        aligned = alignment["fragment"]
+        self.assertSameGeometry(methanol, aligned, 10**-5)
+
+    def test_align_scrambled(self):
+        #test harder case for molecule alignment: different ordering of atoms
+        
+        methanol = self.G.make_fragment("CO")
+
+        #create XYZ representation of data, shuffle atom order, and read it
+        #back in as a new fragment
+        xyz = methanol.write("xyz").strip()
+        lines = xyz.split("\n")
+        head = lines[:2][:]
+        tail = lines[2:][:]
+        random.shuffle(tail)
+        rejoined = "\n".join(head + tail)
+        sio = StringIO.StringIO(rejoined)
+        sio.seek(0)
+        scrambled = self.G.read_fragment(fmt="xyz", handle=sio)
+        sio.close()
+
+        alignment = self.G.align(methanol, scrambled)
+        aligned = alignment["fragment"]
+        self.assertSameGeometry(methanol, aligned, 10**-5)
 
     def test_deepcopy_fragment(self):
         #validate that deep copying duplicates a fragment and leaves the
