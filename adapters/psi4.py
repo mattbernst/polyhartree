@@ -53,10 +53,13 @@ class Psi4Job(cpinterface.Job):
 
         self.logdata = self.read_file(log_file, host)
 
-        if "PsiException:" in self.logdata:
-            self.runstate = "error"
+        errors = ["PsiException:", "Error:"]
 
-        else:
+        for e in errors:
+            if e in self.logdata:
+                self.runstate = "error"
+
+        if self.runstate != "error":
             self.extract_last_energy(self.logdata)
             self.runstate = "complete"
 
@@ -259,6 +262,13 @@ class Psi4(cpinterface.MolecularCalculator):
         UHF unrestricted Hartree-Fock, and
         ROHF restricted open shell Hartree-Fock
 
+        options:
+         scf_type: How the electron repulsion integrals are calculated. The
+          psi4 default is df, density fitting, but that is not directly
+          comparable to methods used by GAMESS or NWChem. Instead polyhartree
+          uses pk as default. Possible options are pk, out_of_core, direct,
+          df, and cd.
+
         @param system: molecular system for calculation
         @type system : geoprep.System
         @param method: a HF calculation method
@@ -271,7 +281,8 @@ class Psi4(cpinterface.MolecularCalculator):
 
         defaults = {"scf_iterations" : 999,
                     "basis_tag_name" : "basis_tag",
-                    "property_name" : "basis_tag"}
+                    "property_name" : "basis_tag",
+                    "scf_type" : "pk"}
         options = dict(defaults.items() + options.items())
 
         self.check_method(method)
@@ -286,7 +297,9 @@ class Psi4(cpinterface.MolecularCalculator):
             self.log("Forcing UHF for multiplicity {0}".format(system.spin))
             reference = "UHF"
 
-        gb = ["set globals", "reference {0}".format(reference),
+        gb = ["set globals",
+              "scf_type {0}".format(options.get("scf_type")),
+              "reference {0}".format(reference),
               "maxiter {0}".format(options.get("scf_iterations"))]
         gb = self.make_control_block(gb)
 

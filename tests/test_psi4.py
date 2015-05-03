@@ -37,7 +37,7 @@ class Psi4TestCase(unittest.TestCase):
         methane.set_basis_name("3-21G")
         job = self.C.make_energy_job(methane, "hf:rhf")
         job.run()
-        self.assertAlmostEqual(-39.976642, job.energy, places=5)
+        self.assertAlmostEqual(-39.9766425, job.energy, places=6)
 
     def test_energy_rohf_uhf_scf_methane(self):
         #compare UHF and ROHF across methyl radicals for HF energy
@@ -60,12 +60,10 @@ class Psi4TestCase(unittest.TestCase):
 
         energies = dict([(j, jobs[j].energy) for j in jobs])
 
-        #These match NWChem/GAMESS to only 4 decimal places due to default
-        #use of density fitting. Direct SCF matches to 8 places.
         self.assertAlmostEqual(-39.5596229, energies["methyl_radical-rohf"],
-                               places=4)
+                               places=6)
         self.assertAlmostEqual(-39.5638132, energies["methyl_radical-uhf"],
-                               places=4)
+                               places=6)
 
     def test_bad_input_error(self):
         methane = self.G.make_fragment("C")

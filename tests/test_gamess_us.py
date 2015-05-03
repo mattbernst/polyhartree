@@ -103,7 +103,7 @@ class GAMESSTestCase(unittest.TestCase):
         methane.set_basis_name("3-21G")
         job = self.C.make_energy_job(methane, "hf:rhf")
         job.run()
-        self.assertAlmostEqual(-39.976642, job.energy, places=5)
+        self.assertAlmostEqual(-39.9766425, job.energy, places=6)
 
     def test_energy_rohf_uhf_scf_methane(self):
         #compare UHF and ROHF across methyl radicals for HF energy
