@@ -11,6 +11,7 @@
 
 import sys
 import unittest
+import random
 from cinfony import pybel
 import geoprep
 
@@ -220,6 +221,47 @@ class GTestCase(unittest.TestCase):
         for k in selected:
             symbol = s.atom_properties("symbols")[k]
             self.assertTrue(symbol in "OH")
+
+    def assertSameGeometry(self, f1, f2, max_deviation):
+        #test that two fragments have the same atoms and xyz coordinates equal
+        #to within max_deviation
+        l1 = f1.geometry_list
+        l2 = f2.geometry_list
+        self.assertEqual(len(l1), len(l2))
+        self.assertEqual([j[0] for j in l1], [k[0] for k in l2])
+
+        for k in range(len(l1)):
+            e1 = l1[k]
+            e2 = l2[k]
+            for i in (1, 2, 3):
+                delta = abs(e1[i] - e2[i])
+                if delta > max_deviation:
+                    msg = "{0} and {1} differ by more than {2}".format(e1, e2, max_deviation)
+                    raise AssertionError(msg)
+
+    def test_fragment_read_write(self):
+        #test reading and writing with a variety of file formats
+
+        methanol = self.G.make_fragment("CO")
+        prefix = str(random.randint(10**10, 10**11))
+        
+        for fmt in ["pdb", "xyz", "sdf"]:
+            name = "/tmp/{0}.{1}".format(prefix, fmt)
+            methanol.write_fragment(name)
+            read_fragment = self.G.read_fragment(name)
+            self.assertSameGeometry(methanol, read_fragment, 0.001)
+
+    def test_translate(self):
+        #test fragment geometry translation
+        tvec = [1.5, 0.0, 0.0]
+        CO = self.G.make_fragment("[C-]#[O+]")
+        g1 = CO.geometry_list
+        CO.translate(tvec)
+        g2 = CO.geometry_list
+
+        for j in range(len(g1)):
+            for k in (1, 2, 3):
+                self.assertEqual(g1[j][k] + tvec[k - 1], g2[j][k])
 
 def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.
