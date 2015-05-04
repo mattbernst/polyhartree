@@ -2,6 +2,8 @@
 import os
 import string
 import copy
+import cStringIO as StringIO
+
 from cinfony import pybel, webel
 from sharedutilities import ELEMENTS
 
@@ -291,12 +293,9 @@ class Fragment(object):
         
         for k, v in self.__dict__.items():
             if k == "molecule":
-                m = pybel.Molecule(self.molecule)
+                result.molecule = pybel.Molecule(self.molecule)
                 #atom coordinates lose precision above, and need manual copy
-                for j, entry in enumerate(self.geometry_list):
-                    coords = entry[1:]
-                    m.atoms[j].OBAtom.SetVector(*coords)
-                result.molecule = m
+                result.set_coordinates(self.geometry_list)
 
             elif k in self.bridged_attrs:
                 pass
@@ -364,6 +363,24 @@ class Fragment(object):
 
         symbols = [ELEMENTS[atom.atomicnum - 1] for atom in self.atoms]
         self.set_properties("symbols", range(len(symbols)), symbols)
+
+    def set_coordinates(self, geolist):
+        """Use coordinates from geolist for atoms in self.molecule. This is
+        useful because pybel does not preserve full accuracy when creating
+        a new molecule from the old.
+
+        @param geolist: geometry list, e.g. [["He", 1.0, 0.0, 0.0]]
+        @type geolist : list
+        """
+
+        self_elements = [e[0] for e in self.geometry_list]
+        other_elements = [e[0] for e in geolist]
+        if self_elements != other_elements:
+            raise ValueError("Trying to set coordinates with mismatched geometry list: {0} {1}".format(self_elements, other_elements))
+
+        for j, entry in enumerate(geolist):
+            coords = entry[1:]
+            self.molecule.atoms[j].OBAtom.SetVector(*coords)
 
     @property
     def nelec(self):
@@ -664,7 +681,30 @@ class Geotool(object):
         s = System(fragments)
         return s
 
-    def read_fragment(self, name=None, fmt=None, handle=None):
+    def geolist_to_fragment(self, geolist):
+        """Convert a geometry list into a fragment, exactly preserving the
+        original geometry (no translation to origin).
+
+        @param geolist: geometry list, e.g. [["He", 1.0, 0.0, 0.0]]
+        @type geolist : list
+        @return: fragment matching given geometry
+        @rtype : Fragment
+        """
+
+        xyz_head = [str(len(geolist)), '']
+        entries = [" ".join([str(s) for s in e]) for e in geolist]
+        xyz = "\n".join(xyz_head + entries)
+        tmp = StringIO.StringIO(xyz)
+
+        tmp.seek(0)
+        f = self.read_fragment(fmt="xyz", handle=tmp, zero_to_origin=False)
+        tmp.close()
+
+        f.set_coordinates(geolist)
+        return f
+
+    def read_fragment(self, name=None, fmt=None, handle=None,
+                      zero_to_origin=True):
         """Read a molecular structure from a file. Guess at the file type from
         extension if caller does not supply explicit fmt. If file handle is
         provided, read data from it. Otherwise open file name for reading.
@@ -673,6 +713,8 @@ class Geotool(object):
         @type name : str
         @param fmt: optional OpenBabel format code e.g. "xyz"
         @type fmt : str
+        @param zero_to_origin: translate geometry to put atom 0 at origin
+        @type zero_to_origin : bool
         @return: molecular fragment
         @rtype : Fragment
         """
@@ -690,7 +732,9 @@ class Geotool(object):
             molecule = pybel.readstring(fmt, data)
             
         fragment = Fragment(molecule)
-        fragment.set_zero_to_origin()
+        
+        if zero_to_origin:
+            fragment.set_zero_to_origin()
         
         return fragment
 

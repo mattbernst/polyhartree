@@ -31,7 +31,7 @@ class Job(Utility, Messages):
         self.tmpdir = tmpdir
         self.energy = None
         self.heat_of_formation = None
-        self.geometry = None
+        self.geometry = []
         self.messages = []
         self.extras = extras
         #use location of script to find location of configs 

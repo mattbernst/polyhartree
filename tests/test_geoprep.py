@@ -314,6 +314,14 @@ class GTestCase(unittest.TestCase):
         alignment = self.G.align(methanol1, methanol2)
         self.assertTrue(alignment["rmsd"] < 0.025)
 
+    def test_geolist_to_fragment(self):
+        #test creation of new fragment from geometry list: geometry lists
+        #should match exactly across fragments
+
+        methanol = self.G.read_fragment("tests/data/methanol1.xyz")
+        fcopy = self.G.geolist_to_fragment(methanol.geometry_list)
+        self.assertEqual(methanol.geometry_list, fcopy.geometry_list)
+
     def test_deepcopy_fragment(self):
         #validate that deep copying duplicates a fragment and leaves the
         #duplicate independent of the original
