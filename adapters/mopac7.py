@@ -75,9 +75,12 @@ class Mopac7Job(cpinterface.Job):
         
         stdout, returncode = self.execute(cmd, host, bash_shell=True)
         self.stdout = stdout
-        if "DUE TO PROGRAM BUG" in stdout:
-            self.runstate = "error"
-            return
+
+        errors_stdout = ["DUE TO PROGRAM BUG", "STOPPED TO AVOID WASTING TIME"]
+        for e in errors_stdout:
+            if e in stdout:
+                self.runstate = "error"
+                return
 
         log_file = abs_file.replace(".dat", ".log")
 

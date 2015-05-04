@@ -725,6 +725,9 @@ class Geotool(object):
         """Optimize target fragment alignment to reference. Return a copied
         fragment with aligned geometry and information about the fit.
 
+        TODO (maybe): use maximum common substructure to also align different
+        molecules, e.g. toluene against m-xylene
+
         @param reference: the fragment to align to
         @type reference : Fragment
         @param target: the fragment to be aligned

@@ -76,10 +76,10 @@ class MOPACTestCase(unittest.TestCase):
                                job.heat_of_formation, places=5)
 
     def test_bad_input_error(self):
-        #This doesn't work. At least the job status says so.
-        #"THE FIRST THREE ATOMS MUST NOT LIE IN A STRAIGHT LINE"
+        #This fails because we introduce a typo into the deck.
         P2 = self.G.make_system("P#P")
         job = self.C.make_energy_job(P2, "semiempirical:pm3")
+        job.deck = job.deck.replace("SINGLET", "SNIGLET")
         job.run()
         self.assertEqual("error", job.runstate)
 

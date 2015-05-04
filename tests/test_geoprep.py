@@ -282,8 +282,7 @@ class GTestCase(unittest.TestCase):
         methanol = self.G.make_fragment("CO")
         copied = copy.deepcopy(methanol)
         alignment = self.G.align(methanol, copied)
-        aligned = alignment["fragment"]
-        self.assertSameGeometry(methanol, aligned, 10**-5)
+        self.assertTrue(alignment["rmsd"] < 10**-5)
 
     def test_align_scrambled(self):
         #test harder case for molecule alignment: different ordering of atoms
@@ -304,8 +303,16 @@ class GTestCase(unittest.TestCase):
         sio.close()
 
         alignment = self.G.align(methanol, scrambled)
-        aligned = alignment["fragment"]
-        self.assertSameGeometry(methanol, aligned, 10**-5)
+        self.assertTrue(alignment["rmsd"] < 10**-5)
+
+    def test_align_unequal_geometry(self):
+        #test molecule alignment: atom order is different, geometry slightly
+        #different, rotation is different
+
+        methanol1 = self.G.read_fragment("tests/data/methanol1.xyz")
+        methanol2 = self.G.read_fragment("tests/data/methanol2.xyz")
+        alignment = self.G.align(methanol1, methanol2)
+        self.assertTrue(alignment["rmsd"] < 0.025)
 
     def test_deepcopy_fragment(self):
         #validate that deep copying duplicates a fragment and leaves the
