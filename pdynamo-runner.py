@@ -5,7 +5,7 @@ import os
 import StringIO
 import yaml
 try:
-    from pBabel import XYZFile_ToSystem
+    from pBabel import XYZFile_ToSystem, XYZFile_FromSystem
     from pCore import TextLogFileWriter
     from pMolecule import DIISSCFConverger, ElectronicState, QCModelMNDO
 except ImportError:
@@ -67,17 +67,41 @@ class PDRunner(object):
         if jobtype == "energy":
             system = self.run_spe_semiempirical(system, method_name, charge,
                                                 multiplicity, restricted)
+            xyz = self.store_final_geometry(system)
             hof = self.get_heat_of_formation(system, method_name)
             t = self.logger.GetTable()
             t.Start()
-            v = "Heat of Formation: {:.6f} kcal/mol".format(hof)
-            t.Title(v)
+            t.Title("Heat of Formation")
+            t.Entry("{:.6f} kcal/mol".format(hof))
+            t.Stop()
+
+            t = self.logger.GetTable()
+            t.Start()
+            t.Title("Final Geometry")
+            t.Entry(xyz)
             t.Stop()
             self.outstream.write(self.logfile.getvalue())
             if self.outstream != sys.stdout:
                 self.outstream.close()
         else:
             raise ValueError("Unrecognized job type {0}".format(jobtype))
+
+    def store_final_geometry(self, system):
+        """Write out system geometry to an XYZ file after calculation, and
+        read in the contents of that file to return as a string.
+
+        @param system: post-calculation system
+        @type system : pMolecule.System.System
+        @return: XYZ file
+        @rtype : str
+        """
+
+        outname = "final.xyz"
+        XYZFile_FromSystem(outname, system)
+        with open(outname) as xyzfile:
+            data = xyzfile.read().strip()
+
+        return data
 
     def run_spe_semiempirical(self, system, method_name, charge, multiplicity,
                               restricted):

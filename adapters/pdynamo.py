@@ -4,7 +4,10 @@ import hashlib
 import os
 import uuid
 import shutil
+import cStringIO as StringIO
 import sys
+
+import geoprep
 import cpinterface
 
 class PDynamoJob(cpinterface.Job):
@@ -13,7 +16,7 @@ class PDynamoJob(cpinterface.Job):
         self.backend = "pdynamo"
 
     def extract_last_energy(self, data, options={}):
-        """Get last energy message from log file and store it as energy.
+        """Get last energy message from log file and store it as self.energy.
 
         @param data: log file contents
         @type data : str
@@ -40,7 +43,7 @@ class PDynamoJob(cpinterface.Job):
 
     def extract_heat_of_formation(self, data, options={}):
         """Get heat of formation from log file and store it
-        as heat_of_formation.
+        as self.heat_of_formation.
 
         @param data: log file contents
         @type data : str
@@ -48,10 +51,53 @@ class PDynamoJob(cpinterface.Job):
         @type options : dict
         """
 
+        scanning = False
         for line in data.split("\n"):
-            if "Heat of Formation:" in line:
-                hof = self.n_number_from_line(line, 0, 1)
+            if "Heat of Formation" in line:
+                scanning = True
+                
+            elif scanning:
+                try:
+                    hof = self.n_number_from_line(line, 0, 1)
+                except ValueError:
+                    continue
+                    
                 self.heat_of_formation = self.kcalm_to_au(hof)
+                break
+
+    def extract_geometry(self, data, options={}):
+        """Get last geometry found in log file and store it as self.geometry.
+
+        @param data: log file contents
+        @type data : str
+        @param options: ignored
+        @type options : dict
+        """
+
+        g = geoprep.Geotool()
+        
+        scanning = False
+        buffer = []
+        banner_count = 0
+        for line in data.split("\n"):
+            if "Final Geometry" in line:
+                scanning = True
+            elif scanning:
+                if "---" in line:
+                    banner_count += 1
+                    if banner_count == 2:
+                        break
+                else:
+                    buffer.append(line)
+
+        xyz = "\n".join(buffer)
+        xyzfile = StringIO.StringIO(xyz)
+        xyzfile.seek(0)
+        f = g.read_fragment(handle=xyzfile, fmt="xyz",
+                            zero_to_origin=False)
+        xyzfile.close()
+        self.geometry = f.geometry_list
+
         
     def run(self, host="localhost", options={}):
         """Run pdynamo using the the pdynamo-runner.py script on the given
@@ -100,6 +146,7 @@ class PDynamoJob(cpinterface.Job):
         self.logdata = self.read_file(log_file, host)
         self.extract_last_energy(self.logdata)
         self.extract_heat_of_formation(self.logdata)
+        self.extract_geometry(self.logdata)
 
         self.runstate = "complete"
 
