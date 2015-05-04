@@ -1,16 +1,22 @@
 # -*- coding:utf-8 mode:python; tab-width:4; indent-tabs-mode:nil; py-indent-offset:4 -*-
 
 import hashlib
+import cStringIO as StringIO
 import uuid
+
 import cpinterface
+import geoprep
+import sharedutilities
+
+from cinfony import pybel
 
 class Mopac7Job(cpinterface.Job):
     def __init__(self, *args, **kw):
         super(Mopac7Job, self).__init__(*args, **kw)
         self.backend = "mopac7"
 
-    def extract_last_energy(self, data, options={}):
-        """Get last energy message from log file and store it as energy.
+    def extract_energy(self, data, options={}):
+        """Get last energy message from log file and store it as self.energy.
 
         @param data: log file contents
         @type data : str
@@ -37,19 +43,63 @@ class Mopac7Job(cpinterface.Job):
             self.log("Unable to find energy. Electronic energy: {0} Core-core repulsion: {1}".format(electronic_energy, core_repulsion))
 
     def extract_heat_of_formation(self, data, options={}):
-        """Get heat of formation from log file and store it
-        as heat_of_formation.
+        """Get heat of formation from log file and store it as
+        self.heat_of_formation.
 
         @param data: log file contents
         @type data : str
         @param options: ignored
-        @type options : ignored
+        @type options : dict
         """
 
         for line in data.split("\n"):
             if "HEAT OF FORMATION" in line:
                 hof = self.n_number_from_line(line, 0, 1)
                 self.heat_of_formation = self.kcalm_to_au(hof)
+
+    def extract_geometry(self, data, options={}):
+        """Get last geometry found in log file and store it as self.geometry.
+
+        @param data: log file contents
+        @type data : str
+        @param options: ignored
+        @type options : dict
+        """
+
+        #If this was an energy-only calculation, indicated by 1SCF, the final
+        #geometry will be the same as the initial geometry and it will be
+        #in a hybrid format: mopac internal coordinates with an extra charge
+        #column
+
+        u = sharedutilities.Utility()
+        g = geoprep.Geotool()
+        
+        if "1SCF" in data.upper():
+            buffer = []
+            for line in data.split("\n"):
+                converted = u.numericize(line)
+                numeric_count = sum([1 for e in converted if type(e) == float])
+                if numeric_count == 10:
+                    #this is geometry, but last column (charge) needs removal
+                    pieces = line.strip().split()[:-1]
+                    entry = "\t".join(pieces)
+                    buffer.append(entry)
+
+            mopin_body = "\n".join(buffer)
+            mopin = "FAKE HEADER\n\n\n{0}".format(mopin_body)
+            mfile = StringIO.StringIO(mopin)
+            mfile.seek(0)
+            f = g.read_fragment(handle=mfile, fmt="mopin",
+                                zero_to_origin=False)
+            mfile.close()
+            geolist = f.geometry_list
+
+        #Geometry could vary during calculation. Start CARTESIAN COORDINATES,
+        #end ATOMIC ORBITAL ELECTRON.
+        else:
+            pass
+
+        self.geometry = geolist
         
     def run(self, host="localhost", options={}):
         """Run MOPAC7 on the given host using the run_mopac7 script.
@@ -85,8 +135,9 @@ class Mopac7Job(cpinterface.Job):
         log_file = abs_file.replace(".dat", ".log")
 
         self.logdata = self.read_file(log_file, host)
-        self.extract_last_energy(self.logdata)
+        self.extract_energy(self.logdata)
         self.extract_heat_of_formation(self.logdata)
+        self.extract_geometry(self.logdata)
 
         self.runstate = "complete"
 

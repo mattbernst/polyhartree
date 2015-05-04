@@ -93,6 +93,17 @@ class MOPACTestCase(unittest.TestCase):
         self.assertRaises(ValueError, self.C.make_energy_job, stibine,
                           "semiempirical:mindo/3")
 
+    def test_extract_geometry_unchanged(self):
+        #extract geometry from an energy job, which should be basically the
+        #same as the input
+        methane = self.G.make_system("C")
+        job = self.C.make_energy_job(methane, "semiempirical:pm3")
+        job.run()
+
+        reread = self.G.geolist_to_fragment(job.geometry)
+        rmsd = self.G.align(methane.fragments[0], reread)["rmsd"]
+        self.assertTrue(rmsd < 10**-5)
+
 def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.
 

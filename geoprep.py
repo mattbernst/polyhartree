@@ -653,7 +653,7 @@ class Geotool(object):
         """
 
         molecule = pybel.readstring(fmt, representation)
-        
+
         molecule.make3D()
         fragment = Fragment(molecule)
         fragment.set_zero_to_origin()
@@ -765,23 +765,30 @@ class Geotool(object):
         
         return cs
 
-    def align(self, reference, target):
+    def align(self, reference, target, includeH=True, symmetry=True):
         """Optimize target fragment alignment to reference. Return a copied
         fragment with aligned geometry and information about the fit.
 
         TODO (maybe): use maximum common substructure to also align different
-        molecules, e.g. toluene against m-xylene
+        molecules, e.g. toluene against m-xylene.
+        Also maybe TODO: add option to force a canonical ordering on atoms
+        before alignment so that OBAlign will work regardless of original
+        order.
 
         @param reference: the fragment to align to
         @type reference : Fragment
         @param target: the fragment to be aligned
         @type target: Fragment
+        @param includeH: if False, consider only heavy atoms
+        @type includeH : bool
+        @param symmetry: if True, use symmetry axes. For example, if a benzene is flipped by 180 degrees along one of its 2-fold symmetry axes, it will only have an RMSD of 0 (with respect to its original orientation) if symmetry is enabled.
+        @type symmetry : bool
         @return: aligned fragment and fit data
         @rtype : dict
         """
 
         copied = copy.deepcopy(target)
-        aligner = pybel.ob.OBAlign(False, False)
+        aligner = pybel.ob.OBAlign(includeH, symmetry)
         aligner.SetRefMol(reference.molecule.OBMol) 
         aligner.SetTargetMol(copied.molecule.OBMol) 
         aligner.Align() 
