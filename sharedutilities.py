@@ -107,4 +107,15 @@ class Utility(object):
         @rtype : float
         """
 
-        return v / 627.509469 
+        return v / 627.509469
+
+    def bohr_to_angstrom(self, v):
+        """Convert a distance expressed in bohr to angstrom.
+
+        @param v: distance in bohr
+        @type v : float
+        @return: distance in angstrom
+        @rtype : float
+        """
+
+        return v * 0.52917721092

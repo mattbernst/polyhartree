@@ -2,7 +2,9 @@
 
 import hashlib
 import uuid
+
 import cpinterface
+import sharedutilities
 
 class GAMESSUSJob(cpinterface.Job):
     def __init__(self, *args, **kw):
@@ -10,7 +12,7 @@ class GAMESSUSJob(cpinterface.Job):
         self.backend = "gamess_us"
 
     def extract_last_energy(self, data, options={}):
-        """Get last energy message from log file and store it as energy.
+        """Get last energy message from log file and store it as self.energy.
 
         @param data: log file contents
         @type data : str
@@ -33,8 +35,8 @@ class GAMESSUSJob(cpinterface.Job):
                     self.log_once("NOTE: energies from semiempirical methods are not directly comparable to ab initio energies")
 
     def extract_heat_of_formation(self, data, options={}):
-        """Get heat of formation from log file and store it
-        as heat_of_formation.
+        """Get heat of formation from log file and store it as
+        self.heat_of_formation.
 
         @param data: log file contents
         @type data : str
@@ -46,6 +48,42 @@ class GAMESSUSJob(cpinterface.Job):
             if "HEAT OF FORMATION IS" in line:
                 hof = self.n_number_from_line(line, 0, 1)
                 self.heat_of_formation = self.kcalm_to_au(hof)
+
+    def extract_geometry(self, data, options={}):
+        """Get last geometry found in log file and store it as self.geometry.
+
+        @param data: log file contents
+        @type data : str
+        @param options: ignored
+        @type options : dict
+        """
+
+        u = sharedutilities.Utility()
+        initial_geometry = []
+        geometries = []
+        init = False
+        # initial geometry starts after COORDINATES (BOHR)
+        for line in data.split("\n"):
+            if "COORDINATES (BOHR)" in line:
+                init = True
+
+            elif init:
+                # INTERNUCLEAR DISTANCES block follows COORDINATES
+                if "INTERNUCLEAR" in line:
+                    break
+                coords = u.numericize(line)
+                if sum([1 for c in coords if type(c) == float]) == 4:
+                    #got a coordinate line: element symbol, charge, x, y, z
+                    coords.pop(1)
+                    for j in [1, 2, 3]:
+                        coords[j] = self.bohr_to_angstrom(coords[j])
+                    initial_geometry.append(coords)
+
+        if geometries:
+            self.geometry = geometries[-1]
+        else:
+            self.geometry = initial_geometry
+            
 
     def run(self, host="localhost", options={}):
         """Run a GAMESS-US job on the given host.
@@ -85,6 +123,7 @@ class GAMESSUSJob(cpinterface.Job):
         if self.runstate != "error":
             self.extract_last_energy(self.logdata)
             self.extract_heat_of_formation(self.logdata)
+            self.extract_geometry(self.logdata)
             self.runstate = "complete"
 
 class GAMESSUS(cpinterface.MolecularCalculator):
