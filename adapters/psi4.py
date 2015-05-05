@@ -2,7 +2,9 @@
 
 import hashlib
 import uuid
+
 import cpinterface
+import sharedutilities
 
 class Psi4Job(cpinterface.Job):
     def __init__(self, *args, **kw):
@@ -10,7 +12,7 @@ class Psi4Job(cpinterface.Job):
         self.backend = "psi4"
 
     def extract_last_energy(self, data, options={}):
-        """Get last energy message from log file and store it as energy.
+        """Get last energy message from log file and store it as self.energy.
 
         @param data: log file contents
         @type data : str
@@ -24,6 +26,41 @@ class Psi4Job(cpinterface.Job):
 
                 #units are already Hartree
                 self.energy = energy
+
+    def extract_geometry(self, data, options={}):
+        """Get last geometry found in log file and store it as self.geometry.
+
+        @param data: log file contents
+        @type data : str
+        @param options: ignored
+        @type options : dict
+        """
+
+        u = sharedutilities.Utility()
+        initial_geometry = []
+        geometries = []
+        init = False
+        # initial geometry starts after XYZ format geometry
+        for line in data.split("\n"):
+            if "Geometry (in Angstrom)" in line:
+                init = True
+
+            elif init:
+                #run block follows geometry
+                if "Running in" in line:
+                    break
+
+                coords = u.numericize(line)
+                if sum([1 for c in coords if type(c) == float]) == 3:
+                    #got a coordinate line: symbol, x, y, z
+                    initial_geometry.append(coords)
+
+        if geometries:
+            self.geometry = geometries[-1]
+        else:
+            self.geometry = initial_geometry
+
+
 
     def run(self, host="localhost", options={}):
         """Run a Psi4 job using psi script, on the local host.
@@ -61,6 +98,7 @@ class Psi4Job(cpinterface.Job):
 
         if self.runstate != "error":
             self.extract_last_energy(self.logdata)
+            self.extract_geometry(self.logdata)
             self.runstate = "complete"
 
 class Psi4(cpinterface.MolecularCalculator):
