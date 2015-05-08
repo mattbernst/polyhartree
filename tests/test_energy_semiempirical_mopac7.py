@@ -29,8 +29,8 @@ class MOPACEnergyTestCase(es.SemiempiricalEnergyTestCase):
         methane = self.G.make_system("C")
         job = self.C.make_energy_job(methane, "semiempirical:mindo/3")
         job.run()
-        self.assertAlmostEqual(reference_values.methane_mindo3_hof,
-                               job.heat_of_formation, places=5)
+        self.assertNearMatch(reference_values.methane_mindo3_hof,
+                             job.heat_of_formation, places=5)
 
 def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.
