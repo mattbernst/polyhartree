@@ -14,128 +14,11 @@ import sys
 import unittest
 import geoprep
 from adapters import gamess_us
-from tests import reference_values
 
 class GAMESSTestCase(unittest.TestCase):
     def setUp(self):
         self.G = geoprep.Geotool()
         self.C = gamess_us.GAMESSUS()
-
-    def tearDown(self):
-        pass
-
-    def test_energy_rohf_uhf_pm3(self):
-        #compare UHF and ROHF across different radicals for heat of formation
-        
-        smiles = {"methyl_radical" : "[CH3]",
-                  "phenyl_radical" : "c1cc[c]cc1"}
-        jobs = {}
-
-        for key in smiles:
-            s = smiles[key]
-            mol = self.G.make_system(s)
-            for reference in ["uhf", "rohf"]:
-                j = self.C.make_energy_job(mol, "semiempirical:pm3",
-                                           options={"reference" : reference})
-                j.run()
-                name = "{0}-{1}".format(key, reference)
-                jobs[name] = j
-
-        hofs = dict([(j, jobs[j].heat_of_formation) for j in jobs])
-
-        self.assertAlmostEqual(reference_values.phenyl_rohf_pm3_hof,
-                               hofs["phenyl_radical-rohf"], places=5)
-        self.assertAlmostEqual(reference_values.phenyl_uhf_pm3_hof,
-                               hofs["phenyl_radical-uhf"], places=5)
-        self.assertAlmostEqual(reference_values.methyl_rohf_pm3_hof,
-                               hofs["methyl_radical-rohf"], places=5)
-        self.assertAlmostEqual(reference_values.methyl_uhf_pm3_hof,
-                               hofs["methyl_radical-uhf"], places=5)
-
-    def test_energy_pm3_methylium(self):
-        methylium = self.G.make_system("[CH3+]")
-        job = self.C.make_energy_job(methylium, "semiempirical:pm3")
-        job.run()
-        self.assertAlmostEqual(reference_values.methylium_pm3_hof,
-                               job.heat_of_formation, places=5)
-
-    def test_energy_pm3_carbanide(self):
-        carbanide = self.G.make_system("[CH3-]")
-        job = self.C.make_energy_job(carbanide, "semiempirical:pm3")
-        job.run()
-        self.assertAlmostEqual(reference_values.carbanide_pm3_hof,
-                               job.heat_of_formation, places=5)
-
-    def test_energy_pm3_methyl_radical(self):
-        methyl_radical = self.G.make_system("[CH3]")
-        job = self.C.make_energy_job(methyl_radical, "semiempirical:pm3")
-        self.assertEqual("Forcing UHF for multiplicity 2", self.C.messages[0])
-        job.run()
-        self.assertAlmostEqual(reference_values.methyl_uhf_pm3_hof,
-                               job.heat_of_formation, places=5)
-
-    def test_energy_pm3_methane(self):
-        methane = self.G.make_system("C")
-        job = self.C.make_energy_job(methane, 'semiempirical:pm3')
-        job.run()
-        self.assertAlmostEqual(reference_values.methane_pm3_hof,
-                               job.heat_of_formation, places=5)
-
-    def test_energy_mndo_methane(self):
-        methane = self.G.make_system("C")
-        job = self.C.make_energy_job(methane, "semiempirical:mndo")
-        job.run()
-        self.assertAlmostEqual(reference_values.methane_mndo_hof,
-                               job.heat_of_formation, places=5)
-
-    def test_energy_am1_methane(self):
-        methane = self.G.make_system("C")
-        job = self.C.make_energy_job(methane, "semiempirical:am1")
-        job.run()
-        self.assertAlmostEqual(reference_values.methane_am1_hof,
-                               job.heat_of_formation, places=5)
-
-    def test_energy_rm1_methane(self):
-        methane = self.G.make_system("C")
-        job = self.C.make_energy_job(methane, "semiempirical:rm1")
-        job.run()
-        self.assertAlmostEqual(reference_values.methane_rm1_hof,
-                               job.heat_of_formation, places=5)
-
-    def test_energy_scf_methane(self):
-        #very basic minimal basis set test for methane
-        methane = self.G.make_fragment("C")
-        methane.set_basis_name("3-21G")
-        job = self.C.make_energy_job(methane, "hf:rhf")
-        job.run()
-        self.assertAlmostEqual(reference_values.methane_rhf_321g,
-                               job.energy, places=6)
-
-    def test_energy_rohf_uhf_scf_methane(self):
-        #compare UHF and ROHF across methyl radicals for HF energy
-        
-        smiles = {"methyl_radical" : "[CH3]"}
-        jobs = {}
-
-        for key in smiles:
-            s = smiles[key]
-            fragment = self.G.make_fragment(s)
-            fragment.set_basis_name("cc-pVDZ")
-
-            for reference in ["uhf", "rohf"]:
-                j = self.C.make_energy_job(fragment,
-                                           "hf:{0}".format(reference))
-                self.assertTrue(reference in j.deck.lower())
-                j.run()
-                name = "{0}-{1}".format(key, reference)
-                jobs[name] = j
-
-        energies = dict([(j, jobs[j].energy) for j in jobs])
-
-        self.assertAlmostEqual(reference_values.methyl_rohf_ccpvdz,
-                               energies["methyl_radical-rohf"], places=6)
-        self.assertAlmostEqual(reference_values.methyl_uhf_ccpvdz,
-                               energies["methyl_radical-uhf"], places=6)
 
     def test_create_geometry_td_symmetry(self):
         #test explicit symmetry setting (creation) for GAMESS-US
@@ -190,18 +73,6 @@ class GAMESSTestCase(unittest.TestCase):
 
         basis_tags = s.atom_properties(btag)
         self.assertEqual(expected_tags, basis_tags)
-
-    def test_extract_geometry_unchanged(self):
-        #extract geometry from an energy job, which should be basically the
-        #same as the input
-        methane = self.G.make_fragment("C")
-        methane = geoprep.System([methane])
-        job = self.C.make_energy_job(methane, "semiempirical:pm3")
-        job.run()
-
-        reread = self.G.geolist_to_fragment(job.geometry)
-        rmsd = self.G.align(methane.fragments[0], reread)["rmsd"]
-        self.assertTrue(rmsd < 10**-5)
 
 def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.
