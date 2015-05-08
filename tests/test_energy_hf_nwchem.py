@@ -3,23 +3,23 @@
 ##
 
 """
-    test_energy_hf_gamess_us
+    test_energy_semiempirical_gamess_us
     ~~~~~~~~~~~~~~
 
-    Test GAMESS implementations for Hartree-Fock energy jobs.
+    Test GAMESS implementations for semiempirical energy jobs.
 """
 
 import sys
 import unittest
 import geoprep
-from adapters import gamess_us
+from adapters import nwchem
 from tests import energy_hf as eh
 from tests import reference_values
 
-class GAMESSHFEnergyTestCase(eh.HFEnergyTestCase):
+class NWChemHFEnergyTestCase(eh.HFEnergyTestCase):
     def setUp(self):
         self.G = geoprep.Geotool()
-        self.C = gamess_us.GAMESSUS()
+        self.C = nwchem.NWChem()
 
 def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.
@@ -52,10 +52,10 @@ def runTests():
         test_name = None
 
     if test_name:
-        result = runSuite(GAMESSHFEnergyTestCase, name = test_name)
+        result = runSuite(NWChemHFEnergy, name=test_name)
 
     else:
-        result = runSuite(GAMESSHFEnergyTestCase)
+        result = runSuite(NWChemHFEnergyTestCase)
 
     return result
 

@@ -6,8 +6,7 @@
     test_nwchem
     ~~~~~~~~~~~~~~
 
-    Test NWChem implementations for energy, minimum geometry,
-    transition state geometry, and frequencies.
+    Test NWChem specific functionality that is not handled elsewhere.
 """
 
 import sys
@@ -36,41 +35,6 @@ end"""
         scf_controls = ["scf", "uhf", "triplet", "maxiter 200"]
         block = self.C.make_control_block(scf_controls)
         self.assertEqual(expected, block)
-
-    def test_energy_scf_methane(self):
-        #very basic minimal basis set test for methane
-        methane = self.G.make_fragment("C")
-        methane.set_basis_name("3-21G")
-        job = self.C.make_energy_job(methane, "hf:rhf")
-        job.run()
-        self.assertAlmostEqual(reference_values.methane_rhf_321g,
-                               job.energy, places=6)
-
-    def test_energy_rohf_uhf_scf_methane(self):
-        #compare UHF and ROHF across methyl radicals for HF energy
-        
-        smiles = {"methyl_radical" : "[CH3]"}
-        jobs = {}
-
-        for key in smiles:
-            s = smiles[key]
-            fragment = self.G.make_fragment(s)
-            fragment.set_basis_name("cc-pVDZ")
-
-            for reference in ["uhf", "rohf"]:
-                j = self.C.make_energy_job(fragment,
-                                           "hf:{0}".format(reference))
-                self.assertTrue(reference in j.deck.lower())
-                j.run()
-                name = "{0}-{1}".format(key, reference)
-                jobs[name] = j
-
-        energies = dict([(j, jobs[j].energy) for j in jobs])
-
-        self.assertAlmostEqual(reference_values.methyl_rohf_ccpvdz,
-                               energies["methyl_radical-rohf"], places=6)
-        self.assertAlmostEqual(reference_values.methyl_uhf_ccpvdz,
-                               energies["methyl_radical-uhf"], places=6)
 
     def test_bad_input_error(self):
         methane = self.G.make_fragment("C")
@@ -157,19 +121,6 @@ end"""
         geometry = self.C.create_geometry(s, options=options)
 
         self.assertTrue("symmetry C1" in geometry)
-
-    def test_extract_geometry_unchanged(self):
-        #extract geometry from an energy job, which should be basically the
-        #same as the input
-        methane = self.G.make_fragment("C")
-        methane.set_basis_name("3-21G")
-        methane = geoprep.System([methane])
-        job = self.C.make_energy_job(methane, "hf:rhf")
-        job.run()
-
-        reread = self.G.geolist_to_fragment(job.geometry)
-        rmsd = self.G.align(methane.fragments[0], reread)["rmsd"]
-        self.assertTrue(rmsd < 10**-5)
 
 
 def runSuite(cls, verbosity=2, name=None):
