@@ -6,7 +6,7 @@
     test_energy_hf_gamess_us
     ~~~~~~~~~~~~~~
 
-    Test GAMESS implementations for Hartree-Fock energy jobs.
+    Test GAMESS-US implementations for Hartree-Fock energy jobs.
 """
 
 import sys

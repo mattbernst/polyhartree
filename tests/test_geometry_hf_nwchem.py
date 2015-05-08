@@ -3,20 +3,19 @@
 ##
 
 """
-    test_energy_hf_nwchem
+    test_geometry_hf_nwchem
     ~~~~~~~~~~~~~~
 
-    Test NWChem implementations for Hartree-Fock energy jobs.
+    Test NWChem implementations for Hartree-Fock geometry jobs.
 """
 
 import sys
 import unittest
 import geoprep
 from adapters import nwchem
-from tests import energy_hf as eh
-from tests import reference_values
+from tests import geometry_hf as gh
 
-class NWChemHFEnergyTestCase(eh.HFEnergyTestCase):
+class NWChemHFGeometryTestCase(gh.HFGeometryTestCase):
     def setUp(self):
         self.G = geoprep.Geotool()
         self.C = nwchem.NWChem()
@@ -52,10 +51,10 @@ def runTests():
         test_name = None
 
     if test_name:
-        result = runSuite(NWChemHFEnergyTestCase, name=test_name)
+        result = runSuite(NWChemHFGeometryTestCase, name=test_name)
 
     else:
-        result = runSuite(NWChemHFEnergyTestCase)
+        result = runSuite(NWChemHFGeometryTestCase)
 
     return result
 

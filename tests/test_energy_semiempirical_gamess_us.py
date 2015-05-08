@@ -6,7 +6,7 @@
     test_energy_semiempirical_gamess_us
     ~~~~~~~~~~~~~~
 
-    Test GAMESS implementations for semiempirical energy jobs.
+    Test GAMESS-US implementations for semiempirical energy jobs.
 """
 
 import sys

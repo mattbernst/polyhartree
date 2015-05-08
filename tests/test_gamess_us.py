@@ -6,8 +6,7 @@
     test_gamess
     ~~~~~~~~~~~~~~
 
-    Test GAMESS implementations for energy, minimum geometry,
-    transition state geometry, and frequencies.
+    Test GAMESS-US specific functionality that is not handled elsewhere.
 """
 
 import sys
