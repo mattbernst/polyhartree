@@ -14,15 +14,12 @@ import unittest
 import geoprep
 from adapters import nwchem
 from sharedutilities import Utility
-from tests import reference_values
+from tests.common_testcode import runSuite
 
 class NWChemTestCase(unittest.TestCase):
     def setUp(self):
         self.G = geoprep.Geotool()
         self.C = nwchem.NWChem()
-
-    def tearDown(self):
-        pass
 
     def test_make_control_block(self):
         #test control block formatting
@@ -121,30 +118,6 @@ end"""
         geometry = self.C.create_geometry(s, options=options)
 
         self.assertTrue("symmetry C1" in geometry)
-
-
-def runSuite(cls, verbosity=2, name=None):
-    """Run a unit test suite and return status code.
-
-    @param cls: class that the suite should be constructed from
-    @type cls : class
-    @param verbosity: verbosity level to pass to test runner
-    @type verbosity : int
-    @param name: name of a specific test in the suite to run
-    @type name : str
-    @return: unit test run status code
-    @rtype : int
-    """
-    try: 
-        if name:
-            suite = unittest.makeSuite(cls, name)
-        else:
-            suite = unittest.makeSuite(cls)
-            
-        return unittest.TextTestRunner(verbosity=verbosity).run(suite)
-    
-    except SystemExit:
-        pass
 
 def runTests():
     try:

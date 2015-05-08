@@ -14,6 +14,7 @@
 import sys
 import unittest
 import geoprep
+from tests.common_testcode import runSuite
 from adapters import nwchem, mopac7
 from sharedutilities import Utility
 
@@ -22,9 +23,6 @@ class RETestCase(unittest.TestCase):
         self.G = geoprep.Geotool()
         self.C = nwchem.NWChem()
         self.C2 = mopac7.Mopac7()
-
-    def tearDown(self):
-        pass
 
     def test_nwchem_energy_scf_methane(self):
         #very basic minimal basis set test for methane
@@ -96,29 +94,6 @@ class RETestCase(unittest.TestCase):
         job = self.C2.make_energy_job(methylium, "semiempirical:pm3")
         self.assertRaises(KeyError, job.ansible_run, "shell", "ls",
                           "nosuchhost")
-
-def runSuite(cls, verbosity=2, name=None):
-    """Run a unit test suite and return status code.
-
-    @param cls: class that the suite should be constructed from
-    @type cls : class
-    @param verbosity: verbosity level to pass to test runner
-    @type verbosity : int
-    @param name: name of a specific test in the suite to run
-    @type name : str
-    @return: unit test run status code
-    @rtype : int
-    """
-    try: 
-        if name:
-            suite = unittest.makeSuite(cls, name)
-        else:
-            suite = unittest.makeSuite(cls)
-            
-        return unittest.TextTestRunner(verbosity=verbosity).run(suite)
-    
-    except SystemExit:
-        pass
 
 def runTests():
     try:

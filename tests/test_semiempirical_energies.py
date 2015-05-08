@@ -12,9 +12,9 @@
 
 import sys
 import unittest
-import pprint
 from cinfony import pybel
 import geoprep
+from tests.common_testcode import runSuite
 from adapters import gamess_us
 from adapters import mopac7
 from adapters import pdynamo
@@ -26,9 +26,6 @@ class PDTestCase(unittest.TestCase):
         self.implementations = {"pdynamo" : pdynamo.PDynamo(),
                                 "gamess" : gamess_us.GAMESSUS(),
                                 "mopac7" : mopac7.Mopac7()}
-
-    def tearDown(self):
-        pass
 
     def run_multi(self, geometry, method):
         """Run multiple energy calculations at the same geometry and method
@@ -229,29 +226,6 @@ class PDTestCase(unittest.TestCase):
                 self.assertEqual(len(results[key]), num_unique)
             else:
                 self.assertEqual(1, num_unique)
-
-def runSuite(cls, verbosity=2, name=None):
-    """Run a unit test suite and return status code.
-
-    @param cls: class that the suite should be constructed from
-    @type cls : class
-    @param verbosity: verbosity level to pass to test runner
-    @type verbosity : int
-    @param name: name of a specific test in the suite to run
-    @type name : str
-    @return: unit test run status code
-    @rtype : int
-    """
-    try: 
-        if name:
-            suite = unittest.makeSuite(cls, name)
-        else:
-            suite = unittest.makeSuite(cls)
-            
-        return unittest.TextTestRunner(verbosity=verbosity).run(suite)
-    
-    except SystemExit:
-        pass
 
 def runTests():
     try:

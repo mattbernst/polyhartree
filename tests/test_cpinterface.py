@@ -14,14 +14,12 @@ import sys
 import unittest
 import cpinterface
 import geoprep
+from tests.common_testcode import runSuite
 
 class CPITestCase(unittest.TestCase):
     def setUp(self):
         self.G = geoprep.Geotool()
         self.C = cpinterface.MolecularCalculator()
-
-    def tearDown(self):
-        pass
 
     def test_missing_basis_name(self):
         #error given for atoms lacking a basis set assignment
@@ -86,29 +84,6 @@ class CPITestCase(unittest.TestCase):
         dzd = "".join(data["cc-pVDZ"].values())
         for name in ["HYDROGEN", "CARBON", "ARSENIC"]:
             self.assertTrue(name in dzd)
-
-def runSuite(cls, verbosity=2, name=None):
-    """Run a unit test suite and return status code.
-
-    @param cls: class that the suite should be constructed from
-    @type cls : class
-    @param verbosity: verbosity level to pass to test runner
-    @type verbosity : int
-    @param name: name of a specific test in the suite to run
-    @type name : str
-    @return: unit test run status code
-    @rtype : int
-    """
-    try: 
-        if name:
-            suite = unittest.makeSuite(cls, name)
-        else:
-            suite = unittest.makeSuite(cls)
-            
-        return unittest.TextTestRunner(verbosity=verbosity).run(suite)
-    
-    except SystemExit:
-        pass
 
 def runTests():
     try:

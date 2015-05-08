@@ -3,23 +3,22 @@
 ##
 
 """
-    test_energy_hf_nwchem
+    test_geometry_hf_psi4
     ~~~~~~~~~~~~~~
 
-    Test NWChem implementations for Hartree-Fock energy jobs.
+    Test Psi4 implementations for Hartree-Fock geometry jobs.
 """
 
 import sys
 import geoprep
-from adapters import nwchem
+from adapters import psi4
 from tests.common_testcode import runSuite
-from tests import energy_hf as eh
-from tests import reference_values
+from tests import geometry_hf as gh
 
-class NWChemHFEnergyTestCase(eh.HFEnergyTestCase):
+class Psi4HFGeometryTestCase(gh.HFGeometryTestCase):
     def setUp(self):
         self.G = geoprep.Geotool()
-        self.C = nwchem.NWChem()
+        self.C = psi4.Psi4()
 
 def runTests():
     try:
@@ -29,10 +28,10 @@ def runTests():
         test_name = None
 
     if test_name:
-        result = runSuite(NWChemHFEnergyTestCase, name=test_name)
+        result = runSuite(Psi4HFGeometryTestCase, name=test_name)
 
     else:
-        result = runSuite(NWChemHFEnergyTestCase)
+        result = runSuite(Psi4HFGeometryTestCase)
 
     return result
 

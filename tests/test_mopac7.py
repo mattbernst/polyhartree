@@ -12,6 +12,7 @@
 import sys
 import unittest
 import geoprep
+from tests.common_testcode import runSuite
 from adapters import mopac7
 
 class MOPACTestCase(unittest.TestCase):
@@ -19,9 +20,6 @@ class MOPACTestCase(unittest.TestCase):
     def setUp(self):
         self.G = geoprep.Geotool()
         self.C = mopac7.Mopac7()
-
-    def tearDown(self):
-        pass
 
     def test_bad_input_error(self):
         #This fails because we introduce a typo into the deck.
@@ -40,29 +38,6 @@ class MOPACTestCase(unittest.TestCase):
         stibine = self.G.make_system("[SbH3]")
         self.assertRaises(ValueError, self.C.make_energy_job, stibine,
                           "semiempirical:mindo/3")
-
-def runSuite(cls, verbosity=2, name=None):
-    """Run a unit test suite and return status code.
-
-    @param cls: class that the suite should be constructed from
-    @type cls : class
-    @param verbosity: verbosity level to pass to test runner
-    @type verbosity : int
-    @param name: name of a specific test in the suite to run
-    @type name : str
-    @return: unit test run status code
-    @rtype : int
-    """
-    try: 
-        if name:
-            suite = unittest.makeSuite(cls, name)
-        else:
-            suite = unittest.makeSuite(cls)
-            
-        return unittest.TextTestRunner(verbosity=verbosity).run(suite)
-    
-    except SystemExit:
-        pass
 
 def runTests():
     try:
