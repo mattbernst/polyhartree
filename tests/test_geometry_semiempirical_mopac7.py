@@ -3,43 +3,24 @@
 ##
 
 """
-    test_mopac
+    test_geometry_semiempirical_mopac7
     ~~~~~~~~~~~~~~
 
-    Test MOPAC 7 specific functionality that is not handled elsewhere.
+    Test MOPAC 7 semiempirical implementation for geometry.
 """
 
 import sys
 import unittest
 import geoprep
 from adapters import mopac7
+from tests import geometry_semiempirical as gs
+from tests import reference_values
 
-class MOPACTestCase(unittest.TestCase):
+class MOPACGeometryTestCase(gs.SemiempiricalGeometryTestCase):
 
     def setUp(self):
         self.G = geoprep.Geotool()
         self.C = mopac7.Mopac7()
-
-    def tearDown(self):
-        pass
-
-    def test_bad_input_error(self):
-        #This fails because we introduce a typo into the deck.
-        P2 = self.G.make_system("P#P")
-        job = self.C.make_energy_job(P2, "semiempirical:pm3")
-        job.deck = job.deck.replace("SINGLET", "SNIGLET")
-        job.run()
-        self.assertEqual("error", job.runstate)
-
-    def test_element_error(self):
-        #Try to create a system containing an element unparameterized for
-        #MINDO/3. Should raise an error.
-        #N.B.: The generated input file would actually run in practice,
-        #rather contrary to the Mopac 7 manual's parameterization information,
-        #but it seems best to err on the side of caution.
-        stibine = self.G.make_system("[SbH3]")
-        self.assertRaises(ValueError, self.C.make_energy_job, stibine,
-                          "semiempirical:mindo/3")
 
 def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.
@@ -72,10 +53,10 @@ def runTests():
         test_name = None
 
     if test_name:
-        result = runSuite(MOPACTestCase, name = test_name)
+        result = runSuite(MOPACGeometryTestCase, name = test_name)
 
     else:
-        result = runSuite(MOPACTestCase)
+        result = runSuite(MOPACGeometryTestCase)
 
     return result
 
