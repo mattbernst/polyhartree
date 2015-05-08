@@ -3,25 +3,25 @@
 ##
 
 """
-    test_pdynamo
+    test_geometry_semiempirical_pdynamo
     ~~~~~~~~~~~~~~
 
-    Test pDynamo specific functionality that is not handled elsewhere.
+    Test pDynamo implementations for semiempirical geometry.
 """
 
 import sys
 import unittest
 import geoprep
 from adapters import pdynamo
+from tests import reference_values
+from tests import geometry_semiempirical as gs
 
-class PDTestCase(unittest.TestCase):
+class PDGeometryTestCase(gs.SemiempiricalGeometryTestCase):
 
     def setUp(self):
         self.G = geoprep.Geotool()
         self.C = pdynamo.PDynamo()
 
-    def tearDown(self):
-        pass
 
 def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.
@@ -54,10 +54,10 @@ def runTests():
         test_name = None
 
     if test_name:
-        result = runSuite(PDTestCase, name = test_name)
+        result = runSuite(PDGeometryTestCase, name = test_name)
 
     else:
-        result = runSuite(PDTestCase)
+        result = runSuite(PDGeometryTestCase)
 
     return result
 
