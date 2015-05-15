@@ -504,9 +504,17 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         @rtype : Job
         """
 
-        defaults = {"scf_iterations" : 200,
-                    "basis_tag_name" : "basis_tag"}
+        defaults = {"scf_iterations" : 200, "basis_tag_name" : "basis_tag",
+                    "goal" : "optimize"}
         options = dict(defaults.items() + options.items())
+
+        if runtyp == "ENERGY":
+            pass
+        if runtyp == "OPT":
+            if options.get("goal") == "saddle":
+                runtyp = "SADPOINT"
+            elif options.get("goal") == "optimize":
+                runtyp = "OPTIMIZE"
 
         self.check_method(method)
 
