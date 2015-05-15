@@ -50,3 +50,12 @@ class HFEnergyTestCase(energy.EnergyTestCase):
                              energies["methyl_radical-rohf"], places=places)
         self.assertNearMatch(reference_values.methyl_uhf_ccpvdz,
                              energies["methyl_radical-uhf"], places=places)
+
+    def test_energy_methanol(self, places=6):
+        #regression test using geometry read from external file
+        methanol = self.G.read_fragment("tests/data/methanol1.xyz")
+        methanol.set_basis_name("3-21G")
+        job = self.C.make_energy_job(methanol, "hf:rhf")
+        job.run()
+        self.assertNearMatch(reference_values.methanol_rhf_321g,
+                             job.energy, places=places)

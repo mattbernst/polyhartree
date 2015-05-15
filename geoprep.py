@@ -238,8 +238,8 @@ class System(object):
         xyzs = []
         for f in self.fragments:
             #clip header and get right to the atom geometry
-            xyz = f.write("xyz").strip().split("\n\n")[1]
-            xyzs.append(xyz)
+            xyz = f.write("xyz").strip().split("\n")[2:]
+            xyzs.append("\n".join(xyz))
 
         geoblock = "\n".join(xyzs)
         fused = "{0}\n\n{1}\n".format(natoms, geoblock)

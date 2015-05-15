@@ -16,6 +16,9 @@ methane_rhf_321g = -39.9766425
 methyl_uhf_ccpvdz = -39.5638132
 methyl_rohf_ccpvdz = -39.5596229
 
+#energy from external geometry
+methanol_rhf_321g = -114.39179686
+
 #semiempirical heats of formation (also in hartrees)
 phenyl_rohf_pm3_hof = 0.126826
 phenyl_uhf_pm3_hof = 0.119951
