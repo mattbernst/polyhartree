@@ -49,8 +49,37 @@ class GAMESSUSJob(cpinterface.Job):
                 hof = self.n_number_from_line(line, 0, 1)
                 self.heat_of_formation = self.kcalm_to_au(hof)
 
+    def line_to_geometry(self, line):
+        """Extract lines fitting pattern element_symbol float float float float
+        and interpret them as [element, x, y, z]. First float is atomic number
+        and is ignored.
+
+        e.g. WILL match
+         O           8.0   0.0133992460  -0.0168294554   0.0087021955
+
+        WILL NOT match
+         1  O            8.0    -0.0002646     0.0003329    -0.0001721
+
+        @param line: a line of data from log file
+        @type line : str
+        @return: [element, x, y, z] or []
+        @rtype : list
+        """
+
+        entry = []
+        u = sharedutilities.Utility()
+        n = u.numericize(line)
+        pattern = [str, float, float, float, float]
+        if [type(k) for k in n] == pattern:
+            if n[0] in sharedutilities.ELEMENTS:
+                entry = [n[0], n[2], n[3], n[4]]
+
+        return entry
+
     def extract_geometry(self, data, options={}):
         """Get last geometry found in log file and store it as self.geometry.
+        If there are multiple geometries from e.g. an optimization run, they
+        will go into self.geometry_history.
 
         @param data: log file contents
         @type data : str
@@ -58,32 +87,26 @@ class GAMESSUSJob(cpinterface.Job):
         @type options : dict
         """
 
-        u = sharedutilities.Utility()
-        initial_geometry = []
         geometries = []
-        init = False
-        # initial geometry starts after COORDINATES (BOHR)
         for line in data.split("\n"):
-            if "COORDINATES (BOHR)" in line:
-                init = True
+            extracted = self.line_to_geometry(line)
+            if extracted:
+                geometries.append(extracted)
 
-            elif init:
-                # INTERNUCLEAR DISTANCES block follows COORDINATES
-                if "INTERNUCLEAR" in line:
-                    break
-                coords = u.numericize(line)
-                if sum([1 for c in coords if type(c) == float]) == 4:
-                    #got a coordinate line: element symbol, charge, x, y, z
-                    coords.pop(1)
-                    for j in [1, 2, 3]:
-                        coords[j] = self.bohr_to_angstrom(coords[j])
-                    initial_geometry.append(coords)
+        natoms = len(self.system.atoms)
+        while geometries:
+            g = geometries[:natoms]
+            geometries = geometries[natoms:]
 
-        if geometries:
-            self.geometry = geometries[-1]
-        else:
-            self.geometry = initial_geometry
+            #the very first structure will be reported in bohr, so convert it
+            if not self.geometry_history:
+                for j in range(len(g)):
+                    for k in [1, 2, 3]:
+                        g[j][k] = self.bohr_to_angstrom(g[j][k])
+                
+            self.geometry_history.append(g)
             
+        self.geometry = self.geometry_history[-1]
 
     def run(self, host="localhost", options={}):
         """Run a GAMESS-US job on the given host.
@@ -248,6 +271,42 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         else:
             raise ValueError("GAMESS-US does not currently support {0}".method)
 
+    def make_opt_job(self, system, method, options={}):
+        """Create an input specification for a geometry optimization
+        calculation. Optimization goal may be to find minimum geometry or
+        to find a saddle point.
+
+        options:
+         goal: minimize or saddle
+
+        @param system: molecular system for energy calculation
+        @type system : geoprep.System
+        @param method: calculation method
+        @type method : str
+        @param options: additional keyword based control options
+        @type options : dict
+        @return: a GAMESS-US input for geometry optimization calculation
+        @rtype : str
+        """
+
+        system = self.fragment_to_system(system)
+
+        self.check_method(method)
+        if method.startswith("semiempirical"):
+            try:
+                options["extras"]["semiempirical"] = True
+            except KeyError:
+                options["extras"] = {"semiempirical" : True}
+                
+            return self.make_semiempirical_job(system, method, "OPT",
+                                               options=options)
+
+        elif method.startswith("hf"):
+            return self.make_hf_job(system, method, "OPT", options=options)
+
+        else:
+            raise ValueError("GAMESS-US does not currently support {0}".method)
+
     def reformat_long_line(self, data, start_marker, end_marker, maxlen=70):
         """GAMESS-US does not read lines longer than 80 characters. This
         method breaks up long directives into multiple lines.
@@ -295,6 +354,8 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         """Create a semiempirical input specification for a calculation.
         GAMESS-US supports MNDO, RM1, AM1, and PM3 methods.
 
+        TODO: $STATPT control for geometry optimization
+        
         @param system: molecular system for calculation
         @type system : geoprep.System
         @param method: a semiempirical calculation method
@@ -304,9 +365,18 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         @return: a GAMESS-US semiempirical job
         @rtype : Job
         """
-
-        defaults = {"reference" : "rhf", "scf_iterations" : 200}
+        
+        defaults = {"reference" : "rhf", "scf_iterations" : 200,
+                    "goal" : "optimize"}
         options = dict(defaults.items() + options.items())
+
+        if runtyp == "ENERGY":
+            pass
+        if runtyp == "OPT":
+            if options.get("goal") == "saddle":
+                runtyp = "SADPOINT"
+            elif options.get("goal") == "optimize":
+                runtyp = "OPTIMIZE"
 
         self.check_method(method)
         self.check_element_support(system, method)
