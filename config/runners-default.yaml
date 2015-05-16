@@ -16,7 +16,7 @@ localhost:
   - program: mopac7
     cores: 1
     enabled: y
-    cli: cd {path} && run_mopac7 {input}
+    cli: cd {path} && run_mopac7 {input} &> {output}
   - program: pdynamo
     cores: 1
     enabled: y
@@ -37,7 +37,7 @@ localhost:
   - program: mopac7
     cores: 1
     enabled: y
-    cli: cd {path} && run_mopac7 {input}
+    cli: cd {path} && run_mopac7 {input} &> {output}
   - program: pdynamo
     cores: 1
     enabled: y

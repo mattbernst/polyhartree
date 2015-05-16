@@ -57,8 +57,39 @@ class Mopac7Job(cpinterface.Job):
                 hof = self.n_number_from_line(line, 0, 1)
                 self.heat_of_formation = self.kcalm_to_au(hof)
 
+    def line_to_geometry(self, line):
+        """Extract lines fitting pattern float element_symbol float float float
+        and interpret them as [element, x, y, z]. First number is index number
+        and is ignored.
+
+        e.g. WILL match
+         2         C                  1.3220     .0000     .0000
+
+        WILL NOT match
+         2          C           -.1526          4.1526
+        or
+         2      C         1.08609  *     123.09742  *                 1    2
+
+        @param line: a line of data from log file
+        @type line : str
+        @return: [element, x, y, z] or []
+        @rtype : list
+        """
+
+        entry = []
+        u = sharedutilities.Utility()
+        n = u.numericize(line)
+        pattern = [float, str, float, float, float]
+        if [type(k) for k in n] == pattern:
+            if n[1] in sharedutilities.ELEMENTS:
+                entry = [n[1], n[2], n[3], n[4]]
+
+        return entry
+                
     def extract_geometry(self, data, options={}):
         """Get last geometry found in log file and store it as self.geometry.
+        If there are multiple geometries from e.g. an optimization run, they
+        will go into self.geometry_history.
 
         @param data: log file contents
         @type data : str
@@ -66,40 +97,20 @@ class Mopac7Job(cpinterface.Job):
         @type options : dict
         """
 
-        #If this was an energy-only calculation, indicated by 1SCF, the final
-        #geometry will be the same as the initial geometry and it will be
-        #in a hybrid format: mopac internal coordinates with an extra charge
-        #column
+        geometries = []
+        for line in data.split("\n"):
+            extracted = self.line_to_geometry(line)
+            if extracted:
+                geometries.append(extracted)
 
-        u = sharedutilities.Utility()
-        g = geoprep.Geotool()
-        
-        if "1SCF" in data.upper():
-            buffer = []
-            for line in data.split("\n"):
-                converted = u.numericize(line)
-                numeric_count = sum([1 for e in converted if type(e) == float])
-                if numeric_count == 10:
-                    #this is geometry, but last column (charge) needs removal
-                    pieces = line.strip().split()[:-1]
-                    entry = "\t".join(pieces)
-                    buffer.append(entry)
+        natoms = len(self.system.atoms)
+        while geometries:
+            g = geometries[:natoms]
+            geometries = geometries[natoms:]
 
-            mopin_body = "\n".join(buffer)
-            mopin = "FAKE HEADER\n\n\n{0}".format(mopin_body)
-            mfile = StringIO.StringIO(mopin)
-            mfile.seek(0)
-            f = g.read_fragment(handle=mfile, fmt="mopin",
-                                zero_to_origin=False)
-            mfile.close()
-            geolist = f.geometry_list
-
-        #Geometry could vary during calculation. Start CARTESIAN COORDINATES,
-        #end ATOMIC ORBITAL ELECTRON.
-        else:
-            pass
-
-        self.geometry = geolist
+            self.geometry_history.append(g)
+            
+        self.geometry = self.geometry_history[-1]
         
     def run(self, host="localhost", options={}):
         """Run MOPAC7 on the given host using the run_mopac7 script.
@@ -120,21 +131,21 @@ class Mopac7Job(cpinterface.Job):
         self.write_file(self.deck, abs_file, host)
 
         #N.B.: run_mopac7 does not like long paths!
-        rp = {"path" : path, "input" : abs_file.split(".dat")[0]}
+        base_file = abs_file.split(".dat")[0]
+        out_file = "{0}.out".format(base_file)
+        rp = {"path" : path, "input" : base_file, "output" : out_file}
         cmd = run_params["cli"].format(**rp)
-        
+
         stdout, returncode = self.execute(cmd, host, bash_shell=True)
         self.stdout = stdout
+        self.logdata = self.read_file(out_file, host)
 
-        errors_stdout = ["DUE TO PROGRAM BUG", "STOPPED TO AVOID WASTING TIME"]
-        for e in errors_stdout:
-            if e in stdout:
+        errors = ["DUE TO PROGRAM BUG", "STOPPED TO AVOID WASTING TIME"]
+        for e in errors:
+            if e in self.logdata:
                 self.runstate = "error"
                 return
-
-        log_file = abs_file.replace(".dat", ".log")
-
-        self.logdata = self.read_file(log_file, host)
+                
         self.extract_energy(self.logdata)
         self.extract_heat_of_formation(self.logdata)
         self.extract_geometry(self.logdata)
@@ -236,12 +247,41 @@ class Mopac7(cpinterface.MolecularCalculator):
         @return: a Mopac7 single point energy calculation job
         @rtype : cpinterface.Job
         """
+        
+        system = self.fragment_to_system(system)
 
         if method.startswith("semiempirical"):
             return self.make_semiempirical_job(system, method, "ENERGY",
                                                options=options)
         else:
             raise ValueError("Mopac 7 does not support {0}".format(method))
+
+    def make_opt_job(self, system, method, options={}):
+        """Create an input specification for a geometry optimization
+        calculation. Optimization goal may be to find minimum geometry or
+        to find a saddle point.
+
+        options:
+         goal: minimize or saddle
+
+        @param system: molecular system for energy calculation
+        @type system : geoprep.System
+        @param method: calculation method
+        @type method : str
+        @param options: additional keyword based control options
+        @type options : dict
+        @return: a Mopac7 input for geometry optimization calculation
+        @rtype : str
+        """
+
+        system = self.fragment_to_system(system)
+
+        if method.startswith("semiempirical"):
+            return self.make_semiempirical_job(system, method, "OPT",
+                                               options=options)
+        else:
+            raise ValueError("Mopac 7 does not support {0}".format(method))
+
 
     def make_semiempirical_job(self, system, method, runtyp,
                                options={}):
@@ -261,7 +301,7 @@ class Mopac7(cpinterface.MolecularCalculator):
         """
 
         defaults = {"reference" : "rhf", "gnorm" : 0.0001, "precise" : True,
-                    "let" : True, "scf_iterations" : 999}
+                    "let" : True, "scf_iterations" : 999, "geo_ok" : True}
         options = dict(defaults.items() + options.items())
 
         self.check_method(method)
@@ -297,6 +337,7 @@ class Mopac7(cpinterface.MolecularCalculator):
         controls.append(reference)
         controls.append(spin_name)
         controls.append(mmap[semethod])
+        controls.append("LARGE")
 
         #Default is to optimize geometry; "1SCF" gives a single-point energy
         if runtyp == "ENERGY":
@@ -311,6 +352,9 @@ class Mopac7(cpinterface.MolecularCalculator):
         if options.get("let"):
             controls.append("LET")
 
+        if options.get("geo_ok"):
+            controls.append("GEO-OK")
+        
         if options.get("scf_iterations"):
             controls.append("ITRY={0}".format(options.get("scf_iterations")))
 
