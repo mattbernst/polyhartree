@@ -29,16 +29,21 @@ class HFGeometryTestCase(unittest.TestCase):
 
     def test_opt_rhf_water(self):
         #minimize geometry and verify that final structure has lower energy
+
+        #without forcing lower symmetry, psi4 encounters a changed symmetry error
+        #during optimization
+        #TODO: the psi4 problem deserves its own test case
+        options = {"symmetry" : "c1"}
         water = self.G.make_fragment("O")
         water.set_basis_name("3-21G")
-        job = self.C.make_opt_job(water, "hf:rhf")
+        job = self.C.make_opt_job(water, "hf:rhf", options=options)
         job.run()
 
         self.assertTrue(len(job.geometry_history) > 1)
         
         first = self.G.geolist_to_fragment(job.geometry_history[0])
         first.set_basis_name("3-21G")
-        job1 = self.C.make_energy_job(first, "hf:rhf")
+        job1 = self.C.make_energy_job(first, "hf:rhf", options=options)
         job1.run()
 
         self.assertTrue(job.energy < job1.energy)

@@ -363,14 +363,15 @@ class NWChem(cpinterface.MolecularCalculator):
         defaults = {"scf_iterations" : 999,
                     "basis_tag_name" : "basis_tag",
                     "property_name" : "basis_tag",
-                    "goal" : "optimize"}
+                    "goal" : "minimize"}
         options = dict(defaults.items() + options.items())
 
         if runtyp == "ENERGY":
             task = "energy"
         if runtyp == "OPT":
-            #expected: optimize or saddle
-            task = options.get("goal")
+            #expected: minimize or saddle
+            taskmap = {"minimize" : "optimize", "saddle" : "saddle"}
+            task = taskmap[options.get("goal")]
 
         self.check_method(method)
 

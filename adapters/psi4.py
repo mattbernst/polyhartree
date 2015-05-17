@@ -1,5 +1,6 @@
 # -*- coding:utf-8 mode:python; tab-width:4; indent-tabs-mode:nil; py-indent-offset:4 -*-
 
+import json
 import hashlib
 import uuid
 
@@ -27,8 +28,39 @@ class Psi4Job(cpinterface.Job):
                 #units are already Hartree
                 self.energy = energy
 
+    def line_to_geometry(self, line):
+        """Extract lines fitting pattern element float float float
+        and interpret them as [element, x, y, z].
+
+        e.g. WILL match
+         O          -0.0000000006       -0.1206110193        0.0000000000
+
+        WILL NOT match
+         2       -0.000176369484     0.000057996186     0.000000000004
+
+        (presuming that H0 is an actual tag and H is not)
+
+        @param line: a line of data from log file
+        @type line : str
+        @return: [element, x, y, z] or []
+        @rtype : list
+        """
+
+        entry = []
+        u = sharedutilities.Utility()
+        n = u.numericize(line)
+
+        pattern = [str, float, float, float]
+        if [type(k) for k in n] == pattern:
+            if n[0] in sharedutilities.ELEMENTS:
+                entry = n[:]
+
+        return entry
+
     def extract_geometry(self, data, options={}):
         """Get last geometry found in log file and store it as self.geometry.
+        If there are multiple geometries from e.g. an optimization run, they
+        will go into self.geometry_history.
 
         @param data: log file contents
         @type data : str
@@ -36,31 +68,30 @@ class Psi4Job(cpinterface.Job):
         @type options : dict
         """
 
-        u = sharedutilities.Utility()
-        initial_geometry = []
         geometries = []
-        init = False
-        # initial geometry starts after XYZ format geometry
         for line in data.split("\n"):
-            if "Geometry (in Angstrom)" in line:
-                init = True
+            extracted = self.line_to_geometry(line)
+            if extracted:
+                geometries.append(extracted)
 
-            elif init:
-                #run block follows geometry
-                if "Running in" in line:
-                    break
+        natoms = len(self.system.atoms)
+        while geometries:
+            g = geometries[:natoms]
+            geometries = geometries[natoms:]
 
-                coords = u.numericize(line)
-                if sum([1 for c in coords if type(c) == float]) == 3:
-                    #got a coordinate line: symbol, x, y, z
-                    initial_geometry.append(coords)
+            self.geometry_history.append(g)
 
-        if geometries:
-            self.geometry = geometries[-1]
-        else:
-            self.geometry = initial_geometry
+        #extra step for psi4: remove dupes
+        dupes = set()
+        deduped = []
+        for g in self.geometry_history:
+            dumped = json.dumps(g)
+            if dumped not in dupes:
+                deduped.append(g)
+                dupes.add(dumped)
+        self.geometry_history = deduped
 
-
+        self.geometry = self.geometry_history[-1]
 
     def run(self, host="localhost", options={}):
         """Run a Psi4 job using psi script, on the local host.
@@ -222,6 +253,34 @@ class Psi4(cpinterface.MolecularCalculator):
         else:
             raise ValueError("Psi4 does not currently support {0}".method)
 
+    def make_opt_job(self, system, method, options={}):
+        """Create an input specification for a geometry optimization
+        calculation. Optimization goal may be to find minimum geometry or
+        to find a saddle point.
+
+        options:
+         goal: minimize or saddle
+
+        @param system: molecular system for energy calculation
+        @type system : geoprep.System
+        @param method: calculation method
+        @type method : str
+        @param options: additional keyword based control options
+        @type options : dict
+        @return: Psi4 input for geometry optimization calculation
+        @rtype : str
+        """
+
+        system = self.fragment_to_system(system)
+
+        self.check_method(method)
+
+        if method.startswith("hf"):
+            return self.make_hf_job(system, method, "OPT", options=options)
+
+        else:
+            raise ValueError("Psi4 does not currently support {0}".method)
+
     def prepare_basis_data(self, system, options={}):
         """Prepare basis set data for use: basis assignment, inline
         basis specifications, and information for spherical/cartesian flag.
@@ -320,8 +379,18 @@ class Psi4(cpinterface.MolecularCalculator):
         defaults = {"scf_iterations" : 999,
                     "basis_tag_name" : "basis_tag",
                     "property_name" : "basis_tag",
-                    "scf_type" : "pk"}
+                    "scf_type" : "pk",
+                    "goal" : "minimize"}
         options = dict(defaults.items() + options.items())
+
+        opt_type = ""
+        if runtyp == "ENERGY":
+            task = "energy"
+        if runtyp == "OPT":
+            #expected: minimize or saddle
+            taskmap = {"minimize" : "min", "saddle" : "ts"}
+            opt_type = "opt_type {0}".format(taskmap[options.get("goal")])
+            task = "optimize"
 
         self.check_method(method)
 
@@ -338,14 +407,16 @@ class Psi4(cpinterface.MolecularCalculator):
         gb = ["set globals",
               "scf_type {0}".format(options.get("scf_type")),
               "reference {0}".format(reference),
+              opt_type,
               "maxiter {0}".format(options.get("scf_iterations"))]
-        gb = self.make_control_block(gb)
+
+        global_block = self.make_control_block(gb)
 
         deck = ["# {0}".format(system.title),
                 geometry,
-                gb,
+                global_block,
                 bd["basis_data"],
-                "energy('scf')"]
+                "{0}('scf')".format(task)]
         
         deck = "\n\n".join(deck)
         
