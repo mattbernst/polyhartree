@@ -28,8 +28,42 @@ class NWChemJob(cpinterface.Job):
                 #units are already Hartree
                 self.energy = energy
 
+    def line_to_geometry(self, line):
+        """Extract lines fitting pattern float tag float float float float
+        and interpret them as [element, x, y, z]. Index and charge number
+        values are discarded.
+
+        e.g. WILL match
+         2 H0         1.0000     0.76346784     0.00000000     0.47737789
+
+        WILL NOT match
+         2 H    1     0.64   0.43  0.21
+
+        (presuming that H0 is an actual tag and H is not)
+
+        @param line: a line of data from log file
+        @type line : str
+        @return: [element, x, y, z] or []
+        @rtype : list
+        """
+
+        entry = []
+        u = sharedutilities.Utility()
+        n = u.numericize(line)
+
+        pattern = [float, str, float, float, float, float]
+        if [type(k) for k in n] == pattern:
+            if n[1] in self.system.atom_properties("basis_tag"):
+                el = [x for x in n[1] if x in string.ascii_letters]
+                n[1] = "".join(el)
+                entry = [n[1], n[3], n[4], n[5]]
+
+        return entry
+
     def extract_geometry(self, data, options={}):
         """Get last geometry found in log file and store it as self.geometry.
+        If there are multiple geometries from e.g. an optimization run, they
+        will go into self.geometry_history.
 
         @param data: log file contents
         @type data : str
@@ -37,33 +71,20 @@ class NWChemJob(cpinterface.Job):
         @type options : dict
         """
 
-        u = sharedutilities.Utility()
-        initial_geometry = []
         geometries = []
-        init = False
-        # initial geometry starts after XYZ format geometry
         for line in data.split("\n"):
-            if "XYZ format geometry" in line:
-                init = True
+            extracted = self.line_to_geometry(line)
+            if extracted:
+                geometries.append(extracted)
 
-            elif init:
-                #internuclear distances block follows geometry
-                if "internuclear" in line:
-                    break
+        natoms = len(self.system.atoms)
+        while geometries:
+            g = geometries[:natoms]
+            geometries = geometries[natoms:]
 
-                coords = u.numericize(line)
-                if sum([1 for c in coords if type(c) == float]) == 3:
-                    #got a coordinate line: tag, x, y, z
-                    #need to strip numbers from tags to recover elements
-                    el = [x for x in coords[0] if x in string.ascii_letters]
-                    coords[0] = "".join(el)
-
-                    initial_geometry.append(coords)
-
-        if geometries:
-            self.geometry = geometries[-1]
-        else:
-            self.geometry = initial_geometry
+            self.geometry_history.append(g)
+            
+        self.geometry = self.geometry_history[-1]
 
     def run(self, host="localhost", options={}):
         """Run a NWChem job on the given host.
@@ -218,6 +239,34 @@ class NWChem(cpinterface.MolecularCalculator):
         else:
             raise ValueError("NWChem does not currently support {0}".method)
 
+    def make_opt_job(self, system, method, options={}):
+        """Create an input specification for a geometry optimization
+        calculation. Optimization goal may be to find minimum geometry or
+        to find a saddle point.
+
+        options:
+         goal: minimize or saddle
+
+        @param system: molecular system for energy calculation
+        @type system : geoprep.System
+        @param method: calculation method
+        @type method : str
+        @param options: additional keyword based control options
+        @type options : dict
+        @return: NWChem input for geometry optimization calculation
+        @rtype : str
+        """
+
+        system = self.fragment_to_system(system)
+
+        self.check_method(method)
+
+        if method.startswith("hf"):
+            return self.make_hf_job(system, method, "OPT", options=options)
+
+        else:
+            raise ValueError("NWChem does not currently support {0}".method)
+
     def prepare_basis_data(self, system, options={}):
         """Prepare basis set data for use: basis assignment, inline
         basis specifications, and information for spherical/cartesian flag.
@@ -291,7 +340,7 @@ class NWChem(cpinterface.MolecularCalculator):
                               basis_names)
 
         r = {"basis_data" : formatted}
-        
+
         return r
 
     def make_hf_job(self, system, method, runtyp, options={}):
@@ -313,8 +362,15 @@ class NWChem(cpinterface.MolecularCalculator):
 
         defaults = {"scf_iterations" : 999,
                     "basis_tag_name" : "basis_tag",
-                    "property_name" : "basis_tag"}
+                    "property_name" : "basis_tag",
+                    "goal" : "optimize"}
         options = dict(defaults.items() + options.items())
+
+        if runtyp == "ENERGY":
+            task = "energy"
+        if runtyp == "OPT":
+            #expected: optimize or saddle
+            task = options.get("goal")
 
         self.check_method(method)
 
@@ -339,7 +395,7 @@ class NWChem(cpinterface.MolecularCalculator):
                 scf,
                 charge,
                 bd["basis_data"],
-                "task scf energy"]
+                "task scf {0}".format(task)]
         
         deck = "\n\n".join(deck)
         
