@@ -38,6 +38,20 @@ class MOPACTestCase(adapter.AdapterTestCase):
         self.assertRaises(ValueError, self.C.make_energy_job, stibine,
                           "semiempirical:mindo/3")
 
+    def test_extract_geometry_from_log(self):
+        #read/verify geometry from a specific stored PM3 water optimization
+        job = self.get_job("O", "semiempirical:pm3")
+        with open("tests/data/logs/pm3_water_geo_min_mopac7.log") as infile:
+            data = infile.read()
+
+        self.assertEqual(0, len(job.geometry_history))
+        job.extract_geometry(data)
+
+        #Note that only first and last structures are logged; the
+        #interim steps are not recorded.
+        self.assertEqual(2, len(job.geometry_history))
+
+
 def runTests():
     try:
         test_name = sys.argv[1]

@@ -73,6 +73,17 @@ class GAMESSTestCase(adapter.AdapterTestCase):
         basis_tags = s.atom_properties(btag)
         self.assertEqual(expected_tags, basis_tags)
 
+    def test_extract_geometry_from_log(self):
+        #read/verify geometry from a specific stored RHF water optimization
+        job = self.get_job("O", "hf:rhf", "3-21G")
+        with open("tests/data/logs/rhf_water_geo_min_gamess_us.log") as infile:
+            data = infile.read()
+
+        self.assertEqual(0, len(job.geometry_history))
+        job.extract_geometry(data)
+        self.assertEqual(7, len(job.geometry_history))
+
+
 def runTests():
     try:
         test_name = sys.argv[1]

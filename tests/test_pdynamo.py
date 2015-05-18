@@ -21,6 +21,16 @@ class PDTestCase(adapter.AdapterTestCase):
         self.G = geoprep.Geotool()
         self.C = pdynamo.PDynamo()
 
+    def test_extract_geometry_from_log(self):
+        #read/verify geometry from a specific stored PM3 water optimization
+        job = self.get_job("O", "semiempirical:pm3")
+        with open("tests/data/logs/pm3_water_geo_min_pdynamo.log") as infile:
+            data = infile.read()
+
+        self.assertEqual(0, len(job.geometry_history))
+        job.extract_geometry(data)
+        self.assertEqual(9, len(job.geometry_history))
+
 def runTests():
     try:
         test_name = sys.argv[1]

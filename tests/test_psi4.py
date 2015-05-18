@@ -113,6 +113,16 @@ class Psi4TestCase(adapter.AdapterTestCase):
 
         self.assertTrue("symmetry C1" in geometry)
 
+    def test_extract_geometry_from_log(self):
+        #read/verify geometry from a specific stored RHF water optimization
+        job = self.get_job("O", "hf:rhf", "3-21G")
+        with open("tests/data/logs/rhf_water_geo_min_psi4.log") as infile:
+            data = infile.read()
+
+        self.assertEqual(0, len(job.geometry_history))
+        job.extract_geometry(data)
+        self.assertEqual(9, len(job.geometry_history))
+
 def runTests():
     try:
         test_name = sys.argv[1]
