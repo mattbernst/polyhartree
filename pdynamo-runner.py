@@ -277,7 +277,7 @@ class PDRunner(object):
                 coords = pickle.load(infile)
                 for j in range(coords.rows):
                     xyz = [r for r in coords[j]]
-                    row = "{}\t{:.6f}\t{:.6f}\t{:.6f}".format(*([atoms[j]] + xyz))
+                    row = "{}\t{:.14f}\t{:.14f}\t{:.14f}".format(*([atoms[j]] + xyz))
                     t.Entry(row)
                     t.EndRow()
 
