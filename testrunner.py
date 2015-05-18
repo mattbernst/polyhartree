@@ -30,15 +30,15 @@ class TestRunner(object):
                  test_list_file=None, seed=0, randomize=False):
         """
         :param testdirs: the directories in which to look for tests
-        @type testdirs : list
+        :type testdirs : list
         :param pattern: only runs tests containing pattern; e.g. if pattern="scrape" then only tests like test_scraper.py, test_scraperspeed.py will be run
-        @type pattern : str
+        :type pattern : str
         :param test_list: run only the tests listed in the file given by test_list. Names of tests much each be on a separate line.
-        @type test_list : str
+        :type test_list : str
         :param randomize: if True, run tests in a random order
-        @type randomize : bool
+        :type randomize : bool
         :param seed: the seed for the PRNG -- if a particular seed causes test failures, then it may be useful to pass that seed back in later for debugging.
-        @type seed : int
+        :type seed : int
         
         NB: both pattern and test_list are applied, so if pattern="cache" and 
         test_list contains the lines:
@@ -77,7 +77,7 @@ class TestRunner(object):
         module file name per line.
 
         :param test_list_file: name of file containing the test module list
-        @type test_list_file : str
+        :type test_list_file : str
         """
         self.test_list = []
         
@@ -139,9 +139,9 @@ class TestRunner(object):
         that there can be no cross-talk between tests.
 
         :param modulenames: modules to test
-        @type modulenames : list
-        @return: results, test errors
-        @rtype : tuple
+        :type modulenames : list
+        :return: results, test errors
+        :rtype : tuple
         """
 
         cmd = "{0} subrunner.py".format(sys.executable)
@@ -177,9 +177,9 @@ class TestRunner(object):
         """Reorder test list to run lasttest last.
 
         :param testfiles: all test file modules to be run
-        @type testfiles : list
+        :type testfiles : list
         :param lasttest: name of test module to run last
-        @type lasttest : str
+        :type lasttest : str
         """
         
         try:
@@ -192,11 +192,11 @@ class TestRunner(object):
         """Show test results, including failures and errors.
 
         :param results: summary results for tests
-        @type results : list
+        :type results : list
         :param test_errors: information about severely failed test modules
-        @type test_errors : list
-        @return: 0 for a perfect run, 1 if test errors or failures encountered
-        @rtype : int
+        :type test_errors : list
+        :return: 0 for a perfect run, 1 if test errors or failures encountered
+        :rtype : int
         """
         
         self.out.write("\nSummary:\n")
@@ -269,8 +269,8 @@ def othertr():
     """Check if this file's name appears in the process list. If so, another
     testrunner may be simultaneously active -- warn the user.
 
-    @return: True if another testrunner may be in use
-    @rtype : bool
+    :return: True if another testrunner may be in use
+    :rtype : bool
     """
     
     procs = os.popen("ps -ef | grep {0}".format(__file__)).read() 

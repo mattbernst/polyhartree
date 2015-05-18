@@ -164,7 +164,7 @@ class Mopac7(cpinterface.MolecularCalculator):
     def check_element_support(self, system, method):
         """Check that the chosen semiempirical method is parameterized for
         all the elements in the system. Supported elements are taken from
-        section 3.5 of the Mopac 7 manual. Unsupported elements will raise
+        section 3.5 of the Mopac7 manual. Unsupported elements will raise
         an exception.
 
         Note that MINDO/3 is supported only for certain *pairs* of elements,
@@ -254,7 +254,7 @@ class Mopac7(cpinterface.MolecularCalculator):
             return self.make_semiempirical_job(system, method, "ENERGY",
                                                options=options)
         else:
-            raise ValueError("Mopac 7 does not support {0}".format(method))
+            raise ValueError("Mopac7 does not support {0}".format(method))
 
     def make_opt_job(self, system, method, options={}):
         """Create an input specification for a geometry optimization
@@ -280,7 +280,7 @@ class Mopac7(cpinterface.MolecularCalculator):
             return self.make_semiempirical_job(system, method, "OPT",
                                                options=options)
         else:
-            raise ValueError("Mopac 7 does not support {0}".format(method))
+            raise ValueError("Mopac7 does not support {0}".format(method))
 
 
     def make_semiempirical_job(self, system, method, runtyp,
@@ -288,7 +288,7 @@ class Mopac7(cpinterface.MolecularCalculator):
         """Create a semiempirical input specification for a calculation.
         Mopac7 supports MNDO, MINDO/3, AM1, and PM3 methods.
 
-        See Chapter 2 of the Mopac 7 manual for keyword details.
+        See Chapter 2 of the Mopac7 manual for keyword details.
 
         :param system: molecular system for calculation
         :type system : geoprep.System
@@ -301,7 +301,9 @@ class Mopac7(cpinterface.MolecularCalculator):
         """
 
         defaults = {"reference" : "rhf", "gnorm" : 0.0001, "precise" : True,
-                    "let" : True, "scf_iterations" : 999, "geo_ok" : True}
+                    "let" : True, "scf_iterations" : 999, "geo_ok" : True,
+                    "goal" : "minimize"}
+
         options = dict(defaults.items() + options.items())
 
         self.check_method(method)

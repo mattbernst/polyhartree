@@ -20,13 +20,13 @@ class Utility(object):
         data to the command through stdin, and return the results.
 
         :param cmd: a command line for an external program
-        @type cmd : str
+        :type cmd : str
         :param stdin_data: optional data to supply on stdin to external program
-        @type stdin_data : str
+        :type stdin_data : str
         :param bash_shell: execute command through Bash with rcfile, if True
-        @type bash_shell : bool
-        @return: (data from stdout, return code)
-        @rtype : tuple
+        :type bash_shell : bool
+        :return: (data from stdout, return code)
+        :rtype : tuple
         """
 
         command = shlex.split(cmd)
@@ -54,11 +54,11 @@ class Utility(object):
         ["Root", 1.0, "singlet", 19.48009, "a.u.", 530.0803, "eV"]
 
         :param line: input line of text from a nwparse QA file
-        @type line : str
+        :type line : str
         :param numeric_only: exclude unconverted fragments if True
-        @type numeric_only : bool
-        @return: mixed list of strings and floats
-        @rtype : list
+        :type numeric_only : bool
+        :return: mixed list of strings and floats
+        :rtype : list
         """
 
         converted = []
@@ -77,9 +77,9 @@ class Utility(object):
         """Get the Nth numeric value from a line where M values are present.
 
         :param line: a line from a data file
-        @type line : str
-        @return: found numeric value
-        @rtype : float
+        :type line : str
+        :return: found numeric value
+        :rtype : float
         """
 
         numbers = self.numericize(line, numeric_only=True)
@@ -91,9 +91,9 @@ class Utility(object):
         """Convert an energy expressed in electron volts to a Hartree value.
 
         :param v: energy in electron volts
-        @type v : float
-        @return: energy in Hartrees
-        @rtype : float
+        :type v : float
+        :return: energy in Hartrees
+        :rtype : float
         """
 
         return v / 27.211385
@@ -102,9 +102,9 @@ class Utility(object):
         """Convert an energy expressed in kcal/mol to a Hartree value.
 
         :param v: energy in kcal/mol
-        @type v : float
-        @return: energy in Hartrees
-        @rtype : float
+        :type v : float
+        :return: energy in Hartrees
+        :rtype : float
         """
 
         return v / 627.509469
@@ -113,9 +113,9 @@ class Utility(object):
         """Convert a distance expressed in bohr to angstrom.
 
         :param v: distance in bohr
-        @type v : float
-        @return: distance in angstrom
-        @rtype : float
+        :type v : float
+        :return: distance in angstrom
+        :rtype : float
         """
 
         return v * 0.52917721092

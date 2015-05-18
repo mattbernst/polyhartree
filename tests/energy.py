@@ -21,11 +21,11 @@ class EnergyTestCase(unittest.TestCase):
         least places.
 
         :param reference_value: value treated as reference for comparison
-        @type reference_value : float
+        :type reference_value : float
         :param trial_value: value tested against reference
-        @type trial_value : float
+        :type trial_value : float
         :param places: number of decimal places to match reference and trial
-        @type places : int
+        :type places : int
         """
 
         self.assertAlmostEqual(reference_value, trial_value, places)

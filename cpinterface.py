@@ -46,9 +46,9 @@ class Job(Utility, Messages):
         the default config/runners-default.yaml.
 
         :param host: name of host to use for job execution
-        @type host : str
-        @return: backend run configuration
-        @rtype : dict
+        :type host : str
+        :return: backend run configuration
+        :rtype : dict
         """
 
         data = None
@@ -95,13 +95,13 @@ class Job(Utility, Messages):
         and then comment out the logic below it.
 
         :param module_name: the ansible module to run
-        @type module_name : str
+        :type module_name : str
         :param module_args: the ansible module arguments to pass
-        @type module_args : dict
+        :type module_args : dict
         :param host: the host to target with ansible
-        @type host : str
+        :type host : str
         :param complex_args: more optional arguments to pass to the runner
-        @type complex_args : dict
+        :type complex_args : dict
         """
 
         self.load_ansible()
@@ -125,7 +125,7 @@ class Job(Utility, Messages):
         returned.
 
         :param result: ansible output from calling runner.run()
-        @type result : dict
+        :type result : dict
         """
 
         for host in result["dark"]:
@@ -140,9 +140,9 @@ class Job(Utility, Messages):
         anything other than localhost, use ansible for remote write.
 
         :param data: data to write
-        @type data : str
+        :type data : str
         :param filename: name of file to write, with absolute path prepended
-        @type filename : str
+        :type filename : str
         """
 
         if host == "localhost":
@@ -176,9 +176,9 @@ class Job(Utility, Messages):
         a host other than localhost, copy it to the local machine first.
 
         :param filename: name of file to read, with absolute path prepended
-        @type filename : str
-        @return: file contents
-        @rtype : str
+        :type filename : str
+        :return: file contents
+        :rtype : str
         """
 
         if host == "localhost":
@@ -205,8 +205,8 @@ class Job(Utility, Messages):
         """Execute a command. Run locally if host is localhost or over ansible
         otherwise.
 
-        @return: output, return code
-        @rtype : tuple
+        :return: output, return code
+        :rtype : tuple
         """
 
         if host == "localhost":
@@ -276,9 +276,9 @@ class MolecularCalculator(Messages):
         a fragment without manually converting it to a system.
 
         :param sf: a system or a single fragment
-        @type sf : geoprep.Fragment | geoprep.System
-        @return: a system
-        @rtype : geoprep.System
+        :type sf : geoprep.Fragment | geoprep.System
+        :return: a system
+        :rtype : geoprep.System
         """
 
         if type(sf) != geoprep.System:
@@ -298,11 +298,11 @@ class MolecularCalculator(Messages):
          basis_format: "gamess-us", "nwchem", or "gaussian94"
 
         :param system: molecular system
-        @type system : geoprep.System
+        :type system : geoprep.System
         :param options: ignored
-        @type options : dict
-        @return: basis data block
-        @rtype : str
+        :type options : dict
+        :return: basis data block
+        :rtype : str
         """
 
         basis_format = options["basis_format"]
@@ -378,9 +378,9 @@ class MolecularCalculator(Messages):
         May need to do special things here for multi-reference methods.
 
         :param reference: reference name to check
-        @type reference : str
-        @return: original reference name
-        @rtype : str
+        :type reference : str
+        :return: original reference name
+        :rtype : str
         """
         
         if reference in self.references:
@@ -397,9 +397,9 @@ class MolecularCalculator(Messages):
         dft:m05:roks, correlated:mp2:rhf, mm:amber-99...
 
         :param method: method name to check
-        @type reference : str
-        @return: original method name
-        @rtype : str
+        :type reference : str
+        :return: original method name
+        :rtype : str
         """
         
         if method in self.methods:
@@ -415,9 +415,9 @@ class MolecularCalculator(Messages):
         Some examples: cartesian, zmatrix
 
         :param coordinate_choice: coordinate system name to check
-        @type reference : str
-        @return: original coordinate system name
-        @rtype : str
+        :type reference : str
+        :return: original coordinate system name
+        :rtype : str
         """
         
         if coordinate_choice in self.coordinate_choices:

@@ -26,17 +26,17 @@ class Verifier(Utility):
         a subset of tests, ordered by increasing test cost.
 
         :param tests: tests to include in output, each entry (cost, name)
-        @type tests : list
+        :type tests : list
         :param directory: location of QA directory, where scripts will go
-        @type directory : str
+        :type directory : str
         :param top: NWCHEM_TOP environment variable
-        @type top : str
+        :type top : str
         :param target: NWCHEM_TARGET environment variable
-        @type target : str
+        :type target : str
         :param serial: name of serial-execution test battery script to generate
-        @type serial : str
+        :type serial : str
         :param parallel: name of MPI-execution test battery script to generate
-        @type parallel : str
+        :type parallel : str
         """
 
         head = """#!/bin/csh -f
@@ -85,11 +85,11 @@ endif
         script and that are not commented out.
 
         :param qa_root: path to the QA root directory
-        @type qa_root : str
+        :type qa_root : str
         :param glob_pattern: pattern to match test battery file names
-        @type glob_pattern : str
-        @return: names of test cases included in standard test batteries
-        @rtype : set
+        :type glob_pattern : str
+        :return: names of test cases included in standard test batteries
+        :rtype : set
         """
 
         cases = set()
@@ -119,11 +119,11 @@ endif
         only if they already appear in one of the QA do* scripts.
 
         :param qa_root: path to the QA root directory
-        @type qa_root : str
+        :type qa_root : str
         :param core_seconds: maximum number of core-seconds to include test
-        @type core_seconds : int
-        @return: tests that appear to run sufficiently fast
-        @rtype : list
+        :type core_seconds : int
+        :return: tests that appear to run sufficiently fast
+        :rtype : list
         """
 
         ok_tests = self.find_ok_tests(qa_root)
@@ -182,7 +182,7 @@ endif
         more closely later.
 
         :param logfile: name of QA log file to open
-        @type logfile : str
+        :type logfile : str
         """
 
         refs_path = os.path.dirname(os.path.abspath(logfile)) + "/testoutputs"
@@ -225,11 +225,11 @@ endif
         the gross_mismatch count.
 
         :param reference: mismatching lines from reference .nwparse file
-        @type reference : list
+        :type reference : list
         :param trial: mismatching lines from current QA trial .nwparse file
-        @type trial : list
-        @return: mismatch score, higher scores indicate worse mismatches
-        @rtype : tuple
+        :type trial : list
+        :return: mismatch score, higher scores indicate worse mismatches
+        :rtype : tuple
         """
 
         gross_mismatches = 0
@@ -267,9 +267,9 @@ endif
         """Parse reference and trial files and compare their contents.
 
         :param reference_file: a known-good NWChem log file for a calculation
-        @type reference_file : str
+        :type reference_file : str
         :param trial_file: an NWChem log file to compare against the reference
-        @type reference_file : str
+        :type reference_file : str
         """
 
         cmd = "diff {0} {1}".format(reference_file, trial_file)

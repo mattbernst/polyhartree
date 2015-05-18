@@ -136,7 +136,8 @@ class PDynamoJob(cpinterface.Job):
         dst = path + "pdynamo-runner.py"
 
         self.write_file(runsource, dst, host)
-            
+
+        #TODO: wrap this in a shell script so user can debug
         cmd = self.deck
         
         stdout, returncode = self.execute(cmd, host, bash_shell=True)
@@ -198,6 +199,37 @@ class PDynamo(cpinterface.MolecularCalculator):
         else:
             raise ValueError("pDynamo 7 does not support {0}".format(method))
 
+    def make_opt_job(self, system, method, options={}):
+        """Create an input specification for a geometry optimization
+        calculation. Optimization goal may be to find minimum geometry or
+        to find a saddle point.
+
+        N.B.: There are actually many underlying geometry minimizers that are
+        not yet exposed here. In addition to conjugate gradient minimization
+        pDynamo has FIRE minimization, LBFGS minimization, quasi-Newton
+        minimization, and steepest descent minimization.
+
+        options:
+         goal: minimize or saddle
+
+        :param system: molecular system for energy calculation
+        :type system : geoprep.System
+        :param method: calculation method
+        :type method : str
+        :param options: additional keyword based control options
+        :type options : dict
+        :return: a pDynamo input for geometry optimization calculation
+        :rtype : str
+        """
+
+        system = self.fragment_to_system(system)
+
+        if method.startswith("semiempirical"):
+            return self.make_semiempirical_job(system, method, "OPT",
+                                               options=options)
+        else:
+            raise ValueError("pDynamo does not support {0}".format(method))
+
     def make_semiempirical_job(self, system, method, runtyp,
                                options={}):
         """Create a semiempirical input specification for a calculation.
@@ -214,8 +246,9 @@ class PDynamo(cpinterface.MolecularCalculator):
         :rtype : Job
         """
 
-        defaults = {"reference" : "rhf"}
+        defaults = {"reference" : "rhf", "goal" : "minimize"}
         options = dict(defaults.items() + options.items())
+        goal = options.get("goal")
 
         self.check_method(method)
 
@@ -242,6 +275,10 @@ class PDynamo(cpinterface.MolecularCalculator):
 
         if runtyp == "ENERGY":
             controls.append("--jobtype=energy")
+
+        elif runtyp == "OPT":
+            controls.append("--jobtype=geometry")
+            controls.append("--goal={0}".format(goal))
 
         controls.append("--charge={0}".format(system.charge))
 

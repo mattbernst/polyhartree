@@ -7,13 +7,13 @@ def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.
 
     :param cls: class that the suite should be constructed from
-    @type cls : class
+    :type cls : class
     :param verbosity: verbosity level to pass to test runner
-    @type verbosity : int
+    :type verbosity : int
     :param name: name of a specific test in the suite to run
-    @type name : str
-    @return: unit test run status code
-    @rtype : int
+    :type name : str
+    :return: unit test run status code
+    :rtype : int
     """
     try: 
         if name:

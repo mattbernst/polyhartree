@@ -32,11 +32,11 @@ class PDTestCase(unittest.TestCase):
         settings using different quantum chemistry back ends.
 
         :param geometry: system geometry for calculations
-        @type geometry : cinfony.pybel.Molecule
+        :type geometry : cinfony.pybel.Molecule
         :param method: method name to use
-        @type method : str
-        @return: implementation and job results from each back end
-        @rtype : list
+        :type method : str
+        :return: implementation and job results from each back end
+        :rtype : list
         """
         
         results = []
@@ -56,11 +56,11 @@ class PDTestCase(unittest.TestCase):
         deviate from it.
 
         :param results: results of calculations with different back ends
-        @type results : list
+        :type results : list
         :param metric: a measurable quantity to compare, e.g. "energy" or "hof"
-        @type metric : str
-        @return: calculation metric differences
-        @rtype : list
+        :type metric : str
+        :return: calculation metric differences
+        :rtype : list
         """
 
         def places_of_agreement(a, b):
@@ -95,14 +95,14 @@ class PDTestCase(unittest.TestCase):
         geometry across different chemistry back-ends.
 
         :param geometry: a trial geometry
-        @type geometry : geoprep.System
+        :type geometry : geoprep.System
         :param method: a method name, e.g. "semiempirical:am1"
-        @type method : str
+        :type method : str
         :param metric: a measurable quantity to compare, e.g. "energy" or "hof"
-        @type metric : str
+        :type metric : str
         :param min_places: minimum number of decimal places agreement for metric
-        @return: differences among packages, using the first run as reference
-        @rtype : list
+        :return: differences among packages, using the first run as reference
+        :rtype : list
         """
         
         jobs = self.run_multi(geometry, method)

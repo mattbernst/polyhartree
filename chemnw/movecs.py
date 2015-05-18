@@ -40,11 +40,11 @@ class MOVecsReader(object):
         if they cannot be found in the input files.
 
         :param movecs_file_name: name of molecular orbital vector file to read
-        @type movecs_file_name : str
+        :type movecs_file_name : str
         :param default_energy: total energy in Hartrees
-        @type default_energy : float
+        :type default_energy : float
         :param default_enrep: nuclear repulsion energy in Hartrees
-        @type default_enrep : float
+        :type default_enrep : float
         """
         
         self.fname = movecs_file_name
@@ -92,9 +92,9 @@ class MOVecsReader(object):
         many bytes are in the actual record data.
 
         :param open_file: open file to read a record head from
-        @type open_file : file
-        @return: number of bytes in record
-        @rtype : int
+        :type open_file : file
+        :return: number of bytes in record
+        :rtype : int
         """
         
         head = open_file.read(self.head_size)
@@ -108,9 +108,9 @@ class MOVecsReader(object):
         of the file in reverse order?
 
         :param open_file: open file to read a record head from
-        @type open_file : file
-        @return: number of bytes in record
-        @rtype : int
+        :type open_file : file
+        :return: number of bytes in record
+        :rtype : int
         """
         
         tail = open_file.read(self.tail_size)
@@ -122,9 +122,9 @@ class MOVecsReader(object):
         discarding record tail.
 
         :param open_file: open file to read a record from
-        @type open_file : file
-        @return: record data as a raw byte string
-        @rtype : str
+        :type open_file : file
+        :return: record data as a raw byte string
+        :rtype : str
         """
         head = self.get_head(open_file)
 
@@ -143,9 +143,9 @@ class MOVecsReader(object):
         instead of list.
 
         :param open_file: open file to read a record from
-        @type open_file : file
-        @return: an integer
-        @rtype : int | list
+        :type open_file : file
+        :return: an integer
+        :rtype : int | list
         """
         
         raw_ints = self.get_record(open_file)
@@ -167,9 +167,9 @@ class MOVecsReader(object):
         return them in a list.
 
         :param open_file: open file to read a record from
-        @type open_file : file
-        @return: floating point numbers
-        @rtype : list
+        :type open_file : file
+        :return: floating point numbers
+        :rtype : list
         """
         double_size = 8
         
@@ -186,8 +186,8 @@ class MOVecsReader(object):
         """Read the contents of .movecs file and perform any necessary
         platform translations.
 
-        @return: structured, translated file contents
-        @rtype : dict
+        :return: structured, translated file contents
+        :rtype : dict
         """
         
         self._init_formats()
@@ -319,7 +319,7 @@ class MOVecsWriter(object):
         """Prepare writer for molecular orbital vectors.
 
         :param movecs_file_name: name of molecular orbital vector file to write
-        @type movecs_file_name : str
+        :type movecs_file_name : str
         """
         
         self.fname = movecs_file_name
@@ -358,9 +358,9 @@ class MOVecsWriter(object):
         many bytes are in the actual record data.
 
         :param open_file: open file to write a record head to
-        @type open_file : file
+        :type open_file : file
         :param count: number of bytes in record
-        @type count : int
+        :type count : int
         """
 
         packed = struct.pack(self.head_fmt, count)
@@ -370,9 +370,9 @@ class MOVecsWriter(object):
         """Put a record into the open output file.
 
         :param open_file: open file to read a record head from
-        @type open_file : file
+        :type open_file : file
         :param packed: a byte-string of record data packed by struct module
-        @type packed : str
+        :type packed : str
         """
         
         head_size = len(packed)
@@ -387,9 +387,9 @@ class MOVecsWriter(object):
         """Write string into a record.
 
         :param open_file: open file to write a record to
-        @type open_file : file
+        :type open_file : file
         :param s: string data
-        @type s : str
+        :type s : str
         """
 
         fmt = "c" * len(s)
@@ -400,9 +400,9 @@ class MOVecsWriter(object):
         """Write one or more integers into a contiguous record.
 
         :param open_file: open file to write a record to
-        @type open_file : file
+        :type open_file : file
         :param ints: integer values
-        @type ints : list | int
+        :type ints : list | int
         """
 
         #convert lone value to one-item list
@@ -418,9 +418,9 @@ class MOVecsWriter(object):
         contiguous record.
 
         :param open_file: open file to write a record to
-        @type open_file : file
+        :type open_file : file
         :param doubles: double precision floating point values
-        @type doubles : list | double
+        :type doubles : list | double
         """
 
         #convert lone value to one-item list
@@ -436,7 +436,7 @@ class MOVecsWriter(object):
         .movecs file.
 
         :param data: formatted platform-independent data
-        @type data : dict
+        :type data : dict
         """
 
         with open(self.fname, "wb") as f:
@@ -622,8 +622,8 @@ def guess_native_platform():
     It could guess wrong if you"re doing something tricky like running a
     32 bit Python interpreter under a 64 bit OS.
 
-    @return: a name representing platform endianness and bitness, like "Big64"
-    @rtype : str
+    :return: a name representing platform endianness and bitness, like "Big64"
+    :rtype : str
     """
 
     endianness = sys.byteorder.title()
@@ -647,8 +647,8 @@ class GuessReader(object):
         """Throw all readers at a file, hope that exactly one sticks. Send
         back translated data if there is no ambiguity, else raise an error.
 
-        @return: translated data
-        @rtype : dict
+        :return: translated data
+        :rtype : dict
         """
 
         readers = [MOVecsReaderLittle64, MOVecsReaderLittle32,
