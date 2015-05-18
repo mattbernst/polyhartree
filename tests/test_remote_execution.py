@@ -10,13 +10,11 @@
     NWChem and MOPAC 7 as back ends for test purposes because they are the
     best supported via Debian packages.
 """
-
 import sys
 import unittest
 import geoprep
 from tests.common_testcode import runSuite
 from adapters import nwchem, mopac7
-from sharedutilities import Utility
 
 class RETestCase(unittest.TestCase):
     def setUp(self):

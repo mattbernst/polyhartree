@@ -8,7 +8,6 @@
 
     Test MOPAC 7 specific functionality that is not handled elsewhere.
 """
-
 import sys
 import unittest
 import geoprep

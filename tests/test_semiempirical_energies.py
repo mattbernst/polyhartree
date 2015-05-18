@@ -9,10 +9,8 @@
     same geometries. This test was prompted by apparent problems with
     pdynamo energies for the methyl radical.
 """
-
 import sys
 import unittest
-from cinfony import pybel
 import geoprep
 from tests.common_testcode import runSuite
 from adapters import gamess_us

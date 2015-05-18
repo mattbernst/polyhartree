@@ -14,7 +14,6 @@ import geoprep
 from adapters import nwchem
 from tests.common_testcode import runSuite
 from tests import energy_hf as eh
-from tests import reference_values
 
 class NWChemHFEnergyTestCase(eh.HFEnergyTestCase):
     def setUp(self):

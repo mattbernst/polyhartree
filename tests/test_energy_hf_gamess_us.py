@@ -8,13 +8,11 @@
 
     Test GAMESS-US implementations for Hartree-Fock energy jobs.
 """
-
 import sys
 import geoprep
 from adapters import gamess_us
 from tests.common_testcode import runSuite
 from tests import energy_hf as eh
-from tests import reference_values
 
 class GAMESSHFEnergyTestCase(eh.HFEnergyTestCase):
     def setUp(self):

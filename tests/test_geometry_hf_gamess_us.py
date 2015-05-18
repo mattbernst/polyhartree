@@ -8,7 +8,6 @@
 
     Test GAMESS-US implementations for Hartree-Fock geometry jobs.
 """
-
 import sys
 import geoprep
 from adapters import gamess_us

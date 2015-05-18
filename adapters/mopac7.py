@@ -1,14 +1,10 @@
 # -*- coding:utf-8 mode:python; tab-width:4; indent-tabs-mode:nil; py-indent-offset:4 -*-
-
 import hashlib
-import cStringIO as StringIO
 import uuid
 
 import cpinterface
 import geoprep
 import sharedutilities
-
-from cinfony import pybel
 
 class Mopac7Job(cpinterface.Job):
     def __init__(self, *args, **kw):

@@ -1,6 +1,4 @@
 # -*- coding:utf-8 mode:python; tab-width:4; indent-tabs-mode:nil; py-indent-offset:4 -*-
-import os
-import string
 import copy
 import cStringIO as StringIO
 

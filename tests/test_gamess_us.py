@@ -8,7 +8,6 @@
 
     Test GAMESS-US specific functionality that is not handled elsewhere.
 """
-
 import sys
 import unittest
 import geoprep

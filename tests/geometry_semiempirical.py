@@ -8,10 +8,7 @@
 
     Test common semiempirical implementations for geometry jobs.
 """
-
-import sys
 import unittest
-import geoprep
 
 class SemiempiricalGeometryTestCase(unittest.TestCase):
     def test_extract_geometry_unchanged(self):

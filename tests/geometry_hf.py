@@ -8,8 +8,6 @@
 
     Test common Hartree-Fock implementations for geometry jobs.
 """
-
-import sys
 import unittest
 import geoprep
 

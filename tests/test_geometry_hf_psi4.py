@@ -8,7 +8,6 @@
 
     Test Psi4 implementations for Hartree-Fock geometry jobs.
 """
-
 import sys
 import geoprep
 from adapters import psi4

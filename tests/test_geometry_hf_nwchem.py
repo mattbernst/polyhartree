@@ -8,7 +8,6 @@
 
     Test NWChem implementations for Hartree-Fock geometry jobs.
 """
-
 import sys
 import geoprep
 from adapters import nwchem

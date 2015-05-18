@@ -9,7 +9,6 @@
     Test chemical program interface code that is not tied to any one specific
     back-end.
 """
-
 import sys
 import unittest
 import cpinterface

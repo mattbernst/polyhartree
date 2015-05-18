@@ -8,13 +8,11 @@
 
     Test MOPAC 7 semiempirical implementation for geometry.
 """
-
 import sys
 import geoprep
 from adapters import mopac7
 from tests.common_testcode import runSuite
 from tests import geometry_semiempirical as gs
-from tests import reference_values
 
 class MOPACGeometryTestCase(gs.SemiempiricalGeometryTestCase):
 

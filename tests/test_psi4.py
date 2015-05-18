@@ -8,14 +8,12 @@
 
     Test Psi4 specific functionality that is not handled elsewhere.
 """
-
 import sys
 import unittest
 import geoprep
 from adapters import psi4
 from tests.common_testcode import runSuite
 from sharedutilities import Utility
-from tests import reference_values
 
 class Psi4TestCase(unittest.TestCase):
     def setUp(self):

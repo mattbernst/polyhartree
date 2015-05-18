@@ -9,9 +9,6 @@
     Test common semiempirical implementations for energy jobs.
 """
 
-import sys
-import unittest
-import geoprep
 from tests import reference_values
 from tests import energy
 

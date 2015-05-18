@@ -8,12 +8,10 @@
 
     Test pDynamo implementations for semiempirical geometry.
 """
-
 import sys
 import geoprep
 from adapters import pdynamo
 from tests.common_testcode import runSuite
-from tests import reference_values
 from tests import geometry_semiempirical as gs
 
 class PDGeometryTestCase(gs.SemiempiricalGeometryTestCase):

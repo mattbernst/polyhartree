@@ -8,7 +8,6 @@
 
     Test pDynamo implementations for semiempirical energy.
 """
-
 import sys
 import geoprep
 from adapters import pdynamo
