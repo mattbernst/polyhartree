@@ -29,15 +29,15 @@ class TestRunner(object):
     def __init__(self, testdirs=[], outfile=None, pattern=None,
                  test_list_file=None, seed=0, randomize=False):
         """
-        @param testdirs: the directories in which to look for tests
+        :param testdirs: the directories in which to look for tests
         @type testdirs : list
-        @param pattern: only runs tests containing pattern; e.g. if pattern="scrape" then only tests like test_scraper.py, test_scraperspeed.py will be run
+        :param pattern: only runs tests containing pattern; e.g. if pattern="scrape" then only tests like test_scraper.py, test_scraperspeed.py will be run
         @type pattern : str
-        @param test_list: run only the tests listed in the file given by test_list. Names of tests much each be on a separate line.
+        :param test_list: run only the tests listed in the file given by test_list. Names of tests much each be on a separate line.
         @type test_list : str
-        @param randomize: if True, run tests in a random order
+        :param randomize: if True, run tests in a random order
         @type randomize : bool
-        @param seed: the seed for the PRNG -- if a particular seed causes test failures, then it may be useful to pass that seed back in later for debugging.
+        :param seed: the seed for the PRNG -- if a particular seed causes test failures, then it may be useful to pass that seed back in later for debugging.
         @type seed : int
         
         NB: both pattern and test_list are applied, so if pattern="cache" and 
@@ -76,7 +76,7 @@ class TestRunner(object):
         """Read a list of modules to test from a file containing one test
         module file name per line.
 
-        @param test_list_file: name of file containing the test module list
+        :param test_list_file: name of file containing the test module list
         @type test_list_file : str
         """
         self.test_list = []
@@ -138,7 +138,7 @@ class TestRunner(object):
         """Execute the test in a completely separate subrunner process so
         that there can be no cross-talk between tests.
 
-        @param modulenames: modules to test
+        :param modulenames: modules to test
         @type modulenames : list
         @return: results, test errors
         @rtype : tuple
@@ -176,9 +176,9 @@ class TestRunner(object):
     def runlast(self,testfiles, lasttest):
         """Reorder test list to run lasttest last.
 
-        @param testfiles: all test file modules to be run
+        :param testfiles: all test file modules to be run
         @type testfiles : list
-        @param lasttest: name of test module to run last
+        :param lasttest: name of test module to run last
         @type lasttest : str
         """
         
@@ -191,9 +191,9 @@ class TestRunner(object):
     def printresults(self, results, test_errors):
         """Show test results, including failures and errors.
 
-        @param results: summary results for tests
+        :param results: summary results for tests
         @type results : list
-        @param test_errors: information about severely failed test modules
+        :param test_errors: information about severely failed test modules
         @type test_errors : list
         @return: 0 for a perfect run, 1 if test errors or failures encountered
         @rtype : int

@@ -15,10 +15,10 @@ class NWChemJob(cpinterface.Job):
     def extract_last_energy(self, data, options={}):
         """Get last energy message from log file and store it as self.energy.
 
-        @param data: log file contents
-        @type data : str
-        @param options: ignored
-        @type options : dict
+        :param data: log file contents
+        :type data : str
+        :param options: ignored
+        :type options : dict
         """
 
         for line in data.split("\n"):
@@ -41,10 +41,10 @@ class NWChemJob(cpinterface.Job):
 
         (presuming that H0 is an actual tag and H is not)
 
-        @param line: a line of data from log file
-        @type line : str
-        @return: [element, x, y, z] or []
-        @rtype : list
+        :param line: a line of data from log file
+        :type line : str
+        :return: [element, x, y, z] or []
+        :rtype : list
         """
 
         entry = []
@@ -65,10 +65,10 @@ class NWChemJob(cpinterface.Job):
         If there are multiple geometries from e.g. an optimization run, they
         will go into self.geometry_history.
 
-        @param data: log file contents
-        @type data : str
-        @param options: ignored
-        @type options : dict
+        :param data: log file contents
+        :type data : str
+        :param options: ignored
+        :type options : dict
         """
 
         geometries = []
@@ -89,10 +89,10 @@ class NWChemJob(cpinterface.Job):
     def run(self, host="localhost", options={}):
         """Run a NWChem job on the given host.
 
-        @param host: name of host where job should execute
-        @type host : str
-        @param options: ignored
-        @type options : dict
+        :param host: name of host where job should execute
+        :type host : str
+        :param options: ignored
+        :type options : dict
         """
 
         run_params = self.get_run_config(host)
@@ -136,10 +136,10 @@ class NWChem(cpinterface.MolecularCalculator):
         options:
          property_name: name of tag group to use from atom_properties
 
-        @param system: molecular system data to convert to input geometry
-        @type system : geoprep.System
-        @return: atom coordinates named by atom tags
-        @rtype : list
+        :param system: molecular system data to convert to input geometry
+        :type system : geoprep.System
+        :return: atom coordinates named by atom tags
+        :rtype : list
         """
 
         tag_name = options["property_name"]
@@ -161,12 +161,12 @@ class NWChem(cpinterface.MolecularCalculator):
          coordinates: "cartesian" or "zmatrix"
          symmetry: optional symmetry group
 
-        @param system: molecular system data to convert to input geometry
-        @type system : geoprep.System
-        @param options: select coordinate system
-        @type options : dict
-        @return: a NWChem input with geometry specifications
-        @rtype : str
+        :param system: molecular system data to convert to input geometry
+        :type system : geoprep.System
+        :param options: select coordinate system
+        :type options : dict
+        :return: a NWChem input with geometry specifications
+        :rtype : str
         """
 
         defaults = {"coordinates" : "cartesian"}
@@ -199,12 +199,12 @@ class NWChem(cpinterface.MolecularCalculator):
           maxiter 200
         end
 
-        @param controls: block name followed by parameters to insert in block
-        @type controls : list
-        @param indent: whitespace to prepend to block parameters
-        @type indent : str
-        @return: formatted control block
-        @rtype : str
+        :param controls: block name followed by parameters to insert in block
+        :type controls : list
+        :param indent: whitespace to prepend to block parameters
+        :type indent : str
+        :return: formatted control block
+        :rtype : str
         """
 
         lines = [controls[0]]
@@ -219,14 +219,14 @@ class NWChem(cpinterface.MolecularCalculator):
     def make_energy_job(self, system, method, options={}):
         """Create an input specification for a single point energy calculation.
 
-        @param system: molecular system for energy calculation
-        @type system : geoprep.System
-        @param method: calculation method
-        @type method : str
-        @param options: additional keyword based control options
-        @type options : dict
-        @return: a NWChem input for single point energy calculation
-        @rtype : str
+        :param system: molecular system for energy calculation
+        :type system : geoprep.System
+        :param method: calculation method
+        :type method : str
+        :param options: additional keyword based control options
+        :type options : dict
+        :return: a NWChem input for single point energy calculation
+        :rtype : str
         """
 
         system = self.fragment_to_system(system)
@@ -247,14 +247,14 @@ class NWChem(cpinterface.MolecularCalculator):
         options:
          goal: minimize or saddle
 
-        @param system: molecular system for energy calculation
-        @type system : geoprep.System
-        @param method: calculation method
-        @type method : str
-        @param options: additional keyword based control options
-        @type options : dict
-        @return: NWChem input for geometry optimization calculation
-        @rtype : str
+        :param system: molecular system for energy calculation
+        :type system : geoprep.System
+        :param method: calculation method
+        :type method : str
+        :param options: additional keyword based control options
+        :type options : dict
+        :return: NWChem input for geometry optimization calculation
+        :rtype : str
         """
 
         system = self.fragment_to_system(system)
@@ -273,12 +273,12 @@ class NWChem(cpinterface.MolecularCalculator):
 
         Also assign basis tags to atoms as atom properties.
 
-        @param system: molecular system for parameterization
-        @type system : geoprep.System
-        @param options: additional keyword based control options
-        @type options : dict
-        @return: basis set control block
-        @rtype : dict
+        :param system: molecular system for parameterization
+        :type system : geoprep.System
+        :param options: additional keyword based control options
+        :type options : dict
+        :return: basis set control block
+        :rtype : dict
         """
 
         property_name = options["basis_tag_name"]
@@ -350,14 +350,14 @@ class NWChem(cpinterface.MolecularCalculator):
         UHF unrestricted Hartree-Fock, and
         ROHF restricted open shell Hartree-Fock
 
-        @param system: molecular system for calculation
-        @type system : geoprep.System
-        @param method: a HF calculation method
-        @param options: additional keyword based control options
-        @type options : dict
-        @type method : str
-        @return: a NWChem HF job
-        @rtype : Job
+        :param system: molecular system for calculation
+        :type system : geoprep.System
+        :param method: a HF calculation method
+        :param options: additional keyword based control options
+        :type options : dict
+        :type method : str
+        :return: a NWChem HF job
+        :rtype : Job
         """
 
         defaults = {"scf_iterations" : 999,

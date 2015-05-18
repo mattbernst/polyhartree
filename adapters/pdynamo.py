@@ -18,10 +18,10 @@ class PDynamoJob(cpinterface.Job):
     def extract_last_energy(self, data, options={}):
         """Get last energy message from log file and store it as self.energy.
 
-        @param data: log file contents
-        @type data : str
-        @param options: ignored
-        @type options : dict
+        :param data: log file contents
+        :type data : str
+        :param options: ignored
+        :type options : dict
         """
 
         electronic_energy = None
@@ -45,10 +45,10 @@ class PDynamoJob(cpinterface.Job):
         """Get heat of formation from log file and store it
         as self.heat_of_formation.
 
-        @param data: log file contents
-        @type data : str
-        @param options: ignored
-        @type options : dict
+        :param data: log file contents
+        :type data : str
+        :param options: ignored
+        :type options : dict
         """
 
         scanning = False
@@ -68,10 +68,10 @@ class PDynamoJob(cpinterface.Job):
     def extract_geometry(self, data, options={}):
         """Get last geometry found in log file and store it as self.geometry.
 
-        @param data: log file contents
-        @type data : str
-        @param options: ignored
-        @type options : dict
+        :param data: log file contents
+        :type data : str
+        :param options: ignored
+        :type options : dict
         """
 
         g = geoprep.Geotool()
@@ -106,10 +106,10 @@ class PDynamoJob(cpinterface.Job):
         the geometry and the runner to the working directory before executing
         the runner.
 
-        @param host: name of host where job should execute
-        @type host : str
-        @param options: ignored
-        @type options : dict
+        :param host: name of host where job should execute
+        :type host : str
+        :param options: ignored
+        :type options : dict
         """
 
         run_params = self.get_run_config(host)
@@ -182,14 +182,14 @@ class PDynamo(cpinterface.MolecularCalculator):
     def make_energy_job(self, system, method, options={}):
         """Create an input specification for a single point energy calculation.
 
-        @param system: molecular system for energy calculation
-        @type system : geoprep.System
-        @param method: calculation method
-        @type method : str
-        @param options: additional keyword based control options
-        @type options : dict
-        @return: a pDynamo single point energy calculation job
-        @rtype : cpinterface.Job
+        :param system: molecular system for energy calculation
+        :type system : geoprep.System
+        :param method: calculation method
+        :type method : str
+        :param options: additional keyword based control options
+        :type options : dict
+        :return: a pDynamo single point energy calculation job
+        :rtype : cpinterface.Job
         """
 
         if method.startswith("semiempirical"):
@@ -204,14 +204,14 @@ class PDynamo(cpinterface.MolecularCalculator):
         pDynamo supports AM1, MNDO, PM3, PM6, RM1, AM1/d-PhoT, PDDG/PM3,
         PDDG/MNDO
 
-        @param system: molecular system for calculation
-        @type system : geoprep.System
-        @param method: a semiempirical calculation method
-        @type method : str
-        @param options: additional keyword based control options
-        @type options : dict
-        @return: a PDynamo semiempirical job
-        @rtype : Job
+        :param system: molecular system for calculation
+        :type system : geoprep.System
+        :param method: a semiempirical calculation method
+        :type method : str
+        :param options: additional keyword based control options
+        :type options : dict
+        :return: a PDynamo semiempirical job
+        :rtype : Job
         """
 
         defaults = {"reference" : "rhf"}

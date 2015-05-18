@@ -45,7 +45,7 @@ class Job(Utility, Messages):
         If config/runners.yaml is present it will take precedence over
         the default config/runners-default.yaml.
 
-        @param host: name of host to use for job execution
+        :param host: name of host to use for job execution
         @type host : str
         @return: backend run configuration
         @rtype : dict
@@ -94,13 +94,13 @@ class Job(Utility, Messages):
 
         and then comment out the logic below it.
 
-        @param module_name: the ansible module to run
+        :param module_name: the ansible module to run
         @type module_name : str
-        @param module_args: the ansible module arguments to pass
+        :param module_args: the ansible module arguments to pass
         @type module_args : dict
-        @param host: the host to target with ansible
+        :param host: the host to target with ansible
         @type host : str
-        @param complex_args: more optional arguments to pass to the runner
+        :param complex_args: more optional arguments to pass to the runner
         @type complex_args : dict
         """
 
@@ -124,7 +124,7 @@ class Job(Utility, Messages):
         """Display and store any ansible command errors that might be
         returned.
 
-        @param result: ansible output from calling runner.run()
+        :param result: ansible output from calling runner.run()
         @type result : dict
         """
 
@@ -139,9 +139,9 @@ class Job(Utility, Messages):
         destination directory first if it does not yet exist. If host is
         anything other than localhost, use ansible for remote write.
 
-        @param data: data to write
+        :param data: data to write
         @type data : str
-        @param filename: name of file to write, with absolute path prepended
+        :param filename: name of file to write, with absolute path prepended
         @type filename : str
         """
 
@@ -175,7 +175,7 @@ class Job(Utility, Messages):
         """Read and return the data from filename on host. If the data is on
         a host other than localhost, copy it to the local machine first.
 
-        @param filename: name of file to read, with absolute path prepended
+        :param filename: name of file to read, with absolute path prepended
         @type filename : str
         @return: file contents
         @rtype : str
@@ -275,7 +275,7 @@ class MolecularCalculator(Messages):
         """It's convenient to be able to pass in a single-fragment system as
         a fragment without manually converting it to a system.
 
-        @param sf: a system or a single fragment
+        :param sf: a system or a single fragment
         @type sf : geoprep.Fragment | geoprep.System
         @return: a system
         @rtype : geoprep.System
@@ -297,9 +297,9 @@ class MolecularCalculator(Messages):
         options:
          basis_format: "gamess-us", "nwchem", or "gaussian94"
 
-        @param system: molecular system
+        :param system: molecular system
         @type system : geoprep.System
-        @param options: ignored
+        :param options: ignored
         @type options : dict
         @return: basis data block
         @rtype : str
@@ -377,7 +377,7 @@ class MolecularCalculator(Messages):
 
         May need to do special things here for multi-reference methods.
 
-        @param reference: reference name to check
+        :param reference: reference name to check
         @type reference : str
         @return: original reference name
         @rtype : str
@@ -396,7 +396,7 @@ class MolecularCalculator(Messages):
         Some examples: semiempirical:pm3, semiempirical:am1, hf:uhf,
         dft:m05:roks, correlated:mp2:rhf, mm:amber-99...
 
-        @param method: method name to check
+        :param method: method name to check
         @type reference : str
         @return: original method name
         @rtype : str
@@ -414,7 +414,7 @@ class MolecularCalculator(Messages):
 
         Some examples: cartesian, zmatrix
 
-        @param coordinate_choice: coordinate system name to check
+        :param coordinate_choice: coordinate system name to check
         @type reference : str
         @return: original coordinate system name
         @rtype : str

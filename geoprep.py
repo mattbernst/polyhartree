@@ -13,11 +13,11 @@ class System(object):
         one fragment it will be promoted to a one-item list; sequences will
         become lists.
 
-        @param fragment_or_fragments: a fragment or sequence of fragments
+        :param fragment_or_fragments: a fragment or sequence of fragments
         @type fragment_or_fragments : Fragment | tuple | list
-        @param spin: optional spin multiplicity for the entire system
+        :param spin: optional spin multiplicity for the entire system
         @type spin : int
-        @param title: optional title for the entire system
+        :param title: optional title for the entire system
         @type title : str
         """
         
@@ -71,7 +71,7 @@ class System(object):
     def title(self, title):
         """Set the explicit title.
 
-        @param title: new title to set
+        :param title: new title to set
         @type title : str
         """
 
@@ -103,7 +103,7 @@ class System(object):
     def spin(self, s):
         """Set explicit spin multiplicity
 
-        @param s: spin to set
+        :param s: spin to set
         @type s : int
         """
         
@@ -161,11 +161,11 @@ class System(object):
         """Assign properties grouped by name to selected atoms. Any unselected
         atoms will get a None property.
 
-        @param name: name of property group, e.g. "basis_name", "fukui_mu_n(+)"
+        :param name: name of property group, e.g. "basis_name", "fukui_mu_n(+)"
         @type name : str
-        @param selection: atom indices
+        :param selection: atom indices
         @type selection : list
-        @param properties: any sequence of values, length same as selection
+        :param properties: any sequence of values, length same as selection
         @type properties : list
         """
 
@@ -187,9 +187,9 @@ class System(object):
         """Select atoms matching a SMARTS pattern with different treatments
         for hydrogen atoms, and do it across all fragments in the system.
 
-        @param smarts: a SMARTS pattern
+        :param smarts: a SMARTS pattern
         @type smarts : str
-        @param hydrogen: "include", "exclude", or "only"
+        :param hydrogen: "include", "exclude", or "only"
         @type hydrogen : str
         @return: indexes of atoms matching the selection
         @rtype : list
@@ -209,7 +209,7 @@ class System(object):
     def elements(self):
         """Get all elements incorporated in system.
 
-        @param system: System
+        :param system: System
         @type system : geoprep.System
         @return: unique list of system elements, in order of atomic number
         @rtype : list
@@ -230,7 +230,7 @@ class System(object):
         There may be strange results trying to write systems containing
         multiple fragments as a linear format like SMILES or InChI
 
-        @param fmt: final format to write, e.g. "mopin" or "pdb"
+        :param fmt: final format to write, e.g. "mopin" or "pdb"
         @type fmt : str
         """
 
@@ -257,7 +257,7 @@ class Fragment(object):
         Molecule types (currently pybel only tested) with extra convenience
         methods.
 
-        @param molecule: underlying cinfony molecule
+        :param molecule: underlying cinfony molecule
         @type molecule : cinfony.*.Molecule
         """
 
@@ -281,7 +281,7 @@ class Fragment(object):
         underlying molecule is not pure Python and needs special handling
         to duplicate.
 
-        @param memo: memoization dictionary
+        :param memo: memoization dictionary
         @type memo : dict
         @return: fragment duplicate
         @rtype : Fragment
@@ -311,7 +311,7 @@ class Fragment(object):
         """Equality comparison. To be equal, two fragments must compare equal
         across all key attributes.
 
-        @param other: other fragment to compare to
+        :param other: other fragment to compare to
         @type other : Fragment
         @return: True if fragments are equal, else False
         @rtype : bool
@@ -369,7 +369,7 @@ class Fragment(object):
         useful because pybel does not preserve full accuracy when creating
         a new molecule from the old.
 
-        @param geolist: geometry list, e.g. [["He", 1.0, 0.0, 0.0]]
+        :param geolist: geometry list, e.g. [["He", 1.0, 0.0, 0.0]]
         @type geolist : list
         """
 
@@ -401,7 +401,7 @@ class Fragment(object):
     def spin(self, s):
         """Set spin by using the setter on the underlying hidden OBMol.
 
-        @param s: spin to set
+        :param s: spin to set
         @type s : int
         """
         
@@ -443,9 +443,9 @@ class Fragment(object):
         molecule.OBMol.Translate method directly, but unable to pass correct
         data type from python.
 
-        @param molecule: molecule to be translated
+        :param molecule: molecule to be translated
         @type molecule : cinfony.pybel.Molecule
-        @param vec: x, y, z coordinates
+        :param vec: x, y, z coordinates
         @type vec : list
         """
 
@@ -465,11 +465,11 @@ class Fragment(object):
         provided explicitly, it will be generated by opening an output file
         with the given name.
 
-        @param name: optional name of file to write
+        :param name: optional name of file to write
         @type name : str
-        @param fmt: if provided, use this format for output
+        :param fmt: if provided, use this format for output
         @type fmt : str
-        @param handle: if provided, use this output file handle to write data
+        :param handle: if provided, use this output file handle to write data
         @type handle : file
         """
 
@@ -494,11 +494,11 @@ class Fragment(object):
         "exclude": return heavy atoms only
         "only": hydrogen atoms attached to heavies are returned without heavies
 
-        @param smarts: a SMARTS pattern
+        :param smarts: a SMARTS pattern
         @type smarts : str
-        @param hydrogen: "include", "exclude", or "only" (see above)
+        :param hydrogen: "include", "exclude", or "only" (see above)
         @type hydrogen : str
-        @param flatten: if True, merge all selections
+        :param flatten: if True, merge all selections
         @type flatten : bool
         @return: indexes of atoms matching the selection
         @rtype : list
@@ -544,7 +544,7 @@ class Fragment(object):
         uses 0-based indexing, so indexes of target atoms need to be reduced
         by 1
 
-        @param atoms: indexes of atoms that may have hydrogen attached
+        :param atoms: indexes of atoms that may have hydrogen attached
         @type atoms : list
         @return: indexes of attached hydrogen atoms
         @rtype : list
@@ -573,11 +573,11 @@ class Fragment(object):
         """Assign properties grouped by name to selected atoms. Any unselected
         atoms will get a None property.
 
-        @param name: name of property group, e.g. "basis_name", "fukui_mu_n(+)"
+        :param name: name of property group, e.g. "basis_name", "fukui_mu_n(+)"
         @type name : str
-        @param selection: atom indices
+        :param selection: atom indices
         @type selection : list
-        @param properties: any sequence of values, length same as selection
+        :param properties: any sequence of values, length same as selection
         @type properties : list
         """
 
@@ -598,11 +598,11 @@ class Fragment(object):
     def set_basis_name_general(self, selection, mapfn, **kw):
         """Assign basis set names to selected atoms.
 
-        @param selection: initial selection (all atoms if empty)
+        :param selection: initial selection (all atoms if empty)
         @type selection : list
-        @param mapfn: a method that produces names for selection
+        :param mapfn: a method that produces names for selection
         @type mapfn : method
-        @param **kw: optional keyword arguments for mapfn
+        :param **kw: optional keyword arguments for mapfn
         @type **kw : dict
         """
         
@@ -625,9 +625,9 @@ class Fragment(object):
         """Simple name based assignment: same basis name on every atom in
         selection.
 
-        @param basis_name: basis set name for selection
+        :param basis_name: basis set name for selection
         @type basis_name : str
-        @param selection: initial selection (all atoms if empty)
+        :param selection: initial selection (all atoms if empty)
         @type selection : list
         """
 
@@ -644,9 +644,9 @@ class Geotool(object):
         IUPAC and SMILES designations. Convert a linear molecular specification
         to a 3D form.
 
-        @param representation: linear molecule encoding
+        :param representation: linear molecule encoding
         @type representation : str
-        @param fmt: smiles, inchi, etc. (default smiles)
+        :param fmt: smiles, inchi, etc. (default smiles)
         @type fmt : str
         @return: 3D-form molecular fragment
         @rtype: Fragment
@@ -664,7 +664,7 @@ class Geotool(object):
         """Make a system out of one or more linear representations of
         molecules that will become fragments.
 
-        @param items: one or more linear molecule representations
+        :param items: one or more linear molecule representations
         @type items : str | list
         @return: a system containing one or more fragments
         @rtype : System
@@ -685,7 +685,7 @@ class Geotool(object):
         """Convert a geometry list into a fragment, exactly preserving the
         original geometry (no translation to origin).
 
-        @param geolist: geometry list, e.g. [["He", 1.0, 0.0, 0.0]]
+        :param geolist: geometry list, e.g. [["He", 1.0, 0.0, 0.0]]
         @type geolist : list
         @return: fragment matching given geometry
         @rtype : Fragment
@@ -709,11 +709,11 @@ class Geotool(object):
         extension if caller does not supply explicit fmt. If file handle is
         provided, read data from it. Otherwise open file name for reading.
 
-        @param name: file to open
+        :param name: file to open
         @type name : str
-        @param fmt: optional OpenBabel format code e.g. "xyz"
+        :param fmt: optional OpenBabel format code e.g. "xyz"
         @type fmt : str
-        @param zero_to_origin: translate geometry to put atom 0 at origin
+        :param zero_to_origin: translate geometry to put atom 0 at origin
         @type zero_to_origin : bool
         @return: molecular fragment
         @rtype : Fragment
@@ -746,7 +746,7 @@ class Geotool(object):
 
         Also, SMARTS match naturally includes heavy atoms only.
 
-        @param fragments: two or more fragments containing common substructure
+        :param fragments: two or more fragments containing common substructure
         @type fragments : list
         @return: maximum common substructure result
         @rtype : MCSResult
@@ -775,13 +775,13 @@ class Geotool(object):
         before alignment so that OBAlign will work regardless of original
         order.
 
-        @param reference: the fragment to align to
+        :param reference: the fragment to align to
         @type reference : Fragment
-        @param target: the fragment to be aligned
+        :param target: the fragment to be aligned
         @type target: Fragment
-        @param includeH: if False, consider only heavy atoms
+        :param includeH: if False, consider only heavy atoms
         @type includeH : bool
-        @param symmetry: if True, use symmetry axes. For example, if a benzene is flipped by 180 degrees along one of its 2-fold symmetry axes, it will only have an RMSD of 0 (with respect to its original orientation) if symmetry is enabled.
+        :param symmetry: if True, use symmetry axes. For example, if a benzene is flipped by 180 degrees along one of its 2-fold symmetry axes, it will only have an RMSD of 0 (with respect to its original orientation) if symmetry is enabled.
         @type symmetry : bool
         @return: aligned fragment and fit data
         @rtype : dict

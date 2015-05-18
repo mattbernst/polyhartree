@@ -20,11 +20,11 @@ class EnergyTestCase(unittest.TestCase):
         """Check that the reference value and the trial value match to at
         least places.
 
-        @param reference_value: value treated as reference for comparison
+        :param reference_value: value treated as reference for comparison
         @type reference_value : float
-        @param trial_value: value tested against reference
+        :param trial_value: value tested against reference
         @type trial_value : float
-        @param places: number of decimal places to match reference and trial
+        :param places: number of decimal places to match reference and trial
         @type places : int
         """
 

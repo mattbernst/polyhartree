@@ -25,17 +25,17 @@ class Verifier(Utility):
         script similar to those bundled with NWChem QA but including only
         a subset of tests, ordered by increasing test cost.
 
-        @param tests: tests to include in output, each entry (cost, name)
+        :param tests: tests to include in output, each entry (cost, name)
         @type tests : list
-        @param directory: location of QA directory, where scripts will go
+        :param directory: location of QA directory, where scripts will go
         @type directory : str
-        @param top: NWCHEM_TOP environment variable
+        :param top: NWCHEM_TOP environment variable
         @type top : str
-        @param target: NWCHEM_TARGET environment variable
+        :param target: NWCHEM_TARGET environment variable
         @type target : str
-        @param serial: name of serial-execution test battery script to generate
+        :param serial: name of serial-execution test battery script to generate
         @type serial : str
-        @param parallel: name of MPI-execution test battery script to generate
+        :param parallel: name of MPI-execution test battery script to generate
         @type parallel : str
         """
 
@@ -84,9 +84,9 @@ endif
         are unreliable. Now only accepting tests that are in the doNightly
         script and that are not commented out.
 
-        @param qa_root: path to the QA root directory
+        :param qa_root: path to the QA root directory
         @type qa_root : str
-        @param glob_pattern: pattern to match test battery file names
+        :param glob_pattern: pattern to match test battery file names
         @type glob_pattern : str
         @return: names of test cases included in standard test batteries
         @rtype : set
@@ -118,9 +118,9 @@ endif
         must be taken to exclude broken tests. Tests are assumed not-broken
         only if they already appear in one of the QA do* scripts.
 
-        @param qa_root: path to the QA root directory
+        :param qa_root: path to the QA root directory
         @type qa_root : str
-        @param core_seconds: maximum number of core-seconds to include test
+        :param core_seconds: maximum number of core-seconds to include test
         @type core_seconds : int
         @return: tests that appear to run sufficiently fast
         @rtype : list
@@ -181,7 +181,7 @@ endif
         failed according to the log file. Failed tests can be examined
         more closely later.
 
-        @param logfile: name of QA log file to open
+        :param logfile: name of QA log file to open
         @type logfile : str
         """
 
@@ -224,9 +224,9 @@ endif
         or one group has more lines than the other, the mismatches add to
         the gross_mismatch count.
 
-        @param reference: mismatching lines from reference .nwparse file
+        :param reference: mismatching lines from reference .nwparse file
         @type reference : list
-        @param trial: mismatching lines from current QA trial .nwparse file
+        :param trial: mismatching lines from current QA trial .nwparse file
         @type trial : list
         @return: mismatch score, higher scores indicate worse mismatches
         @rtype : tuple
@@ -266,9 +266,9 @@ endif
     def compare_outputs(self, reference_file, trial_file, attributes = None):
         """Parse reference and trial files and compare their contents.
 
-        @param reference_file: a known-good NWChem log file for a calculation
+        :param reference_file: a known-good NWChem log file for a calculation
         @type reference_file : str
-        @param trial_file: an NWChem log file to compare against the reference
+        :param trial_file: an NWChem log file to compare against the reference
         @type reference_file : str
         """
 

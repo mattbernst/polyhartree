@@ -18,10 +18,10 @@ class Mopac7Job(cpinterface.Job):
     def extract_energy(self, data, options={}):
         """Get last energy message from log file and store it as self.energy.
 
-        @param data: log file contents
-        @type data : str
-        @param options: ignored
-        @type options : dict
+        :param data: log file contents
+        :type data : str
+        :param options: ignored
+        :type options : dict
         """
 
         electronic_energy = None
@@ -46,10 +46,10 @@ class Mopac7Job(cpinterface.Job):
         """Get heat of formation from log file and store it as
         self.heat_of_formation.
 
-        @param data: log file contents
-        @type data : str
-        @param options: ignored
-        @type options : dict
+        :param data: log file contents
+        :type data : str
+        :param options: ignored
+        :type options : dict
         """
 
         for line in data.split("\n"):
@@ -70,10 +70,10 @@ class Mopac7Job(cpinterface.Job):
         or
          2      C         1.08609  *     123.09742  *                 1    2
 
-        @param line: a line of data from log file
-        @type line : str
-        @return: [element, x, y, z] or []
-        @rtype : list
+        :param line: a line of data from log file
+        :type line : str
+        :return: [element, x, y, z] or []
+        :rtype : list
         """
 
         entry = []
@@ -91,10 +91,10 @@ class Mopac7Job(cpinterface.Job):
         If there are multiple geometries from e.g. an optimization run, they
         will go into self.geometry_history.
 
-        @param data: log file contents
-        @type data : str
-        @param options: ignored
-        @type options : dict
+        :param data: log file contents
+        :type data : str
+        :param options: ignored
+        :type options : dict
         """
 
         geometries = []
@@ -115,10 +115,10 @@ class Mopac7Job(cpinterface.Job):
     def run(self, host="localhost", options={}):
         """Run MOPAC7 on the given host using the run_mopac7 script.
 
-        @param host: name of host where job should execute
-        @type host : str
-        @param options: ignored
-        @type options : dict
+        :param host: name of host where job should execute
+        :type host : str
+        :param options: ignored
+        :type options : dict
         """
 
         run_params = self.get_run_config(host)
@@ -171,11 +171,11 @@ class Mopac7(cpinterface.MolecularCalculator):
         and this check may let bad pairs slip through because it is not
         pair-aware.
 
-        @param system: molecular system
-        @type system : geoprep.System
-        @param method: name of method
-        @type method : str
-        @return: elements from system
+        :param system: molecular system
+        :type system : geoprep.System
+        :param method: name of method
+        :type method : str
+        :return: elements from system
         """
         
         emap = {"semiempirical:mndo" : ["H", "Li", "B", "C", "N", "O", "F",
@@ -214,12 +214,12 @@ class Mopac7(cpinterface.MolecularCalculator):
         options:
          coordinates: "cartesian" or "zmatrix"
 
-        @param system: molecular system data to convert to input geometry
-        @type system : geoprep.System
-        @param options: select coordinate system
-        @type options : dict
-        @return: a Mopac7 input with geometry specifications
-        @rtype : str
+        :param system: molecular system data to convert to input geometry
+        :type system : geoprep.System
+        :param options: select coordinate system
+        :type options : dict
+        :return: a Mopac7 input with geometry specifications
+        :rtype : str
         """
 
         defaults = {"coordinates" : "cartesian"}
@@ -238,14 +238,14 @@ class Mopac7(cpinterface.MolecularCalculator):
     def make_energy_job(self, system, method, options={}):
         """Create an input specification for a single point energy calculation.
 
-        @param system: molecular system for energy calculation
-        @type system : geoprep.System
-        @param method: calculation method
-        @type method : str
-        @param options: additional keyword based control options
-        @type options : dict
-        @return: a Mopac7 single point energy calculation job
-        @rtype : cpinterface.Job
+        :param system: molecular system for energy calculation
+        :type system : geoprep.System
+        :param method: calculation method
+        :type method : str
+        :param options: additional keyword based control options
+        :type options : dict
+        :return: a Mopac7 single point energy calculation job
+        :rtype : cpinterface.Job
         """
         
         system = self.fragment_to_system(system)
@@ -264,14 +264,14 @@ class Mopac7(cpinterface.MolecularCalculator):
         options:
          goal: minimize or saddle
 
-        @param system: molecular system for energy calculation
-        @type system : geoprep.System
-        @param method: calculation method
-        @type method : str
-        @param options: additional keyword based control options
-        @type options : dict
-        @return: a Mopac7 input for geometry optimization calculation
-        @rtype : str
+        :param system: molecular system for energy calculation
+        :type system : geoprep.System
+        :param method: calculation method
+        :type method : str
+        :param options: additional keyword based control options
+        :type options : dict
+        :return: a Mopac7 input for geometry optimization calculation
+        :rtype : str
         """
 
         system = self.fragment_to_system(system)
@@ -290,14 +290,14 @@ class Mopac7(cpinterface.MolecularCalculator):
 
         See Chapter 2 of the Mopac 7 manual for keyword details.
 
-        @param system: molecular system for calculation
-        @type system : geoprep.System
-        @param method: a semiempirical calculation method
-        @type method : str
-        @param options: additional keyword based control options
-        @type options : dict
-        @return: a Mopac7 semiempirical job
-        @rtype : Job
+        :param system: molecular system for calculation
+        :type system : geoprep.System
+        :param method: a semiempirical calculation method
+        :type method : str
+        :param options: additional keyword based control options
+        :type options : dict
+        :return: a Mopac7 semiempirical job
+        :rtype : Job
         """
 
         defaults = {"reference" : "rhf", "gnorm" : 0.0001, "precise" : True,

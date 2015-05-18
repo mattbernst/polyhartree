@@ -14,10 +14,10 @@ class GAMESSUSJob(cpinterface.Job):
     def extract_last_energy(self, data, options={}):
         """Get last energy message from log file and store it as self.energy.
 
-        @param data: log file contents
-        @type data : str
-        @param options: ignored
-        @type options : dict
+        :param data: log file contents
+        :type data : str
+        :param options: ignored
+        :type options : dict
         """
 
         for line in data.split("\n"):
@@ -38,10 +38,10 @@ class GAMESSUSJob(cpinterface.Job):
         """Get heat of formation from log file and store it as
         self.heat_of_formation.
 
-        @param data: log file contents
-        @type data : str
-        @param options: ignored
-        @type options : dict
+        :param data: log file contents
+        :type data : str
+        :param options: ignored
+        :type options : dict
         """
 
         for line in data.split("\n"):
@@ -60,10 +60,10 @@ class GAMESSUSJob(cpinterface.Job):
         WILL NOT match
          1  O            8.0    -0.0002646     0.0003329    -0.0001721
 
-        @param line: a line of data from log file
-        @type line : str
-        @return: [element, x, y, z] or []
-        @rtype : list
+        :param line: a line of data from log file
+        :type line : str
+        :return: [element, x, y, z] or []
+        :rtype : list
         """
 
         entry = []
@@ -81,10 +81,10 @@ class GAMESSUSJob(cpinterface.Job):
         If there are multiple geometries from e.g. an optimization run, they
         will go into self.geometry_history.
 
-        @param data: log file contents
-        @type data : str
-        @param options: ignored
-        @type options : dict
+        :param data: log file contents
+        :type data : str
+        :param options: ignored
+        :type options : dict
         """
 
         geometries = []
@@ -111,10 +111,10 @@ class GAMESSUSJob(cpinterface.Job):
     def run(self, host="localhost", options={}):
         """Run a GAMESS-US job on the given host.
 
-        @param host: name of host where job should execute
-        @type host : str
-        @param options: ignored
-        @type options : dict
+        :param host: name of host where job should execute
+        :type host : str
+        :param options: ignored
+        :type options : dict
         """
 
         run_params = self.get_run_config(host)
@@ -165,11 +165,11 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         the GAMESS manual, "MOPAC Calculations Within GAMESS",
         http://www.msg.ameslab.gov/gamess/GAMESS_Manual/refs.pdf
 
-        @param system: molecular system
-        @type system : geoprep.System
-        @param method: name of method
-        @type method : str
-        @return: elements from system
+        :param system: molecular system
+        :type system : geoprep.System
+        :param method: name of method
+        :type method : str
+        :return: elements from system
         """
 
         emap = {"semiempirical:pm3" : ["H", "Li", "Be", "C", "N", "O", "F",
@@ -204,12 +204,12 @@ class GAMESSUS(cpinterface.MolecularCalculator):
          coordinates: "cartesian" or "zmatrix"
          symmetry: optional symmetry group
 
-        @param system: molecular system data to convert to input geometry
-        @type system : geoprep.System
-        @param options: select coordinate system
-        @type options : dict
-        @return: a GAMESS-US input with geometry specifications
-        @rtype : str
+        :param system: molecular system data to convert to input geometry
+        :type system : geoprep.System
+        :param options: select coordinate system
+        :type options : dict
+        :return: a GAMESS-US input with geometry specifications
+        :rtype : str
         """
 
         defaults = {"coordinates" : "cartesian"}
@@ -243,14 +243,14 @@ class GAMESSUS(cpinterface.MolecularCalculator):
     def make_energy_job(self, system, method, options={}):
         """Create an input specification for a single point energy calculation.
 
-        @param system: molecular system for energy calculation
-        @type system : geoprep.System
-        @param method: calculation method
-        @type method : str
-        @param options: additional keyword based control options
-        @type options : dict
-        @return: a GAMESS-US input for single point energy calculation
-        @rtype : str
+        :param system: molecular system for energy calculation
+        :type system : geoprep.System
+        :param method: calculation method
+        :type method : str
+        :param options: additional keyword based control options
+        :type options : dict
+        :return: a GAMESS-US input for single point energy calculation
+        :rtype : str
         """
 
         system = self.fragment_to_system(system)
@@ -279,14 +279,14 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         options:
          goal: minimize or saddle
 
-        @param system: molecular system for energy calculation
-        @type system : geoprep.System
-        @param method: calculation method
-        @type method : str
-        @param options: additional keyword based control options
-        @type options : dict
-        @return: a GAMESS-US input for geometry optimization calculation
-        @rtype : str
+        :param system: molecular system for energy calculation
+        :type system : geoprep.System
+        :param method: calculation method
+        :type method : str
+        :param options: additional keyword based control options
+        :type options : dict
+        :return: a GAMESS-US input for geometry optimization calculation
+        :rtype : str
         """
 
         system = self.fragment_to_system(system)
@@ -311,16 +311,16 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         """GAMESS-US does not read lines longer than 80 characters. This
         method breaks up long directives into multiple lines.
 
-        @param data: text of input deck that needs fixing
-        @type data : str
-        @param start_marker: token that marks fixup start, e.g. "$CONTRL"
-        @type start_marker : str
-        @param end_marker: token that marks fixup end, e.g. "$END"
-        @type end_marker : str
-        @param maxlen: maximum line length to generate
-        @type maxlen : int
-        @return: (shortened_line_list, region_start_index, region_end_index)
-        @rtype : tuple
+        :param data: text of input deck that needs fixing
+        :type data : str
+        :param start_marker: token that marks fixup start, e.g. "$CONTRL"
+        :type start_marker : str
+        :param end_marker: token that marks fixup end, e.g. "$END"
+        :type end_marker : str
+        :param maxlen: maximum line length to generate
+        :type maxlen : int
+        :return: (shortened_line_list, region_start_index, region_end_index)
+        :rtype : tuple
         """
             
         begin_index = data.find(start_marker)
@@ -356,14 +356,14 @@ class GAMESSUS(cpinterface.MolecularCalculator):
 
         TODO: $STATPT control for geometry optimization
         
-        @param system: molecular system for calculation
-        @type system : geoprep.System
-        @param method: a semiempirical calculation method
-        @type method : str
-        @param options: additional keyword based control options
-        @type options : dict
-        @return: a GAMESS-US semiempirical job
-        @rtype : Job
+        :param system: molecular system for calculation
+        :type system : geoprep.System
+        :param method: a semiempirical calculation method
+        :type method : str
+        :param options: additional keyword based control options
+        :type options : dict
+        :return: a GAMESS-US semiempirical job
+        :rtype : Job
         """
         
         defaults = {"reference" : "rhf", "scf_iterations" : 200,
@@ -421,12 +421,12 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         """Prepare basis set data for use: basis assignment array, inline
         basis specifications, and information for ISPHER flag.
 
-        @param system: molecular system for parameterization
-        @type system : geoprep.System
-        @param options: additional keyword based control options
-        @type options : dict
-        @return: ISPHER flag data, assignment array, basis data, comments
-        @rtype : dict
+        :param system: molecular system for parameterization
+        :type system : geoprep.System
+        :param options: additional keyword based control options
+        :type options : dict
+        :return: ISPHER flag data, assignment array, basis data, comments
+        :rtype : dict
         """
 
         property_name = options["basis_tag_name"]
@@ -494,14 +494,14 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         UHF unrestricted Hartree-Fock, and
         ROHF restricted open shell Hartree-Fock
 
-        @param system: molecular system for calculation
-        @type system : geoprep.System
-        @param method: a HF calculation method
-        @param options: additional keyword based control options
-        @type options : dict
-        @type method : str
-        @return: a GAMESS-US HF job
-        @rtype : Job
+        :param system: molecular system for calculation
+        :type system : geoprep.System
+        :param method: a HF calculation method
+        :param options: additional keyword based control options
+        :type options : dict
+        :type method : str
+        :return: a GAMESS-US HF job
+        :rtype : Job
         """
 
         defaults = {"scf_iterations" : 200, "basis_tag_name" : "basis_tag",

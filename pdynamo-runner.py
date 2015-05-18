@@ -14,7 +14,7 @@ except ImportError:
     sys.exit(1)
 
 controls = [("--xyzfile", {"help" : "XYZ file containing system atoms and geometry"}),
-            ("--jobtype", {"help" : "Kind of job to run: energy"}),
+            ("--jobtype", {"help" : "Kind of job to run: energy, geo-minimize"}),
             ("--method", {"help" : "Method for calculation: semiempirical:am1, semiempirical:mndo, semiempirical:pm3, semiempirical:pm6, semiempirical:rm1"}),
             ("--charge", {"help" : "System charge", "default" : 0, "type" : int}),
             ("--multiplicity", {"help" : "System multiplicity", "default" : 1, "type" : int}),
@@ -34,10 +34,10 @@ class PDRunner(object):
         """Initialize runner with arguments from command line. Execute a job
         based on the arguments.
 
-        @param *args: currently unused
-        @type *args : tuple
-        @param **kw: all keywords controlling job execution
-        @type **kw : dict
+        :param *args: currently unused
+        :type *args : tuple
+        :param **kw: all keywords controlling job execution
+        :type **kw : dict
         """
 
         self.ai_cache = {}
@@ -65,35 +65,52 @@ class PDRunner(object):
             raise ValueError("Unrecognized method {0}".format(method))
 
         if jobtype == "energy":
-            system = self.run_spe_semiempirical(system, method_name, charge,
-                                                multiplicity, restricted)
-            xyz = self.store_final_geometry(system)
-            hof = self.get_heat_of_formation(system, method_name)
-            t = self.logger.GetTable()
-            t.Start()
-            t.Title("Heat of Formation")
-            t.Entry("{:.6f} kcal/mol".format(hof))
-            t.Stop()
-
-            t = self.logger.GetTable()
-            t.Start()
-            t.Title("Final Geometry")
-            t.Entry(xyz)
-            t.Stop()
-            self.outstream.write(self.logfile.getvalue())
-            if self.outstream != sys.stdout:
-                self.outstream.close()
+            self.run_energy(system, method_name, charge, multiplicity,
+                            restricted)
         else:
             raise ValueError("Unrecognized job type {0}".format(jobtype))
+
+    def run_energy(self, system, method_name, charge, multiplicity, restricted):
+        """Run a single point energy calculation for a system.
+        
+        :param system: a pDynamo molecular system
+        :type system : pMolecule.system
+        :param method_name: name of energy method to run, e.g. pm6
+        :type method_name : str
+        :param charge: system charge
+        :type charge : int
+        :param multiplicity: spin multiplicity
+        :type multiplicity : int
+        :param restricted: run restricted calculation if True, else unrestricted
+        :type restricted : bool
+        """
+        system = self.run_spe_semiempirical(system, method_name, charge,
+                                            multiplicity, restricted)
+        xyz = self.store_final_geometry(system)
+        hof = self.get_heat_of_formation(system, method_name)
+        t = self.logger.GetTable()
+        t.Start()
+        t.Title("Heat of Formation")
+        t.Entry("{:.6f} kcal/mol".format(hof))
+        t.Stop()
+
+        t = self.logger.GetTable()
+        t.Start()
+        t.Title("Final Geometry")
+        t.Entry(xyz)
+        t.Stop()
+        self.outstream.write(self.logfile.getvalue())
+        if self.outstream != sys.stdout:
+            self.outstream.close()
 
     def store_final_geometry(self, system):
         """Write out system geometry to an XYZ file after calculation, and
         read in the contents of that file to return as a string.
 
-        @param system: post-calculation system
-        @type system : pMolecule.System.System
-        @return: XYZ file
-        @rtype : str
+        :param system: post-calculation system
+        :type system : pMolecule.System.System
+        :return: XYZ file
+        :rtype : str
         """
 
         outname = "final.xyz"
@@ -108,15 +125,15 @@ class PDRunner(object):
         """Run a single point energy calculation for a semiempirical method
         like AM1 or PM6.
 
-        @param system: input system with geometry
+        :param system: input system with geometry
         @type system : pMolecule.System.System
-        @param method_name: name of semiempirical model to apply
+        :param method_name: name of semiempirical model to apply
         @type method_name : str
-        @param charge: system charge
+        :param charge: system charge
         @type charge : int
-        @param multiplicity: system multiplicity
+        :param multiplicity: system multiplicity
         @type multiplicity : int
-        @param restricted: whether to run a spin-restricted calculation
+        :param restricted: whether to run a spin-restricted calculation
         @type restricted : bool
         """
 
@@ -137,9 +154,9 @@ class PDRunner(object):
         """Get E(isol-atom) for the given semiempirical method and element.
         The value is returned in eV.
 
-        @param semiempirical_method: a method name, like "am1"
+        :param semiempirical_method: a method name, like "am1"
         @type semiempirical_method : str
-        @param element: an element symbol, like "Cl"
+        :param element: an element symbol, like "Cl"
         @type element : str
         @return: energy
         @rtype : float
@@ -179,9 +196,9 @@ class PDRunner(object):
         The heat of formation is calculated as explained at
         http://openmopac.net/manual/SCF_calc_hof.html
 
-        @param converged_system: a system with energy already calculated
+        :param converged_system: a system with energy already calculated
         @type converged_system : pMolecule.System.System
-        @param semiempirical_method: name of SE method for parameter lookup
+        :param semiempirical_method: name of SE method for parameter lookup
         @type semiempirical_method : str
         @return: heat of formation in kcal/mol
         @rtype : float

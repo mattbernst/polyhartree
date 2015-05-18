@@ -6,11 +6,11 @@ import unittest
 def runSuite(cls, verbosity=2, name=None):
     """Run a unit test suite and return status code.
 
-    @param cls: class that the suite should be constructed from
+    :param cls: class that the suite should be constructed from
     @type cls : class
-    @param verbosity: verbosity level to pass to test runner
+    :param verbosity: verbosity level to pass to test runner
     @type verbosity : int
-    @param name: name of a specific test in the suite to run
+    :param name: name of a specific test in the suite to run
     @type name : str
     @return: unit test run status code
     @rtype : int

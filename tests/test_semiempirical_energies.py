@@ -31,9 +31,9 @@ class PDTestCase(unittest.TestCase):
         """Run multiple energy calculations at the same geometry and method
         settings using different quantum chemistry back ends.
 
-        @param geometry: system geometry for calculations
+        :param geometry: system geometry for calculations
         @type geometry : cinfony.pybel.Molecule
-        @param method: method name to use
+        :param method: method name to use
         @type method : str
         @return: implementation and job results from each back end
         @rtype : list
@@ -55,9 +55,9 @@ class PDTestCase(unittest.TestCase):
         in the list as reference value and see how much other results
         deviate from it.
 
-        @param results: results of calculations with different back ends
+        :param results: results of calculations with different back ends
         @type results : list
-        @param metric: a measurable quantity to compare, e.g. "energy" or "hof"
+        :param metric: a measurable quantity to compare, e.g. "energy" or "hof"
         @type metric : str
         @return: calculation metric differences
         @rtype : list
@@ -94,13 +94,13 @@ class PDTestCase(unittest.TestCase):
         """Compare a metric when running the same energy method with the same
         geometry across different chemistry back-ends.
 
-        @param geometry: a trial geometry
+        :param geometry: a trial geometry
         @type geometry : geoprep.System
-        @param method: a method name, e.g. "semiempirical:am1"
+        :param method: a method name, e.g. "semiempirical:am1"
         @type method : str
-        @param metric: a measurable quantity to compare, e.g. "energy" or "hof"
+        :param metric: a measurable quantity to compare, e.g. "energy" or "hof"
         @type metric : str
-        @param min_places: minimum number of decimal places agreement for metric
+        :param min_places: minimum number of decimal places agreement for metric
         @return: differences among packages, using the first run as reference
         @rtype : list
         """

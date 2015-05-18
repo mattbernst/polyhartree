@@ -19,11 +19,11 @@ class Utility(object):
         """Execute a command with subprocess.Popen, optionally supplying
         data to the command through stdin, and return the results.
 
-        @param cmd: a command line for an external program
+        :param cmd: a command line for an external program
         @type cmd : str
-        @param stdin_data: optional data to supply on stdin to external program
+        :param stdin_data: optional data to supply on stdin to external program
         @type stdin_data : str
-        @param bash_shell: execute command through Bash with rcfile, if True
+        :param bash_shell: execute command through Bash with rcfile, if True
         @type bash_shell : bool
         @return: (data from stdout, return code)
         @rtype : tuple
@@ -53,9 +53,9 @@ class Utility(object):
 
         ["Root", 1.0, "singlet", 19.48009, "a.u.", 530.0803, "eV"]
 
-        @param line: input line of text from a nwparse QA file
+        :param line: input line of text from a nwparse QA file
         @type line : str
-        @param numeric_only: exclude unconverted fragments if True
+        :param numeric_only: exclude unconverted fragments if True
         @type numeric_only : bool
         @return: mixed list of strings and floats
         @rtype : list
@@ -76,7 +76,7 @@ class Utility(object):
     def n_number_from_line(self, line, n, m):
         """Get the Nth numeric value from a line where M values are present.
 
-        @param line: a line from a data file
+        :param line: a line from a data file
         @type line : str
         @return: found numeric value
         @rtype : float
@@ -90,7 +90,7 @@ class Utility(object):
     def ev_to_au(self, v):
         """Convert an energy expressed in electron volts to a Hartree value.
 
-        @param v: energy in electron volts
+        :param v: energy in electron volts
         @type v : float
         @return: energy in Hartrees
         @rtype : float
@@ -101,7 +101,7 @@ class Utility(object):
     def kcalm_to_au(self, v):
         """Convert an energy expressed in kcal/mol to a Hartree value.
 
-        @param v: energy in kcal/mol
+        :param v: energy in kcal/mol
         @type v : float
         @return: energy in Hartrees
         @rtype : float
@@ -112,7 +112,7 @@ class Utility(object):
     def bohr_to_angstrom(self, v):
         """Convert a distance expressed in bohr to angstrom.
 
-        @param v: distance in bohr
+        :param v: distance in bohr
         @type v : float
         @return: distance in angstrom
         @rtype : float

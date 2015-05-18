@@ -39,11 +39,11 @@ class MOVecsReader(object):
         the calculation log file. The default energies are used only
         if they cannot be found in the input files.
 
-        @param movecs_file_name: name of molecular orbital vector file to read
+        :param movecs_file_name: name of molecular orbital vector file to read
         @type movecs_file_name : str
-        @param default_energy: total energy in Hartrees
+        :param default_energy: total energy in Hartrees
         @type default_energy : float
-        @param default_enrep: nuclear repulsion energy in Hartrees
+        :param default_enrep: nuclear repulsion energy in Hartrees
         @type default_enrep : float
         """
         
@@ -91,7 +91,7 @@ class MOVecsReader(object):
         """Get the head of a Fortran record, basically a count of how
         many bytes are in the actual record data.
 
-        @param open_file: open file to read a record head from
+        :param open_file: open file to read a record head from
         @type open_file : file
         @return: number of bytes in record
         @rtype : int
@@ -107,7 +107,7 @@ class MOVecsReader(object):
         to be a duplicate of the record head. Maybe to allow easy reading
         of the file in reverse order?
 
-        @param open_file: open file to read a record head from
+        :param open_file: open file to read a record head from
         @type open_file : file
         @return: number of bytes in record
         @rtype : int
@@ -121,7 +121,7 @@ class MOVecsReader(object):
         """Get record data from a Fortran record within a .movecs file,
         discarding record tail.
 
-        @param open_file: open file to read a record from
+        :param open_file: open file to read a record from
         @type open_file : file
         @return: record data as a raw byte string
         @rtype : str
@@ -142,7 +142,7 @@ class MOVecsReader(object):
         open file. If there is only a single record, return as int
         instead of list.
 
-        @param open_file: open file to read a record from
+        :param open_file: open file to read a record from
         @type open_file : file
         @return: an integer
         @rtype : int | list
@@ -166,7 +166,7 @@ class MOVecsReader(object):
         numbers to Python's float type (which is really a double) and
         return them in a list.
 
-        @param open_file: open file to read a record from
+        :param open_file: open file to read a record from
         @type open_file : file
         @return: floating point numbers
         @rtype : list
@@ -318,7 +318,7 @@ class MOVecsWriter(object):
     def __init__(self, movecs_file_name):
         """Prepare writer for molecular orbital vectors.
 
-        @param movecs_file_name: name of molecular orbital vector file to write
+        :param movecs_file_name: name of molecular orbital vector file to write
         @type movecs_file_name : str
         """
         
@@ -357,9 +357,9 @@ class MOVecsWriter(object):
         """Put a head on a Fortran record, an integer count of how
         many bytes are in the actual record data.
 
-        @param open_file: open file to write a record head to
+        :param open_file: open file to write a record head to
         @type open_file : file
-        @param count: number of bytes in record
+        :param count: number of bytes in record
         @type count : int
         """
 
@@ -369,9 +369,9 @@ class MOVecsWriter(object):
     def put_record(self, open_file, packed):
         """Put a record into the open output file.
 
-        @param open_file: open file to read a record head from
+        :param open_file: open file to read a record head from
         @type open_file : file
-        @param packed: a byte-string of record data packed by struct module
+        :param packed: a byte-string of record data packed by struct module
         @type packed : str
         """
         
@@ -386,9 +386,9 @@ class MOVecsWriter(object):
     def put_string(self, open_file, s):
         """Write string into a record.
 
-        @param open_file: open file to write a record to
+        :param open_file: open file to write a record to
         @type open_file : file
-        @param s: string data
+        :param s: string data
         @type s : str
         """
 
@@ -399,9 +399,9 @@ class MOVecsWriter(object):
     def put_ints(self, open_file, ints):
         """Write one or more integers into a contiguous record.
 
-        @param open_file: open file to write a record to
+        :param open_file: open file to write a record to
         @type open_file : file
-        @param ints: integer values
+        :param ints: integer values
         @type ints : list | int
         """
 
@@ -417,9 +417,9 @@ class MOVecsWriter(object):
         """Write one or more double precision floating point numbers into a
         contiguous record.
 
-        @param open_file: open file to write a record to
+        :param open_file: open file to write a record to
         @type open_file : file
-        @param doubles: double precision floating point values
+        :param doubles: double precision floating point values
         @type doubles : list | double
         """
 
@@ -435,7 +435,7 @@ class MOVecsWriter(object):
         """Write formatted data interpreted by a MOVecsReader into an NWChem
         .movecs file.
 
-        @param data: formatted platform-independent data
+        :param data: formatted platform-independent data
         @type data : dict
         """
 
