@@ -125,8 +125,9 @@ class PDynamoJob(cpinterface.Job):
         #add geometry file specification and run location to command line
         log_file = path + xyzfile.replace(".xyz", ".log")
         args = {"path" : path, "input" : xyzfull, "output" : log_file}
-        self.deck += " --xyzfile={input} --outfile={output}"
-        self.deck = self.deck.format(**args)
+
+        shell_cli = "python pdynamo-runner.py --xyzfile={input} --outfile={output} " + self.extras["cli_args"]
+        shell_cli = shell_cli.format(**args)
 
         #copy runner to working directory
         here = os.path.dirname(os.path.dirname(__file__))
@@ -135,11 +136,12 @@ class PDynamoJob(cpinterface.Job):
             runsource = runnerfile.read()
         dst = path + "pdynamo-runner.py"
 
+        shell_script = path + "runpd.sh"
+        self.write_file(shell_cli, shell_script, host)
         self.write_file(runsource, dst, host)
 
-        #TODO: wrap this in a shell script so user can debug
-        cmd = self.deck
-        
+        cmd = self.deck.format(path=path)
+
         stdout, returncode = self.execute(cmd, host, bash_shell=True)
         
         self.stdout = stdout
@@ -286,9 +288,9 @@ class PDynamo(cpinterface.MolecularCalculator):
         #pdynamo-runner.py. In the actual job runner we will add the name
         #of the geometry file, create a shell script, and copy the runner.
         args = " ".join([c for c in controls if c])
-        deck = "cd {path} && python pdynamo-runner.py " + args
+        deck = "cd {path} && bash ./runpd.sh "
 
-        job = PDynamoJob(deck=deck, system=system)
+        job = PDynamoJob(deck=deck, system=system, extras={"cli_args" : args})
 
         return job
 
