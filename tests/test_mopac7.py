@@ -11,10 +11,11 @@
 import sys
 import unittest
 import geoprep
+from tests import adapter
 from tests.common_testcode import runSuite
 from adapters import mopac7
 
-class MOPACTestCase(unittest.TestCase):
+class MOPACTestCase(adapter.AdapterTestCase):
 
     def setUp(self):
         self.G = geoprep.Geotool()
@@ -22,8 +23,7 @@ class MOPACTestCase(unittest.TestCase):
 
     def test_bad_input_error(self):
         #This fails because we introduce a typo into the deck.
-        P2 = self.G.make_system("P#P")
-        job = self.C.make_energy_job(P2, "semiempirical:pm3")
+        job = self.get_job("C", "semiempirical:pm3")
         job.deck = job.deck.replace("SINGLET", "SNIGLET")
         job.run()
         self.assertEqual("error", job.runstate)

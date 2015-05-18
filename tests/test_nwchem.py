@@ -13,9 +13,11 @@ import unittest
 import geoprep
 from adapters import nwchem
 from sharedutilities import Utility
+from tests import adapter
 from tests.common_testcode import runSuite
 
-class NWChemTestCase(unittest.TestCase):
+
+class NWChemTestCase(adapter.AdapterTestCase):
     def setUp(self):
         self.G = geoprep.Geotool()
         self.C = nwchem.NWChem()
@@ -33,11 +35,8 @@ end"""
         self.assertEqual(expected, block)
 
     def test_bad_input_error(self):
-        methane = self.G.make_fragment("C")
-        methane.set_basis_name("3-21G")
-        job = self.C.make_energy_job(methane, "hf:rhf")
-
         #introduce an error in the input deck: misspell rhf as thf
+        job = self.get_job("C", "hf:rhf", "3-21G")
         job.deck = job.deck.replace("RHF", "THF")
 
         self.assertEqual("begin", job.runstate)
@@ -103,7 +102,7 @@ end"""
         for tag in expected_tags:
             self.assertTrue(tag in geometry)
 
-    def test_create_geometry_c1_symmetry(self):
+    def test_create_geometry_explicit_symmetry(self):
         #test generation of geometry block with explicit C1 symmetry
         btag = "basis_tag"
         options = {"basis_tag_name" : btag, "property_name" : btag,
@@ -117,6 +116,18 @@ end"""
         geometry = self.C.create_geometry(s, options=options)
 
         self.assertTrue("symmetry C1" in geometry)
+
+    def test_extract_geometry_from_log(self):
+        #read/verify geometry from a specific stored RHF water optimization
+        job = self.get_job("O", "hf:rhf", "3-21G")
+        with open("tests/data/logs/rhf_water_geo_min_nwchem.log") as infile:
+            data = infile.read()
+
+        self.assertEqual(0, len(job.geometry_history))
+        job.extract_geometry(data)
+        #there are actually 6 geometries in the log file but one is a repeat
+        self.assertEqual(5, len(job.geometry_history))
+
 
 def runTests():
     try:

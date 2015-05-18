@@ -12,14 +12,15 @@ import sys
 import unittest
 import geoprep
 from adapters import gamess_us
+from tests import adapter
 from tests.common_testcode import runSuite
 
-class GAMESSTestCase(unittest.TestCase):
+class GAMESSTestCase(adapter.AdapterTestCase):
     def setUp(self):
         self.G = geoprep.Geotool()
         self.C = gamess_us.GAMESSUS()
 
-    def test_create_geometry_td_symmetry(self):
+    def test_create_geometry_explicit_symmetry(self):
         #test explicit symmetry setting (creation) for GAMESS-US
         #N.B.: actual specified geometry is wrong for TD -- job will not work!
         methane = self.G.make_fragment("C")
@@ -30,8 +31,7 @@ class GAMESSTestCase(unittest.TestCase):
         self.assertTrue(symmetry_group in job.deck)
 
     def test_bad_input_error(self):
-        methane = self.G.make_fragment("C")
-        job = self.C.make_energy_job(methane, "semiempirical:pm3")
+        job = self.get_job("C", "semiempirical:pm3")
 
         #introduce an error in the input deck: misspell SCFTYP as SCFTYPE
         job.deck = job.deck.replace("SCFTYP", "SCFTYPE")

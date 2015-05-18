@@ -11,10 +11,11 @@
 import sys
 import unittest
 import geoprep
+from tests import adapter
 from tests.common_testcode import runSuite
 from adapters import pdynamo
 
-class PDTestCase(unittest.TestCase):
+class PDTestCase(adapter.AdapterTestCase):
 
     def setUp(self):
         self.G = geoprep.Geotool()

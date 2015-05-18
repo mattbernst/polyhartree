@@ -12,10 +12,11 @@ import sys
 import unittest
 import geoprep
 from adapters import psi4
+from tests import adapter
 from tests.common_testcode import runSuite
 from sharedutilities import Utility
 
-class Psi4TestCase(unittest.TestCase):
+class Psi4TestCase(adapter.AdapterTestCase):
     def setUp(self):
         self.G = geoprep.Geotool()
         self.C = psi4.Psi4()
@@ -28,9 +29,7 @@ class Psi4TestCase(unittest.TestCase):
         self.assertEqual(expected, block)
 
     def test_bad_input_error(self):
-        methane = self.G.make_fragment("C")
-        methane.set_basis_name("3-21G")
-        job = self.C.make_energy_job(methane, "hf:rhf")
+        job = self.get_job("C", "hf:rhf", "3-21G")
 
         #introduce an error in the input deck: misspell scf as sfc
         job.deck = job.deck.replace("scf", "sfc")
@@ -99,7 +98,7 @@ class Psi4TestCase(unittest.TestCase):
         for tag in expected_tags:
             self.assertTrue(tag in geometry)
 
-    def test_create_geometry_c1_symmetry(self):
+    def test_create_geometry_explicit_symmetry(self):
         #test generation of geometry block with explicit C1 symmetry
         btag = "basis_tag"
         options = {"basis_tag_name" : btag, "property_name" : btag,
