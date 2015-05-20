@@ -10,6 +10,10 @@ class Mopac7Job(cpinterface.Job):
     def __init__(self, *args, **kw):
         super(Mopac7Job, self).__init__(*args, **kw)
         self.backend = "mopac7"
+        #intended to extract XYZ geometric coordinates from a line like
+        #2         C                  1.3220     .0000     .0000
+        self.geometry_matcher = ([int, str, float, float, float],
+                                 [2, 3, 4])
 
     def extract_energy(self, data, options={}):
         """Get last energy message from log file and store it as self.energy.
@@ -53,61 +57,6 @@ class Mopac7Job(cpinterface.Job):
                 hof = self.n_number_from_line(line, 0, 1)
                 self.heat_of_formation = self.kcalm_to_au(hof)
 
-    def line_to_geometry(self, line):
-        """Extract lines fitting pattern float element_symbol float float float
-        and interpret them as [element, x, y, z]. First number is index number
-        and is ignored.
-
-        e.g. WILL match
-         2         C                  1.3220     .0000     .0000
-
-        WILL NOT match
-         2          C           -.1526          4.1526
-        or
-         2      C         1.08609  *     123.09742  *                 1    2
-
-        :param line: a line of data from log file
-        :type line : str
-        :return: [element, x, y, z] or []
-        :rtype : list
-        """
-
-        entry = []
-        u = sharedutilities.Utility()
-        n = u.numericize(line)
-        pattern = [float, str, float, float, float]
-        if [type(k) for k in n] == pattern:
-            if n[1] in sharedutilities.ELEMENTS:
-                entry = [n[1], n[2], n[3], n[4]]
-
-        return entry
-                
-    def extract_geometry(self, data, options={}):
-        """Get last geometry found in log file and store it as self.geometry.
-        If there are multiple geometries from e.g. an optimization run, they
-        will go into self.geometry_history.
-
-        :param data: log file contents
-        :type data : str
-        :param options: ignored
-        :type options : dict
-        """
-
-        geometries = []
-        for line in data.split("\n"):
-            extracted = self.line_to_geometry(line)
-            if extracted:
-                geometries.append(extracted)
-
-        natoms = len(self.system.atoms)
-        while geometries:
-            g = geometries[:natoms]
-            geometries = geometries[natoms:]
-
-            self.geometry_history.append(g)
-            
-        self.geometry = self.geometry_history[-1]
-        
     def run(self, host="localhost", options={}):
         """Run MOPAC7 on the given host using the run_mopac7 script.
 

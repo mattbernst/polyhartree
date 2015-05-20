@@ -10,6 +10,11 @@ class Psi4Job(cpinterface.Job):
     def __init__(self, *args, **kw):
         super(Psi4Job, self).__init__(*args, **kw)
         self.backend = "psi4"
+        #intended to extract XYZ geometric coordinates from a line like
+        #O          -0.0000000006       -0.1206110193        0.0000000000
+        self.geometry_matcher = ([str, float, float, float],
+                                 [1, 2, 3])
+
 
     def extract_last_energy(self, data, options={}):
         """Get last energy message from log file and store it as self.energy.
@@ -26,71 +31,6 @@ class Psi4Job(cpinterface.Job):
 
                 #units are already Hartree
                 self.energy = energy
-
-    def line_to_geometry(self, line):
-        """Extract lines fitting pattern element float float float
-        and interpret them as [element, x, y, z].
-
-        e.g. WILL match
-         O          -0.0000000006       -0.1206110193        0.0000000000
-
-        WILL NOT match
-         2       -0.000176369484     0.000057996186     0.000000000004
-
-        (presuming that H0 is an actual tag and H is not)
-
-        :param line: a line of data from log file
-        :type line : str
-        :return: [element, x, y, z] or []
-        :rtype : list
-        """
-
-        entry = []
-        u = sharedutilities.Utility()
-        n = u.numericize(line)
-
-        pattern = [str, float, float, float]
-        if [type(k) for k in n] == pattern:
-            if n[0] in sharedutilities.ELEMENTS:
-                entry = n[:]
-
-        return entry
-
-    def extract_geometry(self, data, options={}):
-        """Get last geometry found in log file and store it as self.geometry.
-        If there are multiple geometries from e.g. an optimization run, they
-        will go into self.geometry_history.
-
-        :param data: log file contents
-        :type data : str
-        :param options: ignored
-        :type options : dict
-        """
-
-        geometries = []
-        for line in data.split("\n"):
-            extracted = self.line_to_geometry(line)
-            if extracted:
-                geometries.append(extracted)
-
-        natoms = len(self.system.atoms)
-        while geometries:
-            g = geometries[:natoms]
-            geometries = geometries[natoms:]
-
-            self.geometry_history.append(g)
-
-        #extra step for psi4: remove dupes
-        dupes = set()
-        deduped = []
-        for g in self.geometry_history:
-            dumped = json.dumps(g)
-            if dumped not in dupes:
-                deduped.append(g)
-                dupes.add(dumped)
-        self.geometry_history = deduped
-
-        self.geometry = self.geometry_history[-1]
 
     def run(self, host="localhost", options={}):
         """Run a Psi4 job using psi script, on the local host.

@@ -41,9 +41,10 @@ class Utility(object):
 
         return (output, p.returncode)
 
-    def numericize(self, line, numeric_only=False):
+    def numericize(self, line, numeric_only=False, force_float=True):
         """Split a line of text by whitespace and try to convert all
-        numbers to floating point numeric values.
+        numbers to numeric values. If force_float is True, all numbers
+        will be returned as floats, otherwise integers where appropriate.
 
         e.g.
 
@@ -57,6 +58,8 @@ class Utility(object):
         :type line : str
         :param numeric_only: exclude unconverted fragments if True
         :type numeric_only : bool
+        :param force_float: use float for all numeric values (no ints)
+        :type force_float : bool
         :return: mixed list of strings and floats
         :rtype : list
         """
@@ -65,6 +68,11 @@ class Utility(object):
         for piece in line.split():
             try:
                 v = float(piece)
+                if not force_float:
+                    try:
+                        v = int(piece)
+                    except:
+                        pass
             except ValueError:
                 v = piece
 

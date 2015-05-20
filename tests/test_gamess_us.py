@@ -81,7 +81,7 @@ class GAMESSTestCase(adapter.AdapterTestCase):
 
         self.assertEqual(0, len(job.geometry_history))
         job.extract_geometry(data)
-        self.assertEqual(7, len(job.geometry_history))
+        self.assertEqual(6, len(job.geometry_history))
 
 
 def runTests():

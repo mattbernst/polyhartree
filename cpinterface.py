@@ -1,8 +1,9 @@
 # -*- coding:utf-8 mode:python; tab-width:4; indent-tabs-mode:nil; py-indent-offset:4 -*-
 import os
+import cPickle as pickle
 import sys
 import yaml
-from sharedutilities import Utility
+import sharedutilities
 import geoprep
 
 try:
@@ -19,7 +20,7 @@ class Messages(object):
         if not self.messages or self.messages[-1] != msg:
             self.messages.append(msg)
 
-class Job(Utility, Messages):
+class Job(sharedutilities.Utility, Messages):
     def __init__(self, deck="", system=None, runstate="begin", tmpdir="/tmp",
                  extras={}):
         #states: begin, running, complete, error
@@ -255,17 +256,75 @@ class Job(Utility, Messages):
     def extract_heat_of_formation(self, data, options={}):
         raise NotImplementedError
 
+    def match_line(self, line, pattern, indices):
+        """Numericize a line and when it matches a type pattern, extract
+        the whitespace separated components indexed by indices. This is
+        useful for e.g. getting geometry out of log files.
+
+        :param line: a line of data to process
+        :type line : str
+        :param pattern: types to match, e.g. [int, str, float, float, float]
+        :type pattern : list
+        :param indices: indices of components to extract and return from matches
+        :type indices : list
+        :return: matched components, if there was a match
+        :rtype : list
+        """
+
+        matched = []
+        n = self.numericize(line, force_float=False)
+        if [type(k) for k in n] == pattern:
+            matched = [n[k] for k in indices]
+
+        return matched
+
+    def extract_geometry(self, data, options={}):
+        """Get last geometry found in log file and store it as self.geometry.
+        If there are multiple geometries from e.g. an optimization run, they
+        will go into self.geometry_history.
+
+        :param data: log file contents
+        :type data : str
+        :param options: ignored
+        :type options : dict
+        """
+
+        geometries = []
+        pattern, match_indices = self.geometry_matcher
+        for line in data.split("\n"):
+            extracted = self.match_line(line, pattern, match_indices)
+            if extracted:
+                geometries.append(extracted)
+
+        elements = [sharedutilities.ELEMENTS[k.atomicnum - 1] for k in self.system.atoms]
+        natoms = len(elements)
+
+        while geometries:
+            g = geometries[:natoms]
+            geometries = geometries[natoms:]
+
+            for j in range(natoms):
+                g[j] = [elements[j]] + g[j]
+
+            self.geometry_history.append(g)
+
+        #remove any repeated geometries
+        dupes = set()
+        deduped = []
+        for g in self.geometry_history:
+            dumped = pickle.dumps(g)
+            if dumped not in dupes:
+                deduped.append(g)
+                dupes.add(dumped)
+        self.geometry_history = deduped
+
+        self.geometry = self.geometry_history[-1]
+
 class MolecularCalculator(Messages):
     def __init__(self, *args, **kw):
         self.messages = []
         
     def create_geometry(self, molecule, options={}):
-        raise NotImplementedError
-
-    def extract_geometry(self, data, options={}):
-        raise NotImplementedError
-
-    def extract_energy(self, data, options={}):
         raise NotImplementedError
 
     def make_energy_job(self, system, method, options={}):

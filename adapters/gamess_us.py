@@ -9,6 +9,10 @@ class GAMESSUSJob(cpinterface.Job):
     def __init__(self, *args, **kw):
         super(GAMESSUSJob, self).__init__(*args, **kw)
         self.backend = "gamess_us"
+        #intended to extract XYZ geometric coordinates from a line like
+        #O           8.0   0.0133992460  -0.0168294554   0.0087021955
+        self.geometry_matcher = ([str, float, float, float, float],
+                                 [2, 3, 4])
 
     def extract_last_energy(self, data, options={}):
         """Get last energy message from log file and store it as self.energy.
@@ -48,33 +52,6 @@ class GAMESSUSJob(cpinterface.Job):
                 hof = self.n_number_from_line(line, 0, 1)
                 self.heat_of_formation = self.kcalm_to_au(hof)
 
-    def line_to_geometry(self, line):
-        """Extract lines fitting pattern element_symbol float float float float
-        and interpret them as [element, x, y, z]. First float is atomic number
-        and is ignored.
-
-        e.g. WILL match
-         O           8.0   0.0133992460  -0.0168294554   0.0087021955
-
-        WILL NOT match
-         1  O            8.0    -0.0002646     0.0003329    -0.0001721
-
-        :param line: a line of data from log file
-        :type line : str
-        :return: [element, x, y, z] or []
-        :rtype : list
-        """
-
-        entry = []
-        u = sharedutilities.Utility()
-        n = u.numericize(line)
-        pattern = [str, float, float, float, float]
-        if [type(k) for k in n] == pattern:
-            if n[0] in sharedutilities.ELEMENTS:
-                entry = [n[0], n[2], n[3], n[4]]
-
-        return entry
-
     def extract_geometry(self, data, options={}):
         """Get last geometry found in log file and store it as self.geometry.
         If there are multiple geometries from e.g. an optimization run, they
@@ -86,25 +63,13 @@ class GAMESSUSJob(cpinterface.Job):
         :type options : dict
         """
 
-        geometries = []
-        for line in data.split("\n"):
-            extracted = self.line_to_geometry(line)
-            if extracted:
-                geometries.append(extracted)
+        super(GAMESSUSJob, self).extract_geometry(data, options=options)
+        #after standard geometry extraction, rescale the first (special)
+        #GAMESS geometry which is in bohr instead of angstroms
+        for j in range(len(self.system.atoms)):
+            for k in [1, 2, 3]:
+                self.geometry_history[0][j][k] = self.bohr_to_angstrom(self.geometry_history[0][j][k])
 
-        natoms = len(self.system.atoms)
-        while geometries:
-            g = geometries[:natoms]
-            geometries = geometries[natoms:]
-
-            #the very first structure will be reported in bohr, so convert it
-            if not self.geometry_history:
-                for j in range(len(g)):
-                    for k in [1, 2, 3]:
-                        g[j][k] = self.bohr_to_angstrom(g[j][k])
-                
-            self.geometry_history.append(g)
-            
         self.geometry = self.geometry_history[-1]
 
     def run(self, host="localhost", options={}):

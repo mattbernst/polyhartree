@@ -10,6 +10,11 @@ class PDynamoJob(cpinterface.Job):
     def __init__(self, *args, **kw):
         super(PDynamoJob, self).__init__(*args, **kw)
         self.backend = "pdynamo"
+        #intended to extract XYZ geometric coordinates from a line like
+        #O   0.0133992460  -0.0168294554   0.0087021955
+        self.geometry_matcher = ([str, float, float, float],
+                                 [1, 2, 3])
+
 
     def extract_last_energy(self, data, options={}):
         """Get last energy message from log file and store it as self.energy.
@@ -61,57 +66,6 @@ class PDynamoJob(cpinterface.Job):
                 self.heat_of_formation = self.kcalm_to_au(hof)
                 break
 
-    def line_to_geometry(self, line):
-        """Extract lines fitting pattern element_symbol float float float
-        and interpret them as [element, x, y, z].
-
-        e.g. WILL match
-         O   0.0133992460  -0.0168294554   0.0087021955
-
-        WILL NOT match
-         1  O            8.0    -0.0002646     0.0003329    -0.0001721
-
-        :param line: a line of data from log file
-        :type line : str
-        :return: [element, x, y, z] or []
-        :rtype : list
-        """
-
-        entry = []
-        u = sharedutilities.Utility()
-        n = u.numericize(line)
-        pattern = [str, float, float, float]
-        if [type(k) for k in n] == pattern:
-            if n[0] in sharedutilities.ELEMENTS:
-                entry = [n[0], n[1], n[2], n[3]]
-
-        return entry
-
-    def extract_geometry(self, data, options={}):
-        """Get last geometry found in log file and store it as self.geometry.
-        If there are multiple geometries from e.g. an optimization run, they
-        will go into self.geometry_history.
-
-        :param data: log file contents
-        :type data : str
-        :param options: ignored
-        :type options : dict
-        """
-
-        geometries = []
-        for line in data.split("\n"):
-            extracted = self.line_to_geometry(line)
-            if extracted:
-                geometries.append(extracted)
-
-        natoms = len(self.system.atoms)
-        while geometries:
-            g = geometries[:natoms]
-            geometries = geometries[natoms:]
-            self.geometry_history.append(g)
-
-        self.geometry = self.geometry_history[-1]
-        
     def run(self, host="localhost", options={}):
         """Run pdynamo using the the pdynamo-runner.py script on the given
         host. The pdynamo-runner.py gets geometry from an .xyz file and

@@ -121,7 +121,7 @@ class Psi4TestCase(adapter.AdapterTestCase):
 
         self.assertEqual(0, len(job.geometry_history))
         job.extract_geometry(data)
-        self.assertEqual(9, len(job.geometry_history))
+        self.assertEqual(10, len(job.geometry_history))
 
 def runTests():
     try:

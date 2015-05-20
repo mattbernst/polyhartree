@@ -125,8 +125,8 @@ end"""
 
         self.assertEqual(0, len(job.geometry_history))
         job.extract_geometry(data)
-        #there are actually 6 geometries in the log file but one is a repeat
-        self.assertEqual(6, len(job.geometry_history))
+        #there are actually 6 geometries in the log file but 2 repeats
+        self.assertEqual(4, len(job.geometry_history))
 
 
 def runTests():

@@ -4,12 +4,15 @@ import string
 import uuid
 
 import cpinterface
-import sharedutilities
 
 class NWChemJob(cpinterface.Job):
     def __init__(self, *args, **kw):
         super(NWChemJob, self).__init__(*args, **kw)
         self.backend = "nwchem"
+        #intended to extract XYZ geometric coordinates from a line like
+        #2 H0         1.0000     0.76346784     0.00000000     0.47737789
+        self.geometry_matcher = ([int, str, float, float, float, float],
+                                 [3, 4, 5])
 
     def extract_last_energy(self, data, options={}):
         """Get last energy message from log file and store it as self.energy.
@@ -26,64 +29,6 @@ class NWChemJob(cpinterface.Job):
 
                 #units are already Hartree
                 self.energy = energy
-
-    def line_to_geometry(self, line):
-        """Extract lines fitting pattern float tag float float float float
-        and interpret them as [element, x, y, z]. Index and charge number
-        values are discarded.
-
-        e.g. WILL match
-         2 H0         1.0000     0.76346784     0.00000000     0.47737789
-
-        WILL NOT match
-         2 H    1     0.64   0.43  0.21
-
-        (presuming that H0 is an actual tag and H is not)
-
-        :param line: a line of data from log file
-        :type line : str
-        :return: [element, x, y, z] or []
-        :rtype : list
-        """
-
-        entry = []
-        u = sharedutilities.Utility()
-        n = u.numericize(line)
-
-        pattern = [float, str, float, float, float, float]
-        if [type(k) for k in n] == pattern:
-            if n[1] in self.system.atom_properties("basis_tag"):
-                el = [x for x in n[1] if x in string.ascii_letters]
-                n[1] = "".join(el)
-                entry = [n[1], n[3], n[4], n[5]]
-
-        return entry
-
-    def extract_geometry(self, data, options={}):
-        """Get last geometry found in log file and store it as self.geometry.
-        If there are multiple geometries from e.g. an optimization run, they
-        will go into self.geometry_history.
-
-        :param data: log file contents
-        :type data : str
-        :param options: ignored
-        :type options : dict
-        """
-
-        geometries = []
-        for line in data.split("\n"):
-            extracted = self.line_to_geometry(line)
-            if extracted:
-                geometries.append(extracted)
-
-        natoms = len(self.system.atoms)
-        while geometries:
-            g = geometries[:natoms]
-            geometries = geometries[natoms:]
-
-            self.geometry_history.append(g)
-            
-        self.geometry = self.geometry_history[-1]
 
     def run(self, host="localhost", options={}):
         """Run a NWChem job on the given host.
