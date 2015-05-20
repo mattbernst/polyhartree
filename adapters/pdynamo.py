@@ -162,6 +162,8 @@ class PDynamo(cpinterface.MolecularCalculator):
         :rtype : cpinterface.Job
         """
 
+        system = self.fragment_to_system(system)
+
         if method.startswith("semiempirical"):
             return self.make_semiempirical_job(system, method, "ENERGY",
                                                options=options)

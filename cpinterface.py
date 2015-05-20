@@ -296,7 +296,7 @@ class Job(sharedutilities.Utility, Messages):
             if extracted:
                 geometries.append(extracted)
 
-        elements = [sharedutilities.ELEMENTS[k.atomicnum - 1] for k in self.system.atoms]
+        elements = self.system.atom_properties("symbols")
         natoms = len(elements)
 
         while geometries:
