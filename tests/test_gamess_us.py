@@ -13,6 +13,7 @@ import unittest
 import geoprep
 from adapters import gamess_us
 from tests import adapter
+from tests import reference_values
 from tests.common_testcode import runSuite
 
 class GAMESSTestCase(adapter.AdapterTestCase):
@@ -75,9 +76,21 @@ class GAMESSTestCase(adapter.AdapterTestCase):
 
     def test_extract_geometry_from_log(self):
         #read/verify geometry from a specific stored RHF water optimization
-        super(GAMESSTestCase, self).test_extract_geometry_from_log("O", "hf:rhf",
-                                                                   "tests/data/logs/rhf_water_geo_min_gamess_us.log",
-                                                                   6)
+        self.geometry_from_log("O", "hf:rhf",
+                               "tests/data/logs/rhf_water_geo_min_gamess_us.log",
+                               6)
+
+    def test_extract_energy_from_log(self):
+        #read/verify geometry from a specific stored single point energy log
+        self.energy_from_log("CO", "hf:rhf",
+                             "tests/data/logs/rhf_methanol_energy_gamess_us.log",
+                             reference_values.methanol_rhf_321g, None)
+
+    def test_extract_hof_from_log(self):
+        #read/verify geometry from a specific stored single point energy log
+        self.energy_from_log("C", "semiempirical:pm3",
+                             "tests/data/logs/pm3_methane_energy_gamess_us.log",
+                             None, reference_values.methane_pm3_hof)
 
 
 

@@ -15,7 +15,7 @@ class Mopac7Job(cpinterface.Job):
         self.geometry_matcher = ([int, str, float, float, float],
                                  [2, 3, 4])
 
-    def extract_energy(self, data, options={}):
+    def extract_last_energy(self, data, options={}):
         """Get last energy message from log file and store it as self.energy.
 
         :param data: log file contents
@@ -91,7 +91,7 @@ class Mopac7Job(cpinterface.Job):
                 self.runstate = "error"
                 return
                 
-        self.extract_energy(self.logdata)
+        self.extract_last_energy(self.logdata)
         self.extract_heat_of_formation(self.logdata)
         self.extract_geometry(self.logdata)
 

@@ -12,6 +12,7 @@ import sys
 import unittest
 import geoprep
 from tests import adapter
+from tests import reference_values
 from tests.common_testcode import runSuite
 from adapters import mopac7
 
@@ -42,9 +43,15 @@ class MOPACTestCase(adapter.AdapterTestCase):
         #read/verify geometry from a specific stored PM3 water optimization
         #Note that only first and last structures are logged; the
         #interim steps are not recorded.
-        super(MOPACTestCase, self).test_extract_geometry_from_log("O", "semiempirical:pm3",
-                                                                  "tests/data/logs/pm3_water_geo_min_mopac7.log",
-                                                                  2)
+        self.geometry_from_log("O", "semiempirical:pm3",
+                               "tests/data/logs/pm3_water_geo_min_mopac7.log",
+                               2)
+
+    def test_extract_hof_from_log(self):
+        #read/verify geometry from a specific stored single point energy log
+        self.energy_from_log("C", "semiempirical:pm3",
+                             "tests/data/logs/pm3_methane_energy_mopac7.log",
+                             None, reference_values.methane_pm3_hof)
 
 
 def runTests():

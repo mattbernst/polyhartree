@@ -13,6 +13,7 @@ import unittest
 import geoprep
 from adapters import psi4
 from tests import adapter
+from tests import reference_values
 from tests.common_testcode import runSuite
 from sharedutilities import Utility
 
@@ -115,9 +116,15 @@ class Psi4TestCase(adapter.AdapterTestCase):
 
     def test_extract_geometry_from_log(self):
         #read/verify geometry from a specific stored RHF water optimization
-        super(Psi4TestCase, self).test_extract_geometry_from_log("O", "hf:rhf",
-                                                                 "tests/data/logs/rhf_water_geo_min_psi4.log",
-                                                                 10)
+        self.geometry_from_log("O", "hf:rhf",
+                               "tests/data/logs/rhf_water_geo_min_psi4.log",
+                               10)
+
+    def test_extract_energy_from_log(self):
+        #read/verify geometry from a specific stored single point energy log
+        self.energy_from_log("CO", "hf:rhf",
+                             "tests/data/logs/rhf_methanol_energy_psi4.log",
+                             reference_values.methanol_rhf_321g, None)
 
 def runTests():
     try:
