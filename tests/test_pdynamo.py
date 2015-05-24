@@ -23,13 +23,9 @@ class PDTestCase(adapter.AdapterTestCase):
 
     def test_extract_geometry_from_log(self):
         #read/verify geometry from a specific stored PM3 water optimization
-        job = self.get_job("O", "semiempirical:pm3")
-        with open("tests/data/logs/pm3_water_geo_min_pdynamo.log") as infile:
-            data = infile.read()
-
-        self.assertEqual(0, len(job.geometry_history))
-        job.extract_geometry(data)
-        self.assertEqual(8, len(job.geometry_history))
+        super(PDTestCase, self).test_extract_geometry_from_log("O", "semiempirical:pm3",
+                                                               "tests/data/logs/pm3_water_geo_min_pdynamo.log",
+                                                               8)
 
 def runTests():
     try:
