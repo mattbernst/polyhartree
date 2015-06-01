@@ -393,12 +393,14 @@ class GAMESSUS(cpinterface.MolecularCalculator):
         :rtype : dict
         """
 
+        defaults = {"basis_format" : "gamess-us"}
+        options = dict(defaults.items() + options.items())
         property_name = options["basis_tag_name"]
         ubb = {}
         basis_names = []
         basis_blocks = []
         comments = []
-        bsd = self.get_basis_data(system, {"basis_format" : "gamess-us"})
+        bsd = self.get_basis_data(system, options=options)
         data = bsd["data"]
         if bsd["spherical_or_cartesian"] == "spherical":
             ispher = 1
@@ -427,10 +429,21 @@ class GAMESSUS(cpinterface.MolecularCalculator):
             
             if add_new_block:
                 basis_text = data[basis_name][element]
-                basis_text = "\n".join(basis_text.split("\n")[1:])
+                extra_comments = []
+                non_comments = []
+                for line in basis_text.split("\n"):
+                    if line.startswith("!"):
+                        extra_comments.append(line)
+                    else:
+                        non_comments.append(line)
+
+                basis_text = "\n".join(non_comments[1:])
+                if extra_comments:
+                    extra_comments[0] = "\n" + extra_comments[0]
                 
-                tpl = "!\t{comment}\n ${name}\n{data}\n\n $END"
+                tpl = "!\t{comment}{extra_comments}\n ${name}\n{data}\n\n $END"
                 block = tpl.format(**{"comment" : comment,
+                                      "extra_comments" : "\n".join(extra_comments),
                                       "name" : basis_alias,
                                       "data" : basis_text})
                 basis_blocks.append(block)

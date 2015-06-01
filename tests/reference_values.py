@@ -14,7 +14,8 @@
 methane_rhf_321g = -39.9766425
 methyl_uhf_ccpvdz = -39.5638132
 methyl_rohf_ccpvdz = -39.5596229
-hcl_rhf_ccpvtz = -460.1059469
+hcl_rhf_ccpvdz = -460.0889424
+hcl_rhf_631gs = -460.0589984
 
 #energy from external geometry
 methanol_rhf_321g = -114.39179686

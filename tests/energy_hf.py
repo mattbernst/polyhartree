@@ -60,9 +60,19 @@ class HFEnergyTestCase(energy.EnergyTestCase):
     def test_energy_basis_set_converted(self):
         #test energy job using converted-from-nwchem basis set data
         hcl = self.G.make_fragment("Cl")
-        hcl.set_basis_name("cc-pVTZ")
+        hcl.set_basis_name("cc-pVDZ")
         cnv = {"force_conversion_from" : "nwchem"}
         job = self.C.make_energy_job(hcl, "hf:rhf", options=cnv)
         job.run()
-        self.assertNearMatch(reference_values.hcl_rhf_ccpvtz,
+        self.assertNearMatch(reference_values.hcl_rhf_ccpvdz,
+                             job.energy, places=6)
+
+    def test_energy_basis_set_converted_sp(self):
+        #test using converted-from-nwchem basis set data with "sp" functions
+        hcl = self.G.make_fragment("Cl")
+        hcl.set_basis_name("6-31G*")
+        cnv = {"force_conversion_from" : "nwchem"}
+        job = self.C.make_energy_job(hcl, "hf:rhf", options=cnv)
+        job.run()
+        self.assertNearMatch(reference_values.hcl_rhf_631gs,
                              job.energy, places=6)

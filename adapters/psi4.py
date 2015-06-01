@@ -234,12 +234,14 @@ class Psi4(cpinterface.MolecularCalculator):
         :rtype : dict
         """
 
+        defaults = {"basis_format" : "g94"}
+        options = dict(defaults.items() + options.items())
         property_name = options["basis_tag_name"]
         ubb = {}
         basis_names = []
         basis_blocks = []
         assignments = []
-        bsd = self.get_basis_data(system, {"basis_format" : "g94"})
+        bsd = self.get_basis_data(system, options=options)
         data = bsd["data"]
 
         form = bsd["spherical_or_cartesian"]
