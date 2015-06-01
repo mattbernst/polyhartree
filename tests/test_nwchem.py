@@ -130,7 +130,6 @@ end"""
                              "tests/data/logs/rhf_methanol_energy_nwchem.log",
                              reference_values.methanol_rhf_321g, None)
 
-
 def runTests():
     try:
         test_name = sys.argv[1]

@@ -7,7 +7,7 @@ import sharedutilities
 import geoprep
 
 try:
-    from ebsel import EMSL_api
+    from ebsel.src import EMSL_local
 except ImportError:
     msg = "Warning! Unable to import ebsel. Attempts to prepare calculations that need basis set data will fail. Make sure ebsel is on your PYTHONPATH to run calculations using basis sets. https://github.com/mattbernst/ebsel\n"
     sys.stderr.write(msg)
@@ -355,6 +355,16 @@ class MolecularCalculator(Messages):
 
         options:
          basis_format: "gamess-us", "nwchem", or "gaussian94"
+         force_conversion_from: "gamess-us", "nwchem", or "gaussian94"
+
+        When the force_conversion_from option is enabled, the ebsel code
+        will use the specified format as the original source and force a
+        conversion to a standardized version of the basis_format.
+
+        For example, if basis_format is "gamess-us" and force_conversion_from
+        is "nwchem," the nwchem-format data will be read and reformatted to
+        generate the gamess-us format data that actually gets used in a
+        calculation.
 
         :param system: molecular system
         :type system : geoprep.System
@@ -365,6 +375,7 @@ class MolecularCalculator(Messages):
         """
 
         basis_format = options["basis_format"]
+        conversion_from = options.get("force_conversion_from")
         basis_names = system.atom_properties("basis_name")
         symbols = system.atom_properties("symbols")
         groups = {}
@@ -386,32 +397,33 @@ class MolecularCalculator(Messages):
             except KeyError:
                 groups[name] = set([symbol])
 
-        el = EMSL_api.get_EMSL_local(fmt=basis_format)
-        for group in groups:
-            provided_elements = set(el.get_list_element_available(group))
+        el = EMSL_local.EMSL_local(None, fmt=basis_format)
+        for basis_set_name in groups:
+            provided_elements = set(el.get_list_element_available(basis_set_name))
 
             #no provided elements at all means unknown basis set name
             if not provided_elements:
-                raise ValueError("Unknown basis set {0}".format(group))
+                raise ValueError("Unknown basis set {0}".format(basis_set_name))
                 
-            elements = groups[group]
+            elements = groups[basis_set_name]
             missing_elements = elements.difference(provided_elements)
 
             if missing_elements:
-                raise ValueError("Basis set {0} missing parameters for elements {1}".format(repr(group), list(missing_elements)))
+                raise ValueError("Basis set {0} missing parameters for elements {1}".format(repr(basis_set_name), list(missing_elements)))
 
             basis_data = {}
             for element in elements:
-                bd = el.get_basis(group, [element])[0]
+                bd = el.get_basis(basis_set_name, [element],
+                                  convert_from=conversion_from)[0]
                 basis_data[element] = bd
                 
-            basis_groups[group] = basis_data
+            basis_groups[basis_set_name] = basis_data
 
-            soc = el.spherical_or_cartesian(group)
+            soc = el.spherical_or_cartesian(basis_set_name)
             try:
-                function_types[soc].append(group)
+                function_types[soc].append(basis_set_name)
             except KeyError:
-                function_types[soc] = [group]
+                function_types[soc] = [basis_set_name]
 
         #can't mix spherical and cartesian basis sets in a single system
         if len(function_types) > 1:

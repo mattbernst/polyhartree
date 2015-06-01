@@ -225,11 +225,14 @@ class NWChem(cpinterface.MolecularCalculator):
         :rtype : dict
         """
 
+        defaults = {"basis_format" : "nwchem"}
+        options = dict(defaults.items() + options.items())
         property_name = options["basis_tag_name"]
+
         ubb = {}
         basis_names = []
         basis_blocks = []
-        bsd = self.get_basis_data(system, {"basis_format" : "nwchem"})
+        bsd = self.get_basis_data(system, options)
         data = bsd["data"]
 
         form = bsd["spherical_or_cartesian"]
