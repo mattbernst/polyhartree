@@ -19,6 +19,7 @@ hcl_rhf_631gs = -460.0589984
 
 #energy from external geometry
 methanol_rhf_321g = -114.39179686
+methanol_rhf_g3mp2large = -115.0850089
 
 #semiempirical heats of formation (also in hartrees)
 phenyl_rohf_pm3_hof = 0.126826

@@ -76,3 +76,14 @@ class HFEnergyTestCase(energy.EnergyTestCase):
         job.run()
         self.assertNearMatch(reference_values.hcl_rhf_631gs,
                              job.energy, places=6)
+
+    def test_energy_basis_set_supplemented(self):
+        #test using converted-from-nwchem basis set data that was
+        #automatically filled in from a file system *.nwbas entry
+
+        methanol = self.G.read_fragment("tests/data/methanol1.xyz")
+        methanol.set_basis_name("g3mp2large")
+        job = self.C.make_energy_job(methanol, "hf:rhf")
+        job.run()
+        self.assertNearMatch(reference_values.methanol_rhf_g3mp2large,
+                             job.energy, places=6)

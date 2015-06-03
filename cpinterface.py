@@ -399,7 +399,7 @@ class MolecularCalculator(Messages):
 
         el = EMSL_local.EMSL_local(None, fmt=basis_format)
         for basis_set_name in groups:
-            provided_elements = set(el.get_list_element_available(basis_set_name))
+            provided_elements = set(el.get_available_elements(basis_set_name))
 
             #no provided elements at all means unknown basis set name
             if not provided_elements:
