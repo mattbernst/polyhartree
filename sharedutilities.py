@@ -54,7 +54,7 @@ class Utility(object):
 
         ["Root", 1.0, "singlet", 19.48009, "a.u.", 530.0803, "eV"]
 
-        :param line: input line of text from a nwparse QA file
+        :param line: input line of text
         :type line : str
         :param numeric_only: exclude unconverted fragments if True
         :type numeric_only : bool

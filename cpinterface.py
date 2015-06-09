@@ -354,8 +354,9 @@ class MolecularCalculator(Messages):
         or incorrectly specified basis sets.
 
         options:
-         basis_format: "gamess-us", "nwchem", or "gaussian94"
-         force_conversion_from: "gamess-us", "nwchem", or "gaussian94"
+         basis_format: "gamess-us", "nwchem", or "g94"
+         force_conversion_from: "gamess-us", "nwchem", or "g94"
+         bypass_db: force data to be loaded from file system instead of db
 
         When the force_conversion_from option is enabled, the ebsel code
         will use the specified format as the original source and force a
@@ -365,6 +366,12 @@ class MolecularCalculator(Messages):
         is "nwchem," the nwchem-format data will be read and reformatted to
         generate the gamess-us format data that actually gets used in a
         calculation.
+
+        When the bypass_db option is True, data from ebsel's copy of the
+        Basis Set Exchange database will be ignored and instead data will
+        be loaded (if possible) from the supplementary data on the file
+        system. This permits e.g. testing altered basis sets by changing
+        just a single file.
 
         :param system: molecular system
         :type system : geoprep.System
@@ -376,6 +383,7 @@ class MolecularCalculator(Messages):
 
         basis_format = options["basis_format"]
         conversion_from = options.get("force_conversion_from")
+        bypass_db = options.get("bypass_db", False)
         basis_names = system.atom_properties("basis_name")
         symbols = system.atom_properties("symbols")
         groups = {}
@@ -397,7 +405,7 @@ class MolecularCalculator(Messages):
             except KeyError:
                 groups[name] = set([symbol])
 
-        el = EMSL_local.EMSL_local(None, fmt=basis_format)
+        el = EMSL_local.EMSL_local(fmt=basis_format)
         for basis_set_name in groups:
             provided_elements = set(el.get_available_elements(basis_set_name))
 
@@ -414,7 +422,8 @@ class MolecularCalculator(Messages):
             basis_data = {}
             for element in elements:
                 bd = el.get_basis(basis_set_name, [element],
-                                  convert_from=conversion_from)[0]
+                                  convert_from=conversion_from,
+                                  bypass_db=bypass_db)[0]
                 basis_data[element] = bd
                 
             basis_groups[basis_set_name] = basis_data
