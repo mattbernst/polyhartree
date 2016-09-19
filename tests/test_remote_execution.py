@@ -84,7 +84,11 @@ class RETestCase(unittest.TestCase):
         result = job.ansible_run("shell", "ls", "notarealhost")
         self.assertEqual(1, len(job.messages))
         err = job.messages[0]
-        self.assertTrue("unknown error" in err or "sshpass" in err)
+        #A variety of possible error messages; assert that we got
+        #at least one of them
+        fails = ["unknown error", "sshpass", "SSH Error"]
+        contains = [f in err for f in fails]
+        self.assertTrue(True in contains)
 
     def test_ansible_missing_host(self):
         #try to use ansible on a non-configured host and get an exception

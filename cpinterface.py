@@ -228,27 +228,36 @@ class Job(sharedutilities.Utility, Messages):
         """Import ansible modules just before executing remote tasks. This
         way someone who just wants to run locally has one less dependency
         to install."""
-        try:
+
+        paths = ":".join(sys.path)
+        support = "{0}/support".format(self.here)
+        if support not in paths:
             global ansible
+            #Import bundled ansible from support directory because the 1.x API
+            #is what this code was originally written with, and is simpler
+            sys.path.insert(0, support)
             import ansible.inventory
             import ansible.runner
-        except ImportError:
-            msg = "You must have ansible installed to run jobs on remote machines. See http://www.ansible.com/home\n"
-            sys.stderr.write(msg)
-            sys.exit(1)
 
         try:
             self.inventory
         except AttributeError:
+            hostfiles = ["config/ansible-hosts", "config/ansible-hosts-default"]
+            found = False
             
-            for hostfile in ["config/ansible-hosts",
-                             "config/ansible-hosts-default"]:
+            for hostfile in hostfiles:
                 full_file = "{0}/{1}".format(self.here, hostfile)
                 if os.path.exists(full_file):
-                    inv = ansible.inventory.Inventory(host_list=hostfile)
+                    found = True
                     break
 
-            self.inventory = inv
+            if not found:
+                msg = "ERROR: Could not find ansible-hosts configuration; tried {0}.\n".format(hostfiles)
+                sys.stderr.write(msg)
+                sys.exit(1)
+            else:
+                inv = ansible.inventory.Inventory(host_list=hostfile)
+                self.inventory = inv
 
     def extract_last_energy(self, data, options={}):
         raise NotImplementedError
